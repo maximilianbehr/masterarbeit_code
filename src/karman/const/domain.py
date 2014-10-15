@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 #constants for rectangular domain
 rect         = {"x0":0,"x1":10,"y0":0,"y1":5}
 
