@@ -12,7 +12,9 @@ DOLFIN_VERSION                          = __version__
 
 """macro karman mesh files and boundary functions"""
 KARMAN_MACRO_MESH_FILE                  = "../karman_mesh/"+DOLFIN_VERSION+"/macro/macro.xml.gz"
+KARMAN_MACRO_MESH_FILE_XDMF             = "../karman_mesh/"+DOLFIN_VERSION+"/macro/macro.xdmf"
 KARMAN_MACRO_BOUNDARY_FILE              = "../karman_mesh/"+DOLFIN_VERSION+"/macro/boundary.xml.gz"
+KARMAN_MACRO_BOUNDARY_FILE_XDMF         = "../karman_mesh/"+DOLFIN_VERSION+"/macro/boundary.xdmf"
 KARMAN_MACRO_MESH_PVD_FILE              = "../karman_mesh/"+DOLFIN_VERSION+"/macro/macro.pvd"
 KARMAN_MACRO_BOUNDARY_PVD_FILE          = "../karman_mesh/"+DOLFIN_VERSION+"/macro/boundary.pvd"
 
@@ -23,8 +25,16 @@ def KARMAN_REFN_MESH_FILE(refinementalg, num):
 def KARMAN_REFN_BOUNDARY_FILE(refinementalg, num):
     return "../karman_mesh/"+DOLFIN_VERSION+"/%s/ref_%d/boundary.xml.gz"%(refinementalg,num)
 
+def KARMAN_REFN_MESH_FILE_XDMF(refinementalg, num):
+    return "../karman_mesh/"+DOLFIN_VERSION+"/%s/ref_%d/mesh.xdmf"%(refinementalg,num)
+
+def KARMAN_REFN_BOUNDARY_FILE_XDMF(refinementalg, num):
+    return "../karman_mesh/"+DOLFIN_VERSION+"/%s/ref_%d/boundary.xdmf"%(refinementalg,num)
+
+
 def KARMAN_REFN_MESH_PVD_FILE(refinementalg,num):
     return  "../karman_mesh/"+DOLFIN_VERSION+"/%s/ref_%d/mesh.pvd"%(refinementalg,num)
 
 def KARMAN_REFN_BOUNDARY_PVD_FILE(refinementalg, num):
     return "../karman_mesh/"+DOLFIN_VERSION+"/%s/ref_%d/boundary.pvd"%(refinementalg,num)
+

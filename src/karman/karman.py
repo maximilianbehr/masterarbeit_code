@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 from dolfin.cpp.common import info,begin,end
 from dolfin.cpp.mesh import Rectangle,Circle,Mesh,MeshFunction,SubDomain
+from dolfin.cpp.common import *
 from dolfin.common.plotting import plot
 from dolfin.cpp.io import File
 from dolfin.cpp import parameters
@@ -130,26 +132,36 @@ def refinekarman(mesh):
 
 if __name__=="__main__":
 
-    mesh,boundaryfunction = macrokarman()
-    File(KARMAN_MACRO_MESH_FILE)<<mesh
-    File(KARMAN_MACRO_MESH_PVD_FILE)<<mesh
-    File(KARMAN_MACRO_BOUNDARY_FILE)<<boundaryfunction
-    File(KARMAN_MACRO_BOUNDARY_PVD_FILE)<<boundaryfunction
-
-
-    for refalg in parameters.get_range("refinement_algorithm"):
+    #for refalg in parameters.get_range("refinement_algorithm"):
+    for refalg in ["bisection", "iterative_bisection", "recursive_bisection", "regular_cut"]:
         parameters["refinement_algorithm"]=refalg
 
+        mesh,boundaryfunction = macrokarman()
+
+        File(KARMAN_MACRO_MESH_FILE)<<mesh
+        File(KARMAN_MACRO_BOUNDARY_FILE)<<boundaryfunction
+
+        File(KARMAN_MACRO_MESH_FILE_XDMF)<<mesh
+        File(KARMAN_MACRO_BOUNDARY_FILE_XDMF)<<boundaryfunction
+
+        File(KARMAN_MACRO_MESH_PVD_FILE)<<mesh
+        File(KARMAN_MACRO_BOUNDARY_PVD_FILE)<<boundaryfunction
+
         begin("Refinement with %s"%parameters["refinement_algorithm"])
-        for ref in range(1,8):
+        for ref in range(1,7):
             info("Level %d"%ref)
             mesh, boundaryfunction = refinekarman(mesh)
+
             File(KARMAN_REFN_MESH_FILE(parameters["refinement_algorithm"],ref))<<mesh
-            File(KARMAN_REFN_MESH_PVD_FILE(parameters["refinement_algorithm"],ref))<<mesh
             File(KARMAN_REFN_BOUNDARY_FILE(parameters["refinement_algorithm"],ref))<<boundaryfunction
+
+            File(KARMAN_REFN_MESH_FILE_XDMF(parameters["refinement_algorithm"],ref))<<mesh
+            File(KARMAN_REFN_BOUNDARY_FILE_XDMF(parameters["refinement_algorithm"],ref))<<boundaryfunction
+
+            File(KARMAN_REFN_MESH_PVD_FILE(parameters["refinement_algorithm"],ref))<<mesh
             File(KARMAN_REFN_BOUNDARY_PVD_FILE(parameters["refinement_algorithm"],ref))<<boundaryfunction
 
-        end("Refinement with %s"%parameters["refinement_algorithm"])
+        end()
 
 
 
