@@ -9,7 +9,6 @@ from dolfin.cpp.function import near,between
 from dolfin import refine
 from math import sqrt
 
-from const.domain import rect, circ
 from const.mesh import *
 
 
@@ -95,14 +94,14 @@ def macrokarman():
     # Mark boundary parts
     mesh                = Mesh(domain, initial_resolution)
     boundaryfunction    = MeshFunction("size_t", mesh, mesh.topology().dim()-1)
-    boundaryfunction.set_all(0)
-    GammaLeft().mark(boundaryfunction,1)
-    GammaLower().mark(boundaryfunction,2)
-    GammaRight().mark(boundaryfunction,3)
-    GammaUpper().mark(boundaryfunction,4)
-    GammaBall().mark(boundaryfunction,5)
-    GammaBallCtrlLower().mark(boundaryfunction,6)
-    GammaBallCtrlUpper().mark(boundaryfunction,7)
+    boundaryfunction.set_all(GAMMAINNER)
+    GammaLeft().mark(boundaryfunction,GAMMALEFT)
+    GammaLower().mark(boundaryfunction,GAMMALOWER)
+    GammaRight().mark(boundaryfunction,GAMMARIGHT)
+    GammaUpper().mark(boundaryfunction,GAMMAUPPER)
+    GammaBall().mark(boundaryfunction,GAMMABALL)
+    GammaBallCtrlLower().mark(boundaryfunction,GAMMABALLCTRLUPPER)
+    GammaBallCtrlUpper().mark(boundaryfunction,GAMMABALLCTRLLOWER)
 
     return mesh,boundaryfunction
 
@@ -117,49 +116,50 @@ def refinekarman(mesh):
 
     #mark boundary parts
     boundaryfunction = MeshFunction("size_t", refmesh, refmesh.topology().dim()-1)
-    boundaryfunction.set_all(0)
-    GammaLeft().mark(boundaryfunction,1)
-    GammaLower().mark(boundaryfunction,2)
-    GammaRight().mark(boundaryfunction,3)
-    GammaUpper().mark(boundaryfunction,4)
-    GammaBall().mark(boundaryfunction,5)
-    GammaBallCtrlLower().mark(boundaryfunction,6)
-    GammaBallCtrlUpper().mark(boundaryfunction,7)
+    boundaryfunction.set_all(GAMMAINNER)
+    GammaLeft().mark(boundaryfunction,GAMMALEFT)
+    GammaLower().mark(boundaryfunction,GAMMALOWER)
+    GammaRight().mark(boundaryfunction,GAMMARIGHT)
+    GammaUpper().mark(boundaryfunction,GAMMAUPPER)
+    GammaBall().mark(boundaryfunction,GAMMABALL)
+    GammaBallCtrlLower().mark(boundaryfunction,GAMMABALLCTRLUPPER)
+    GammaBallCtrlUpper().mark(boundaryfunction,GAMMABALLCTRLLOWER)
 
     return refmesh,boundaryfunction
-
 
 
 if __name__=="__main__":
 
     #for refalg in parameters.get_range("refinement_algorithm"):
-    for refalg in ["bisection", "iterative_bisection", "recursive_bisection", "regular_cut"]:
+    #for refalg in ["bisection", "iterative_bisection", "recursive_bisection", "regular_cut"]:
+    for refalg in ["bisection"]:
+
         parameters["refinement_algorithm"]=refalg
 
         mesh,boundaryfunction = macrokarman()
 
-        File(KARMAN_MACRO_MESH_FILE)<<mesh
-        File(KARMAN_MACRO_BOUNDARY_FILE)<<boundaryfunction
+        File(KARMAN_MACRO_MESH_FILE,"compressed")<<mesh
+        File(KARMAN_MACRO_BOUNDARY_FILE,"compressed")<<boundaryfunction
 
-        File(KARMAN_MACRO_MESH_FILE_XDMF)<<mesh
-        File(KARMAN_MACRO_BOUNDARY_FILE_XDMF)<<boundaryfunction
+        File(KARMAN_MACRO_MESH_FILE_XDMF,"compressed")<<mesh
+        File(KARMAN_MACRO_BOUNDARY_FILE_XDMF,"compressed")<<boundaryfunction
 
-        File(KARMAN_MACRO_MESH_PVD_FILE)<<mesh
-        File(KARMAN_MACRO_BOUNDARY_PVD_FILE)<<boundaryfunction
+        File(KARMAN_MACRO_MESH_PVD_FILE,"compressed")<<mesh
+        File(KARMAN_MACRO_BOUNDARY_PVD_FILE,"compressed")<<boundaryfunction
 
         begin("Refinement with %s"%parameters["refinement_algorithm"])
-        for ref in range(1,7):
+        for ref in range(1,8):
             info("Level %d"%ref)
             mesh, boundaryfunction = refinekarman(mesh)
 
-            File(KARMAN_REFN_MESH_FILE(parameters["refinement_algorithm"],ref))<<mesh
-            File(KARMAN_REFN_BOUNDARY_FILE(parameters["refinement_algorithm"],ref))<<boundaryfunction
+            File(KARMAN_REFN_MESH_FILE(parameters["refinement_algorithm"],ref),"compressed")<<mesh
+            File(KARMAN_REFN_BOUNDARY_FILE(parameters["refinement_algorithm"],ref),"compressed")<<boundaryfunction
 
-            File(KARMAN_REFN_MESH_FILE_XDMF(parameters["refinement_algorithm"],ref))<<mesh
-            File(KARMAN_REFN_BOUNDARY_FILE_XDMF(parameters["refinement_algorithm"],ref))<<boundaryfunction
+            File(KARMAN_REFN_MESH_FILE_XDMF(parameters["refinement_algorithm"],ref),"compressed")<<mesh
+            File(KARMAN_REFN_BOUNDARY_FILE_XDMF(parameters["refinement_algorithm"],ref),"compressed")<<boundaryfunction
 
-            File(KARMAN_REFN_MESH_PVD_FILE(parameters["refinement_algorithm"],ref))<<mesh
-            File(KARMAN_REFN_BOUNDARY_PVD_FILE(parameters["refinement_algorithm"],ref))<<boundaryfunction
+            File(KARMAN_REFN_MESH_PVD_FILE(parameters["refinement_algorithm"],ref),"compressed")<<mesh
+            File(KARMAN_REFN_BOUNDARY_PVD_FILE(parameters["refinement_algorithm"],ref),"compressed")<<boundaryfunction
 
         end()
 
