@@ -2,7 +2,7 @@
 
 
 #fenics conf file
-FENICS_CONF="/Applications/FEniCS.app/Contents/Resources/share/fenics/fenics.conf"
+FENICS_CONF="/Applications/FEniCS_1.3.0.app/Contents/Resources/share/fenics/fenics.conf"
 
 #source fenics
 source $FENICS_CONF

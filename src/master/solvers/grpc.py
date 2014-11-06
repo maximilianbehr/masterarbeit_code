@@ -8,6 +8,8 @@ __license__  = "GNU GPL version 3 or any later version"
 
 from solverbase import *
 from numpy import linspace
+from dolfin import __version__
+
 class Solver(SolverBase):
     "cG(2/1)cG(1) with generalized Richardson iteration on the Schur complement."
 
@@ -117,8 +119,13 @@ class Solver(SolverBase):
         # Get solution vectors
         x = u1.vector()
         y = p01.vector()
-        delta_x = Vector(x.size())
-        delta_y = Vector(y.size())
+        if __version__ == "1.3.0" or __version__ == "1.3.0+":
+            delta_x = Vector(x.mpi_comm(),x.size())
+            delta_y = Vector(y.mpi_comm(),y.size())
+        else:
+            delta_x = Vector(x.size())
+            delta_y = Vector(y.size())
+
 
         # Time loop
         prec = "amg" if has_krylov_solver_preconditioner("amg") else "default"

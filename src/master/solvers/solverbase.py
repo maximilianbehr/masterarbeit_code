@@ -5,10 +5,11 @@ __license__  = "GNU GPL version 3 or any later version"
 
 from dolfin import *
 from dolfin import __version__
-
 from time import time
 from os import getpid
 from commands import getoutput
+import ipdb
+
 
 # Common solver parameters
 maxiter = default_maxiter = 200
@@ -116,11 +117,22 @@ class SolverBase:
 
         # Save vectors in xml format
         if self.options["save_xml"] and (self._timestep - 1) % frequency == 0:
-            file = File("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/t=%1.2e"% t + "_velo.xml" )
+            file = File("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/t=%1.2e"% t + "_velo.xml","compressed" )
             file << u.vector()
 
-            file = File("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/t=%1.2e"% t + "_pressure.xml" )
+            file = File("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/t=%1.2e"% t + "_pressure.xml","compressed" )
             file << p.vector()
+
+
+        #Save TimeSeries for u
+        if self.options["save_TimeSeries_u"]:
+            tseries_v = TimeSeries("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/time_series_u",True)
+            tseries_v.store(u.vector(),t)
+
+        #Save Time Series for p
+        if self.options["save_TimeSeries_p"]:
+            tseries_p = TimeSeries("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/time_series_p",True)
+            tseries_p.store(p.vector(),t)
 
         # Plot solution
         if self.options["plot_solution"]:
@@ -197,7 +209,7 @@ def check_divergence(u, Q):
 
     # Compute projection of div u into Q_0
     pdivu = project(div(u), Q)
-    zero = Constant(Q.mesh(), 0.0)
+    zero = Constant(0.0)
     bc = DirichletBC(Q, zero, DomainBoundary())
     bc.apply(pdivu.vector())
 
