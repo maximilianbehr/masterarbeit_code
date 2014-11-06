@@ -8,7 +8,6 @@ from dolfin import __version__
 from time import time
 from os import getpid
 from commands import getoutput
-import ipdb
 
 
 # Common solver parameters
