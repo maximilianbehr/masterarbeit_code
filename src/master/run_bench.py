@@ -22,12 +22,13 @@ jobs = []
 solvers = [ "grpc"]
 
 #problems = ["karman.karman"]   #problems = ["drivencavity"  , "channel", "periodic", "beltrami", "cylinder", "aneurysm"]
-problems= ["cylinder"]
+#problems= ["cylinder"]
 
+problems = ["karman.karman"]
 
 
 # Number of refinement levels
-refinements = [1]
+refinements = [2,3,4,5]
 
 # See output on screen
 to_screen = True

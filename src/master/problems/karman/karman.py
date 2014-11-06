@@ -26,7 +26,7 @@ class Problem(ProblemBase):
         self.U = 3.5
 
         # Set end time
-        self.T  = 1.0
+        self.T  = 8.0
 
     def initial_conditions(self, V, Q):
 
@@ -38,7 +38,10 @@ class Problem(ProblemBase):
     def boundary_conditions(self, V, Q, t):
 
         # Create boundary condition
-        self.u_in               = Expression(("t*(1-x[1])*x[1]*2", "0.0"),t=t)
+        #self.u_in               = Expression(("t*(1-x[1])*x[1]*2", "0.0"),t=t)
+        self.u_in = Expression(('4*(x[1]*(1-x[1]))*sin(pi*t/8.0)', '0.0'), t=t)
+
+
         self.u_inflow           = DirichletBC(V, self.u_in, GammaLeft())
 
         self.u_noslip           = Constant((0,0))
@@ -48,7 +51,12 @@ class Problem(ProblemBase):
 
         # Collect boundary conditions
         bcu = [self.u_noslip_upper, self.u_noslip_lower, self.u_noslip_ball, self.u_inflow]
-        bcp = []
+
+
+        # boundary conditions for pressure
+        self.p_out              = Constant(0)
+        self.p_right            = DirichletBC(Q,self.p_out,GammaRight())
+        bcp = [self.p_right]
 
         return bcu, bcp
 
