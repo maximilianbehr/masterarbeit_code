@@ -13,7 +13,7 @@ class Problem(ProblemBase):
         if refinement_level > 5:
             raise RuntimeError, "No mesh available for refinement level %d" % refinement_level
 
-        self.mesh = Mesh(KARMAN_REFN_MESH_FILE("bisection", refinement_level))
+        self.mesh = Mesh(KARMAN_REFN_MESH_FILE(parameters["refinement_algorithm"], refinement_level))
 
 
         # Create right-hand side function

@@ -99,8 +99,8 @@ class SolverBase:
                     self._ufile = File("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/velo.pvd")
                 if self._pfile is None:
                     self._pfile = File("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/pressure.pvd")
-                self._ufile << u
-                self._pfile << p
+                self._ufile << (u,t)
+                self._pfile << (p,t)
 
         # Save solution at t = T
         if self.options["save_solution_at_t=T"]:
@@ -111,8 +111,8 @@ class SolverBase:
                     self._ufile = File("results/" + self.prefix(problem) +"/ref_"+ str(refinement)  + "/velo.pvd")
                 if self._pfile is None:
                     self._pfile = File("results/" + self.prefix(problem) +"/ref_"+ str(refinement)  + "/pressure.pvd")
-                self._ufile << u
-                self._pfile << p
+                self._ufile << (u,t)
+                self._pfile << (p,t)
 
         # Save vectors in xml format
         if self.options["save_xml"] and (self._timestep - 1) % frequency == 0:

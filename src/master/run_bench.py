@@ -18,6 +18,7 @@ jobs = []
 # Solvers and problems
 #solvers = ["chorin"]   #solvers = ["chorin", "css1", "css2", "ipcs", "g2", "g3", "grpc"]
 #solvers = ["chorin", "css1", "css2", "ipcs"]
+solvers = ["g2", "g3", "grpc"]
 #problems = ["karman.karman"]   #problems = ["drivencavity"  , "channel", "periodic", "beltrami", "cylinder", "aneurysm"]
 problems= ["cylinder"]
 
