@@ -16,19 +16,25 @@ if ".." not in os.environ['PYTHONPATH']:
 jobs = []
 
 # Solvers and problems
-#solvers = ["chorin"]   #solvers = ["chorin", "css1", "css2", "ipcs", "g2", "g3", "grpc"]
-#solvers = ["chorin", "css1", "css2", "ipcs"]
-#solvers = ["g2", "g3", "grpc"]
-solvers = [ "grpc"]
+solvers = ["chorin","css1","css2","ipcs","grpc"]
+#solvers = ["chorin"]
+#solvers = ["css1"]
+#solvers = ["css2"]
+#solvers = ["ipcs"]
+#solvers = ["grpc"]
+solvers = ["stat_newton"]
 
-#problems = ["karman.karman"]   #problems = ["drivencavity"  , "channel", "periodic", "beltrami", "cylinder", "aneurysm"]
-#problems= ["cylinder"]
 
+#problems = ["drivencavity","channel","beltrami","cylinder","karman.karman"]
+#problems = ["drivencavity"]
+#problems = ["channel"]
+#problems = ["beltrami"]
+#problems = ["cylinder"]
 problems = ["karman.karman"]
 
 
 # Number of refinement levels
-refinements = [2,3,4,5]
+refinements = [2]
 
 # See output on screen
 to_screen = True

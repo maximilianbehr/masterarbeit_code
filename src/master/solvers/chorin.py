@@ -25,7 +25,6 @@ class Solver(SolverBase):
         # Define function spaces
         V = VectorFunctionSpace(mesh, "CG", 2)
         Q = FunctionSpace(mesh, "CG", 1)
-        DG = FunctionSpace(mesh, "DG", 0)
 
         # Get initial and boundary conditions
         u0, p0 = problem.initial_conditions(V, Q)
@@ -47,7 +46,7 @@ class Solver(SolverBase):
         f  = problem.f
 
         # Tentative velocity step
-        F1 = (1/k)*inner(v, u - u0)*dx + inner(v, grad(u0)*u0)*dx \
+        F1 = (1.0/k)*inner(v, u - u0)*dx + inner(v, grad(u0)*u0)*dx \
             + nu*inner(grad(v), grad(u))*dx - inner(v, f)*dx
         a1 = lhs(F1)
         L1 = rhs(F1)

@@ -27,7 +27,6 @@ class Solver(SolverBase):
         # Define function spaces
         V = VectorFunctionSpace(mesh, "CG", 2)
         Q = FunctionSpace(mesh, "CG", 1)
-        DG = FunctionSpace(mesh, "DG", 0)
 
         # Get initial and boundary conditions
         u0, p0 = problem.initial_conditions(V, Q)

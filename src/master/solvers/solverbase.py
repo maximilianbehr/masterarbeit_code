@@ -57,36 +57,9 @@ class SolverBase:
         s = self.__module__.split(".")[-1].lower()
         return problem.output_location + p + "/" + s + "/" + __version__
 
-    def update(self, problem, t, u, p):
-        "Update problem at time t"
 
-        # Add to accumulated CPU time
-        timestep_cputime = time() - self._time
-        self._cputime += timestep_cputime
-
-        # Compute divergence
-        if self.options["compute_divergence"]:
-            check_divergence(u, p.function_space())
-
-        # Update problem FIXME: Should this be called before problem.functional??
-        problem.update_problem(t, u, p)
-
-        # Evaluate functional and error
-        m = problem.reference(t)
-        M = problem.functional(t, u, p)
-        if m is None:
-            e = None
-            print "M = %g (missing reference value)" % M
-        else:
-            e = abs(M - m)
-            print "M = %g (reference %g), error = %g (maximum %g)" % (M, m, e, max([e] + self._e))
-
-        # Store values
-        self._t.append(t)
-        self._M.append(M)
-        self._m.append(m)
-        self._e.append(e)
-
+    def save(self, problem, t, u, p):
+        ipdb.set_trace()
         # Save solution
         if self.options["save_solution"]:
 
@@ -133,6 +106,41 @@ class SolverBase:
             tseries_p = TimeSeries("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/time_series_p",True)
             tseries_p.store(p.vector(),t)
 
+
+    def update(self, problem, t, u, p):
+        "Update problem at time t"
+
+        # Add to accumulated CPU time
+        timestep_cputime = time() - self._time
+        self._cputime += timestep_cputime
+
+        # Compute divergence
+        if self.options["compute_divergence"]:
+            check_divergence(u, p.function_space())
+
+        # Update problem FIXME: Should this be called before problem.functional??
+        problem.update_problem(t, u, p)
+
+        # Evaluate functional and error
+        m = problem.reference(t)
+        M = problem.functional(t, u, p)
+        if m is None:
+            e = None
+            print "M = %g (missing reference value)" % M
+        else:
+            e = abs(M - m)
+            print "M = %g (reference %g), error = %g (maximum %g)" % (M, m, e, max([e] + self._e))
+
+        # Store values
+        self._t.append(t)
+        self._M.append(M)
+        self._m.append(m)
+        self._e.append(e)
+
+        #save
+        self.save(problem,t,u,p)
+
+
         # Plot solution
         if self.options["plot_solution"]:
 
@@ -154,6 +162,8 @@ class SolverBase:
         # Increase time step and record current time
         self._timestep += 1
         self._time = time()
+
+
 
     def eval(self):
         "Return last functional value and maximum error in functional value on [0, T]"

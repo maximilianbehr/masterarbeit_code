@@ -20,7 +20,7 @@ class Problem(ProblemBase):
         self.f =  Constant((0, 0))
 
         # Set viscosity (Re = 1000)
-        self.nu = 1.0 / 1000.0
+        self.nu = 1.0 / 100.0
 
         # Characteristic velocity in the domain (used to determinde timestep)
         self.U = 3.5
@@ -38,8 +38,8 @@ class Problem(ProblemBase):
     def boundary_conditions(self, V, Q, t):
 
         # Create boundary condition
-        #self.u_in               = Expression(("t*(1-x[1])*x[1]*2", "0.0"),t=t)
-        self.u_in = Expression(('4*(x[1]*(1-x[1]))*sin(pi*t/8.0)', '0.0'), t=t)
+        self.u_in               = Expression(("(1-x[1])*x[1]*2", "0.0"),t=t)
+        #self.u_in = Expression(('4*(x[1]*(1-x[1]))*sin(pi*t/8.0)', '0.0'), t=t)
 
 
         self.u_inflow           = DirichletBC(V, self.u_in, GammaLeft())
@@ -61,6 +61,29 @@ class Problem(ProblemBase):
 
 
         return bcu, bcp
+
+    def stat_boundary_conditions(self, W):
+
+        # Create boundary condition
+        u_in                = Expression(("(1-x[1])*x[1]*2","0"))
+        noslip_upper        = DirichletBC(W.sub(0), (0, 0), GammaUpper())
+        noslip_lower        = DirichletBC(W.sub(0), (0, 0), GammaLower())
+        noslip_ball         = DirichletBC(W.sub(0), (0, 0), GammaBall())
+        inflow              = DirichletBC(W.sub(0),  u_in , GammaLeft())
+        bcu                 = [noslip_upper,noslip_lower,noslip_ball,inflow]
+
+
+        # boundary conditions for pressure
+        #self.p_out              = Constant(0)
+        #self.p_right            = DirichletBC(Q,self.p_out,GammaRight())
+        #bcp = [self.p_right]
+        bcp = []
+
+
+        return bcu+bcp
+
+
+
 
     def update(self, t, u, p):
         self.u_in.t = t
