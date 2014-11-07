@@ -54,9 +54,11 @@ class Problem(ProblemBase):
 
 
         # boundary conditions for pressure
-        self.p_out              = Constant(0)
-        self.p_right            = DirichletBC(Q,self.p_out,GammaRight())
-        bcp = [self.p_right]
+        #self.p_out              = Constant(0)
+        #self.p_right            = DirichletBC(Q,self.p_out,GammaRight())
+        #bcp = [self.p_right]
+        bcp = []
+
 
         return bcu, bcp
 

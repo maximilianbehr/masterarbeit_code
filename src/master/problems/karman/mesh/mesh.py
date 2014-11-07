@@ -28,15 +28,15 @@ DOLFIN_VERSION                          = __version__
 
 """macro master mesh files and boundary functions"""
 if socket.gethostname() == "pc747":
-	OUTPUTLOCATION 				= os.path.abspath("/scratch/behr/masters/src/master/data/karman")
+    OUTPUTLOCATION 				= os.path.abspath("/scratch/behr/masters/src/master/data/karman")
 elif socket.gethostname() == "pc800":
-	pass
+    pass
 elif socket.gethostname() == "pc785":
-	pass
+    pass
 elif socket.gethostname() == "pc633":
-	pass
+    pass
 elif socket.gethostname() == "jack":
-	OUTPUTLOCATION                          = os.path.abspath("/Users/daniels/Documents/LiClipseWorkspace/master/src/master/data/karman")
+    OUTPUTLOCATION              = os.path.abspath("/Users/daniels/Documents/LiClipseWorkspace/master/src/master/data/karman")
 
 KARMAN_MACRO_MESH_FILE                  = os.path.join(OUTPUTLOCATION,DOLFIN_VERSION,"macro","macro.xml.gz")
 KARMAN_MACRO_MESH_FILE_XDMF             = os.path.join(OUTPUTLOCATION,DOLFIN_VERSION,"macro","macro.xdmf")
@@ -199,7 +199,7 @@ if __name__=="__main__":
         File(KARMAN_MACRO_BOUNDARY_PVD_FILE,"compressed")<<boundaryfunction
 
         begin("Refinement with %s"%parameters["refinement_algorithm"])
-        for ref in range(1,7):
+        for ref in range(1,5):
             info("Level %d"%ref)
             mesh, boundaryfunction = refinekarman(mesh)
 

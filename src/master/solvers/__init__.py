@@ -4,7 +4,7 @@ __copyright__ = "Copyright (C) 2010 " + __author__
 __license__  = "GNU GPL version 3 or any later version"
 
 # List of solvers
-solvers = ["chorin", "css1", "css2", "ipcs", "g2", "g3", "grpc"]
+solvers = ["chorin", "css1", "css2", "ipcs", "grpc"]
 
 # Wrapper for solver classes
 def Solver(name, options):
