@@ -1,10 +1,4 @@
-__author__ = "Kristian Valen-Sendstad <kvs@simula.no>"
-__date__ = "2008-04-10"
-__copyright__ = "Copyright (C) 2008-2010 " + __author__
-__license__  = "GNU GPL version 3 or any later version"
-
-# Modified by Anders Logg, 2008.
-# Modified by Harish Narayanan, 2009.
+# -*- coding: utf-8 -*-
 
 from solverbase import *
 

@@ -1,7 +1,4 @@
-__author__ = "Anders Logg <logg@simula.no> and Kent-Andre Mardal <kent-and@simula.no>"
-__date__ = "2008-03-03"
-__copyright__ = "Copyright (C) 2008-2010 " + __author__
-__license__  = "GNU GPL version 3 or any later version"
+# -*- coding: utf-8 -*-
 
 from solverbase import *
 

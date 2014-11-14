@@ -17,24 +17,24 @@ jobs = []
 
 # Solvers and problems
 solvers = ["chorin","css1","css2","ipcs","grpc"]
-#solvers = ["chorin"]
+solvers = ["chorin"]
 #solvers = ["css1"]
 #solvers = ["css2"]
 #solvers = ["ipcs"]
 #solvers = ["grpc"]
-solvers = ["stat_newton"]
+#solvers = ["stat_newton"]
 
 
-#problems = ["drivencavity","channel","beltrami","cylinder","karman.karman"]
+problems = ["drivencavity","channel","beltrami","cylinder","karman.karman"]
 #problems = ["drivencavity"]
 #problems = ["channel"]
 #problems = ["beltrami"]
 #problems = ["cylinder"]
-problems = ["karman.karman"]
+#problems = ["karman.karman"]
 
 
 # Number of refinement levels
-refinements = [2]
+refinements = [1]
 
 # See output on screen
 to_screen = True
@@ -47,7 +47,7 @@ for k in range(len(refinements)):
             jobs = []
             for i in range(len(solvers)):
                 if to_screen==True:
-                    os.system("instant-clean")
+                    #os.system("instant-clean")
                     print "python ns " + problems[j], solvers[i], "refinement_level=" +str(refinements[k]), ">&", problems[j] + "_" + solvers[i] + "_" + str(refinements[k])
                     jobs.append(("python ns " + problems[j] + " "+ solvers[i] + " " + "refinement_level=" +str(refinements[k]) + " "+ "debug=True" + ">&" + " " + problems[j]  + solvers[i] + "_" + str(refinements[k])))
                     os.system("python ns " + problems[j] + " "+ solvers[i] + " " + "refinement_level=" +str(refinements[k]) + " "+ "debug=True")

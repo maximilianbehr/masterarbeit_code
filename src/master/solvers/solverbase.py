@@ -1,7 +1,5 @@
-__author__ = "Anders Logg <logg@simula.no>"
-__date__ = "2008-04-03"
-__copyright__ = "Copyright (C) 2008-2010 " + __author__
-__license__  = "GNU GPL version 3 or any later version"
+# -*- coding: utf-8 -*-
+
 
 from dolfin import *
 from dolfin import __version__
@@ -51,61 +49,52 @@ class SolverBase:
         "Solve problem"
         raise NotImplementedError
 
-    def prefix(self, problem):
-        "Return file prefix for output files"
-        p = problem.__module__.split(".")[-1].lower()
-        s = self.__module__.split(".")[-1].lower()
-        return problem.output_location + p + "/" + s + "/" + __version__
-
 
     def save(self, problem, t, u, p):
-        ipdb.set_trace()
+        solvername = self.__module__.split(".")[-1].lower()
+        dir = problem.output_location(solvername)
+
         # Save solution
         if self.options["save_solution"]:
-
             # Save velocity and pressure
             frequency = self.options["save_frequency"]
-            refinement = self.options["refinement_level"]
             if (self._timestep - 1) % frequency == 0:
                 # Create files for saving
                 if self._ufile is None:
-                    self._ufile = File("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/velo.pvd")
+                    self._ufile = File(dir+"/velo.pvd")
                 if self._pfile is None:
-                    self._pfile = File("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/pressure.pvd")
+                    self._pfile = File(dir+"/pressure.pvd")
                 self._ufile << (u,t)
                 self._pfile << (p,t)
 
         # Save solution at t = T
         if self.options["save_solution_at_t=T"]:
             if t >= problem.T:
-                refinement = self.options["refinement_level"]
                 # Create files for saving
                 if self._ufile is None:
-                    self._ufile = File("results/" + self.prefix(problem) +"/ref_"+ str(refinement)  + "/velo.pvd")
+                    self._ufile = File(dir+"/velo.pvd")
                 if self._pfile is None:
-                    self._pfile = File("results/" + self.prefix(problem) +"/ref_"+ str(refinement)  + "/pressure.pvd")
+                    self._pfile = File(dir+"/pressure.pvd")
                 self._ufile << (u,t)
                 self._pfile << (p,t)
 
         # Save vectors in xml format
         if self.options["save_xml"] and (self._timestep - 1) % frequency == 0:
-            file = File("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/t=%1.2e"% t + "_velo.xml","compressed" )
+            file = File(dir+"/t=%1.2e"% t+"_velo.xml","compressed")
             file << u.vector()
 
-            file = File("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/t=%1.2e"% t + "_pressure.xml","compressed" )
+            file = File(dir+"/t=%1.2e"% t+"_pressure.xml","compressed")
             file << p.vector()
-
 
         #Save TimeSeries for u
         if self.options["save_TimeSeries_u"]:
-            tseries_v = TimeSeries("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/time_series_u",True)
+            tseries_v = TimeSeries(dir+"/time_series_u",True)
             tseries_v.store(u.vector(),t)
 
         #Save Time Series for p
         if self.options["save_TimeSeries_p"]:
-            tseries_p = TimeSeries("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/time_series_p",True)
+            tseries_p = TimeSeries(dir+"/time_series_p",True)
             tseries_p.store(p.vector(),t)
-
 
     def update(self, problem, t, u, p):
         "Update problem at time t"
@@ -140,13 +129,6 @@ class SolverBase:
         #save
         self.save(problem,t,u,p)
 
-
-        # Plot solution
-        if self.options["plot_solution"]:
-
-            # Plot velocity and pressure
-            plot(u, title="Velocity", rescale=True)
-            plot(p, title="Pressure", rescale=True)
 
         # Check memory usage
         if self.options["check_mem_usage"]:
@@ -198,7 +180,7 @@ def sigma(u, p, nu):
 def is_periodic(bcs):
     "Check if boundary conditions are periodic."
     #return all(isinstance(bc, PeriodicBC) for bc in bcs)
-    return False
+    return all(isinstance(bc, PeriodicBoundaryComputation) for bc in bcs)
 
 def has_converged(r, iter, method, maxiter=default_maxiter, tolerance=default_tolerance):
     "Check if solution has converged."

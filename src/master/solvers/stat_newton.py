@@ -1,7 +1,7 @@
 from solverbase import *
 
 class Solver(SolverBase):
-    "Incremental pressure-correction scheme."
+    "Newton Method for solving stationary navier stokes"
 
     def __init__(self, options):
         SolverBase.__init__(self, options)

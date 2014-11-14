@@ -1,15 +1,8 @@
-__author__ = "Kent-Andre Mardal <kent-and@simula.no>"
-__date__ = "2008-04-03"
-__copyright__ = "Copyright (C) 2008-2010 " + __author__
-__license__  = "GNU GPL version 3 or any later version"
-
-# Modified by Anders Logg, 2008-2010.
-# Modified by Kristian Valen-Sendstad, 2008-2010.
-# Modified by Harish Narayanan, 2009.
-# Modified by Mikael Mortensen, 2009.
+# -*- coding: utf-8 -*-
 
 from problembase import *
 from numpy import array
+import os
 
 # Inflow boundary
 class InflowBoundary(SubDomain):
@@ -45,6 +38,33 @@ class Problem(ProblemBase):
 
         # Set end-time
         self.T = 0.5
+
+    def output_location(self, solver):
+        ref = options["refinement_level"]
+
+        #build prefix of outputlocation
+        EXTHARDDRIVE            = "/media/UNTITLED/"
+        if socket.gethostname() == "pc747":
+            raise NotImplementedError()
+        elif socket.gethostname() == "pc800":
+            if os.path.isdir(EXTHARDDRIVE):
+                prefix = os.path.join(EXTHARDDRIVE,"results/karman")
+            else:
+                prefix = os.path.abspath("/scratch/behr/masters/src/master/results/karman/")
+        elif socket.gethostname() == "pc785":
+            raise NotImplementedError()
+        elif socket.gethostname() == "pc633":
+            raise NotImplementedError()
+        elif socket.gethostname() == "jack":
+            EXTHARDDRIVEMAC         = "/Volumes/UNTITLED/"
+            if os.path.isdir(EXTHARDDRIVEMAC):
+                prefix = os.path.join(EXTHARDDRIVEMAC,"data/karman")
+            else:
+                prefix = os.path.abspath("/Users/daniels/Documents/LiClipseWorkspace/master/src/master/data/karman")
+
+        #build outputlocation
+        return os.path.join(prefix,"%s/%s/RE_%.2e/%s/ref_%d"%(__version__,solver,self.nu,parameters["refinment_algorithm"],ref))
+
 
     def initial_conditions(self, V, Q):
 

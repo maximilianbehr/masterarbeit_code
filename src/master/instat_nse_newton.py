@@ -7,7 +7,6 @@ import master
 
 def newton_solve(RE,refalg,reflevel):
 
-
     # Parameters
     nu      = Constant(0.01)
     dt      = 0.1

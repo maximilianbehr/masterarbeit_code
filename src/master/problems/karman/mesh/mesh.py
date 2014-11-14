@@ -27,16 +27,18 @@ GAMMAINNER                              = 0
 DOLFIN_VERSION                          = __version__
 
 """macro master mesh files and boundary functions"""
+EXTHARDDRIVE            = "/media/UNTITLED/"
+EXTHARDDRIVEMAC         = "/Volumes/UNTITLED/"
 if socket.gethostname() == "pc747":
-    OUTPUTLOCATION 				= os.path.abspath("/scratch/behr/masters/src/master/data/karman")
+    OUTPUTLOCATION  = os.path.join(EXTHARDDRIVE,"data/karman") if os.path.isdir(EXTHARDDRIVE) else os.path.abspath("/scratch/behr/masters/src/master/data/karman")
 elif socket.gethostname() == "pc800":
-    pass
+    OUTPUTLOCATION  = os.path.join(EXTHARDDRIVE,"data/karman") if os.path.isdir(EXTHARDDRIVE) else os.path.abspath("/scratch/behr/masters/src/master/data/karman")
 elif socket.gethostname() == "pc785":
-    pass
+    OUTPUTLOCATION  = os.path.join(EXTHARDDRIVE,"data/karman") if os.path.isdir(EXTHARDDRIVE) else os.path.abspath("/scratch/behr/masters/src/master/data/karman")
 elif socket.gethostname() == "pc633":
-    pass
+    OUTPUTLOCATION  = os.path.join(EXTHARDDRIVE,"data/karman") if os.path.isdir(EXTHARDDRIVE) else os.path.abspath("/scratch/behr/masters/src/master/data/karman")
 elif socket.gethostname() == "jack":
-    OUTPUTLOCATION              = os.path.abspath("/Users/daniels/Documents/LiClipseWorkspace/master/src/master/data/karman")
+    OUTPUTLOCATION  = os.path.join(EXTHARDDRIVEMAC,"data/karman") if os.path.isdir(EXTHARDDRIVEMAC) else os.path.abspath("/Users/daniels/Documents/LiClipseWorkspace/master/src/master/data/karman")
 
 KARMAN_MACRO_MESH_FILE                  = os.path.join(OUTPUTLOCATION,DOLFIN_VERSION,"macro","macro.xml.gz")
 KARMAN_MACRO_MESH_FILE_XDMF             = os.path.join(OUTPUTLOCATION,DOLFIN_VERSION,"macro","macro.xdmf")

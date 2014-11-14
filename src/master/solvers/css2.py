@@ -1,7 +1,4 @@
-__author__ = "Anders Logg <logg@simula.no>"
-__date__ = "2009-10-05"
-__copyright__ = "Copyright (C) 2009-2010 " + __author__
-__license__  = "GNU GPL version 3 or any later version"
+# -*- coding: utf-8 -*-
 
 from css import Solver as CSS
 

@@ -1,14 +1,9 @@
-__author__ = "Harish Narayanan <harish@simula.no>"
-__date__ = "2009-01-20"
-__copyright__ = "Copyright (C) 2009-2010 " + __author__
-__license__  = "GNU GPL version 3 or any later version"
-
-# Modified by Kristian Valen-Sendstad, 2009.
-# Modified by Anders Logg, 2010.
+# -*- coding: utf-8 -*-
 
 from problembase import *
 from numpy import array
 from math import pi, e
+import os
 
 # Problem definition
 class Problem(ProblemBase):
@@ -52,6 +47,33 @@ class Problem(ProblemBase):
         # Common parameters pertinent to the functional forms above
         self.u_params = {'a': pi/4.0, 'd': pi/2.0, 'E': e,             'etabyrho': 1.0, 't': 0.0}
         self.p_params = {'a': pi/4.0, 'd': pi/2.0, 'E': e, 'rho': 1.0, 'etabyrho': 1.0, 't': 0.0}
+
+    def output_location(self, solver):
+        ref = options["refinement_level"]
+
+        #build prefix of outputlocation
+        EXTHARDDRIVE            = "/media/UNTITLED/"
+        if socket.gethostname() == "pc747":
+            raise NotImplementedError()
+        elif socket.gethostname() == "pc800":
+            if os.path.isdir(EXTHARDDRIVE):
+                prefix = os.path.join(EXTHARDDRIVE,"results/karman")
+            else:
+                prefix = os.path.abspath("/scratch/behr/masters/src/master/results/karman/")
+        elif socket.gethostname() == "pc785":
+            raise NotImplementedError()
+        elif socket.gethostname() == "pc633":
+            raise NotImplementedError()
+        elif socket.gethostname() == "jack":
+            EXTHARDDRIVEMAC         = "/Volumes/UNTITLED/"
+            if os.path.isdir(EXTHARDDRIVEMAC):
+                prefix = os.path.join(EXTHARDDRIVEMAC,"data/karman")
+            else:
+                prefix = os.path.abspath("/Users/daniels/Documents/LiClipseWorkspace/master/src/master/data/karman")
+
+        #build outputlocation
+        return os.path.join(prefix,"%s/%s/RE_%.2e/%s/ref_%d"%(__version__,solver,self.nu,parameters["refinment_algorithm"],ref))
+
 
     def initial_conditions(self, V, Q):
 

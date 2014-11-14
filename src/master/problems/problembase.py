@@ -1,9 +1,5 @@
-__author__ = "Anders Logg <logg@simula.no>"
-__date__ = "2008-03-19"
-__copyright__ = "Copyright (C) 2008-2010 " + __author__
-__license__  = "GNU GPL version 3 or any later version"
+# -*- coding: utf-8 -*-
 
-# Modified by Kent-Andre Mardal, 2008.
 
 from dolfin import *
 from numpy import linspace
@@ -31,10 +27,13 @@ class ProblemBase:
         self.u    = None
         self.p    = None
         self.U    = 1.0
-        self.output_location = ''
 
         # FIXME: Temporary while testing
         self.bcpsi = []
+
+    def output_location(self, solver):
+        """output dir"""
+        pass
 
     def update_problem(self, t, u, p):
         "Update problem at time t"
@@ -48,7 +47,7 @@ class ProblemBase:
         self.update(t, u, p)
 
     def update(self, t, u, p):
-        "Problem-speficic update at time t"
+        "Problem-specific update at time t"
         pass
 
     def functional(self, t, u, p):

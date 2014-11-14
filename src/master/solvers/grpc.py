@@ -1,10 +1,4 @@
-__author__ = "Kent-Andre Mardal <kent-and@simula.no>"
-__date__ = "2008-08-05"
-__copyright__ = "Copyright (C) 2008-2010 " + __author__
-__license__  = "GNU GPL version 3 or any later version"
-
-# Modified by Harish Narayanan, 2009.
-# Modified by Anders Logg, 2009-2010.
+# -*- coding: utf-8 -*-
 
 from solverbase import *
 from numpy import linspace
