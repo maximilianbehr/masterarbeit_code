@@ -3,6 +3,9 @@
 from problembase import *
 import os
 
+
+mesh_sizes = [8, 11, 16, 23, 32, 45, 64, 91, 128, 181, 256, 362]
+
 # Boundary value
 class BoundaryValue(Expression):
     def value_shape(self):
@@ -23,7 +26,7 @@ class Problem(ProblemBase):
         ProblemBase.__init__(self, options)
 
         # Create mesh
-        N = options["N"]
+        N = mesh_sizes[options["refinement_level"]]
         self.mesh = UnitSquare(N, N)
 
         # Create right-hand side function
@@ -55,9 +58,9 @@ class Problem(ProblemBase):
         elif socket.gethostname() == "jack":
             EXTHARDDRIVEMAC         = "/Volumes/UNTITLED/"
             if os.path.isdir(EXTHARDDRIVEMAC):
-                prefix = os.path.join(EXTHARDDRIVEMAC,"data/karman")
+                prefix = os.path.join(EXTHARDDRIVEMAC,"results/karman")
             else:
-                prefix = os.path.abspath("/Users/daniels/Documents/LiClipseWorkspace/master/src/master/data/karman")
+                prefix = os.path.abspath("/Users/daniels/Documents/LiClipseWorkspace/master/src/master/results/karman")
 
         #build outputlocation
         return os.path.join(prefix,"%s/%s/RE_%.2e/%s/ref_%d"%(__version__,solver,self.nu,parameters["refinment_algorithm"],ref))

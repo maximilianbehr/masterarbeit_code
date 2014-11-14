@@ -6,7 +6,6 @@ encoding//src/master/legacy/const/instat_nse_newton.py=utf-8
 encoding//src/master/ns=utf-8
 encoding//src/master/plot=utf-8
 encoding//src/master/problems/beltrami.py=utf-8
-encoding//src/master/problems/channel.py=utf-8
 encoding//src/master/problems/cylinder.py=utf-8
 encoding//src/master/problems/drivencavity.py=utf-8
 encoding//src/master/problems/karman/__init__.py=utf-8

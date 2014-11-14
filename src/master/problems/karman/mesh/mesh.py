@@ -8,10 +8,10 @@ import socket
 rect         = {"x0":0,"x1":4,"y0":0,"y1":1}
 
 """constants for circualar domain"""
-circ         = {"x0":1.5,"y0":0.5,"r":0.15,"fragments":15}
+circ         = {"x0":1.5,"y0":0.5,"r":0.15,"fragments":8}
 
 """the resolution of the macro master mesh"""
-initial_resolution                      = 5
+initial_resolution                      = 1
 
 """Indices for Boundary parts"""
 GAMMALEFT                               = 1
@@ -184,8 +184,8 @@ def refinekarman(mesh):
 
 if __name__=="__main__":
 
-    #for refalg in ["bisection", "iterative_bisection", "recursive_bisection", "regular_cut"]:
-    for refalg in ["bisection"]:
+    for refalg in ["bisection", "iterative_bisection", "recursive_bisection", "regular_cut"]:
+    #for refalg in ["bisection"]:
 
         parameters["refinement_algorithm"]=refalg
 
@@ -201,7 +201,7 @@ if __name__=="__main__":
         File(KARMAN_MACRO_BOUNDARY_PVD_FILE,"compressed")<<boundaryfunction
 
         begin("Refinement with %s"%parameters["refinement_algorithm"])
-        for ref in range(1,5):
+        for ref in range(1,7):
             info("Level %d"%ref)
             mesh, boundaryfunction = refinekarman(mesh)
 

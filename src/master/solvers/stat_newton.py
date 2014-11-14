@@ -51,7 +51,7 @@ class Solver(SolverBase):
         #solve the problem
         nsproblem           = NonlinearVariationalProblem(F, w, bc, dF)
         solver              = NonlinearVariationalSolver(nsproblem)
-        solver.parameters["newton_solver"]["maximum_iterations"]=20
+        solver.parameters["newton_solver"]["maximum_iterations"]=self.options["newton_solver_max_iterations"]
         solver.solve()
 
         #split w
@@ -60,15 +60,17 @@ class Solver(SolverBase):
         #save data
         if self.options["save_solution"]:
             # Save velocity and pressure
-            refinement = self.options["refinement_level"]
+            solvername = self.__module__.split(".")[-1].lower()
+            dir = problem.output_location(solvername)
 
             # Create files for saving
-            File("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/velo.pvd")<<u
-            File("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "/pressure.pvd")<<p
+            print dir
+            File(dir+ "/velo.pvd")<<u
+            File(dir+ "/pressure.pvd")<<p
 
         # Save vectors in xml format
         if self.options["save_xml"] :
-            file = File("results/" + self.prefix(problem) +"/ref_"+ str(refinement) + "w_velo_pressure.xml","compressed" )
+            file = File(dir + "/w_velo_pressure.xml","compressed" )
             file << w.vector()
 
         return Function(u),Function(p)

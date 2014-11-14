@@ -128,3 +128,7 @@ class ProblemBase:
     # FIXME: Remove this and merge with boundary_condition()
     def pressure_bc(self, Q):
         return Constant(0)
+
+    def RE(self):
+        "return Reynoldsnumber"
+        pass
