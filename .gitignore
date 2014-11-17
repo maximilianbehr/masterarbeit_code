@@ -3,7 +3,7 @@
 *.h
 src/master/data/**
 
-src/master/results/**
-software/**
-usefullcode/**
-nscodes/**
+
+nscodes
+software
+usefullcode
