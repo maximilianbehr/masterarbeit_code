@@ -2,7 +2,7 @@
 
 import socket
 
-from ..src.problems.problembase import *
+from problembase import ProblemBase
 from problem_mesh import karman as karmanmesh
 
 
@@ -36,33 +36,6 @@ class Problem(ProblemBase):
     def RE(self):
         return (self.U * 2.0 * karmanmesh.circle["r"]) / self.nu
 
-
-    def output_location(self, solver):
-        ref = self.options["refinement_level"]
-
-        # build prefix of outputlocation
-        if socket.gethostname() == "pc747":
-            raise NotImplementedError()
-        elif socket.gethostname() == "pc800":
-            EXTHARDDRIVE = "/media/UNTITLED/"
-            if os.path.isdir(EXTHARDDRIVE):
-                prefix = os.path.join(EXTHARDDRIVE, "results/karman")
-            else:
-                prefix = os.path.abspath("/scratch/behr/masters/src/master/results/karman/")
-        elif socket.gethostname() == "pc785":
-            raise NotImplementedError()
-        elif socket.gethostname() == "pc633":
-            raise NotImplementedError()
-        elif socket.gethostname() == "jack":
-            EXTHARDDRIVEMAC = "/Volumes/UNTITLED/"
-            if os.path.isdir(EXTHARDDRIVEMAC):
-                prefix = os.path.join(EXTHARDDRIVEMAC, "results/karman")
-            else:
-                prefix = os.path.abspath("/Users/daniels/Documents/LiClipseWorkspace/master/src/master/results/karman")
-
-        # build outputlocation
-        return os.path.join(prefix, "%s/%s/RE_%.2e/%s/ref_%d" % (
-            __version__, solver, self.RE(), parameters["refinement_algorithm"], ref))
 
     def initial_conditions(self, V, Q):
 

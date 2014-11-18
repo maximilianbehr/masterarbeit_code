@@ -1,16 +1,7 @@
 # -*- coding: utf-8 -*-
-
-
 from os import getpid
 from commands import getoutput
-
 from dolfin import *
-
-
-
-
-
-
 
 # Common solver parameters
 maxiter = default_maxiter = 200
@@ -56,8 +47,8 @@ class SolverBase:
 
 
     def save(self, problem, t, u, p):
-        solvername = self.__module__.split(".")[-1].lower()
-        dir = problem.output_location(solvername)
+        #solvername = self.__module__.split(".")[-1].lower()
+        outputdir = self.options["outputdir"]
 
         # Save solution
         if self.options["save_solution"]:
@@ -66,9 +57,9 @@ class SolverBase:
             if (self._timestep - 1) % frequency == 0:
                 # Create files for saving
                 if self._ufile is None:
-                    self._ufile = File(dir + "/velo.pvd")
+                    self._ufile = File(outputdir + "/velo.pvd")
                 if self._pfile is None:
-                    self._pfile = File(dir + "/pressure.pvd")
+                    self._pfile = File(outputdir + "/pressure.pvd")
                 self._ufile << (u, t)
                 self._pfile << (p, t)
 
@@ -77,29 +68,29 @@ class SolverBase:
             if t >= problem.T:
                 # Create files for saving
                 if self._ufile is None:
-                    self._ufile = File(dir + "/velo.pvd")
+                    self._ufile = File(outputdir + "/velo.pvd")
                 if self._pfile is None:
-                    self._pfile = File(dir + "/pressure.pvd")
+                    self._pfile = File(outputdir + "/pressure.pvd")
                 self._ufile << (u, t)
                 self._pfile << (p, t)
 
         # Save vectors in xml format
         if self.options["save_xml"] and (self._timestep - 1) % frequency == 0:
-            file = File(dir + "/t=%1.2e" % t + "_velo.xml", "compressed")
+            file = File(outputdir + "/t=%1.2e" % t + "_velo.xml", "compressed")
             file << u.vector()
 
-            file = File(dir + "/t=%1.2e" % t + "_pressure.xml", "compressed")
+            file = File(outputdir + "/t=%1.2e" % t + "_pressure.xml", "compressed")
             file << p.vector()
 
         # Save TimeSeries for u
-        if self.options["save_TimeSeries_u"]:
-            tseries_v = TimeSeries(dir + "/time_series_u", True)
-            tseries_v.store(u.vector(), t)
+        #if self.options["save_TimeSeries_u"]:
+        #    tseries_v = TimeSeries(dir + "/time_series_u", True)
+        #    tseries_v.store(u.vector(), t)
 
         # Save Time Series for p
-        if self.options["save_TimeSeries_p"]:
-            tseries_p = TimeSeries(dir + "/time_series_p", True)
-            tseries_p.store(p.vector(), t)
+        #if self.options["save_TimeSeries_p"]:
+        #    tseries_p = TimeSeries(dir + "/time_series_p", True)
+        #    tseries_p.store(p.vector(), t)
 
     def update(self, problem, t, u, p):
         "Update problem at time t"

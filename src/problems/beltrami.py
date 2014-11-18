@@ -5,7 +5,7 @@ from src.problems.problembase import *
 
 # Problem definition
 class Problem(ProblemBase):
-    "3D test problem with known analytical solution."
+    """3D test problem with known analytical solution."""
 
     def __init__(self, options):
         ProblemBase.__init__(self, options)
@@ -17,7 +17,7 @@ class Problem(ProblemBase):
         level = options["refinement_level"]
         N = int(mesh_sizes[level])
 
-        self.mesh = UnitCube(N, N, N)
+        self.mesh = UnitCubeMesh(N, N, N)
         self.scale = 2 * (self.mesh.coordinates() - 0.5)
         self.mesh.coordinates()[:, :] = self.scale
 
@@ -47,33 +47,6 @@ class Problem(ProblemBase):
         # Common parameters pertinent to the functional forms above
         self.u_params = {'a': pi / 4.0, 'd': pi / 2.0, 'E': e, 'etabyrho': 1.0, 't': 0.0}
         self.p_params = {'a': pi / 4.0, 'd': pi / 2.0, 'E': e, 'rho': 1.0, 'etabyrho': 1.0, 't': 0.0}
-
-    def output_location(self, solver):
-        ref = options["refinement_level"]
-
-        # build prefix of outputlocation
-        EXTHARDDRIVE = "/media/UNTITLED/"
-        if socket.gethostname() == "pc747":
-            raise NotImplementedError()
-        elif socket.gethostname() == "pc800":
-            if os.path.isdir(EXTHARDDRIVE):
-                prefix = os.path.join(EXTHARDDRIVE, "results/karman")
-            else:
-                prefix = os.path.abspath("/scratch/behr/masters/src/master/results/karman/")
-        elif socket.gethostname() == "pc785":
-            raise NotImplementedError()
-        elif socket.gethostname() == "pc633":
-            raise NotImplementedError()
-        elif socket.gethostname() == "jack":
-            EXTHARDDRIVEMAC = "/Volumes/UNTITLED/"
-            if os.path.isdir(EXTHARDDRIVEMAC):
-                prefix = os.path.join(EXTHARDDRIVEMAC, "data/karman")
-            else:
-                prefix = os.path.abspath("/Users/daniels/Documents/LiClipseWorkspace/master/src/master/data/karman")
-
-        # build outputlocation
-        return os.path.join(prefix, "%s/%s/RE_%.2e/%s/ref_%d" % (
-            __version__, solver, self.nu, parameters["refinment_algorithm"], ref))
 
 
     def initial_conditions(self, V, Q):

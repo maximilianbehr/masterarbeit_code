@@ -2,15 +2,14 @@
 
 import sys
 
-from src import problems
 import time
-from dolfin import set_log_active, parameters, list_timings
-from src.problems import Problem
+from dolfin.cpp.common import set_log_active
+from dolfin.cpp.common import list_timings
+from dolfin import parameters
+from problems import Problem, problems
 from solvers import Solver, solvers
 
-
-
-
+from outputhandler import ProblemSolverOutputHandler
 
 
 # Default options
@@ -38,7 +37,7 @@ parameters["refinement_algorithm"] = "bisection"
 
 
 def save_results(problem, solver, num_dofs, cputime, wct, functional, dt_division, error):
-    "Save results to file."
+    """Save results to file."""
 
     # Print summary
     print ""
@@ -56,7 +55,7 @@ def save_results(problem, solver, num_dofs, cputime, wct, functional, dt_divisio
     list_timings()
 
     # Append to file
-    filename = "results/results.log"
+    filename = "../results/results.log"
     file = open(filename, "a")
     file.write("%s, %s, %s, %d, %.15g, %.15g, %.15g, %s, %s\n" %
                (time.asctime(), problem, solver, num_dofs, cputime, wct, functional, str(dt_division), str(error)))
@@ -64,7 +63,7 @@ def save_results(problem, solver, num_dofs, cputime, wct, functional, dt_divisio
 
 
 def usage():
-    "Print usage"
+    """Print usage"""
     print """\
 Usage: ns problem solver
 
@@ -80,7 +79,7 @@ Available solvers:
 
 
 def main(args):
-    "Parse command-line arguments and run solver"
+    """Parse command-line arguments and run solver"""
 
     # Check arguments
     if not len(args) >= 2:
@@ -89,6 +88,10 @@ def main(args):
 
     # Get problem and solver
     problem_name, solver_name = args[:2]
+
+    #get outputdir
+    psohandler = ProblemSolverOutputHandler(problem_name,solver_name)
+    OPTIONS["outputdir"]=psohandler.outputdir()
 
     # Get options
     options = OPTIONS.copy()

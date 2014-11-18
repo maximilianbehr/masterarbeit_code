@@ -1,6 +1,6 @@
-from master import *
-from master.problems.karman.karman.karmanmesh import *
-from master import *
+from dolfin import *
+
+
 
 
 def newton_solve(RE, refalg, reflevel):

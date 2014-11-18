@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from src.problems.problembase import *
-
+from problembase import *
 
 mesh_sizes = [8, 11, 16, 23, 32, 45, 64, 91, 128, 181, 256, 362]
 
@@ -28,7 +27,7 @@ class Problem(ProblemBase):
 
         # Create problem_mesh
         N = mesh_sizes[options["refinement_level"]]
-        self.mesh = UnitSquare(N, N)
+        self.mesh = UnitSquareMesh(N, N)
 
         # Create right-hand side function
         self.f = Constant((0, 0))
@@ -39,33 +38,6 @@ class Problem(ProblemBase):
 
         # Set end-time
         self.T = 2.5
-
-    def output_location(self, solver):
-        ref = options["refinement_level"]
-
-        # build prefix of outputlocation
-        EXTHARDDRIVE = "/media/UNTITLED/"
-        if socket.gethostname() == "pc747":
-            raise NotImplementedError()
-        elif socket.gethostname() == "pc800":
-            if os.path.isdir(EXTHARDDRIVE):
-                prefix = os.path.join(EXTHARDDRIVE, "results/karman")
-            else:
-                prefix = os.path.abspath("/scratch/behr/masters/src/master/results/karman/")
-        elif socket.gethostname() == "pc785":
-            raise NotImplementedError()
-        elif socket.gethostname() == "pc633":
-            raise NotImplementedError()
-        elif socket.gethostname() == "jack":
-            EXTHARDDRIVEMAC = "/Volumes/UNTITLED/"
-            if os.path.isdir(EXTHARDDRIVEMAC):
-                prefix = os.path.join(EXTHARDDRIVEMAC, "results/karman")
-            else:
-                prefix = os.path.abspath("/Users/daniels/Documents/LiClipseWorkspace/master/src/master/results/karman")
-
-        # build outputlocation
-        return os.path.join(prefix, "%s/%s/RE_%.2e/%s/ref_%d" % (
-            __version__, solver, self.nu, parameters["refinment_algorithm"], ref))
 
 
     def initial_conditions(self, V, Q):
