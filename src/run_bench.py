@@ -1,28 +1,27 @@
 
 import os
 
-# from pjobs import submit
 if ".." not in os.environ['PYTHONPATH']:
     os.environ['PYTHONPATH'] = "..:" + os.environ['PYTHONPATH']
 
 # Solvers and problems
 #solvers = ["chorin","css1","css2","ipcs", "stat_newton"]
-solvers = ["chorin","css1","css2","ipcs"]
+#solvers = ["chorin","css1","css2","ipcs"]
 #solvers = ["chorin"]
 #solvers = ["css1"]
 #solvers = ["css2"]
-#solvers = ["ipcs"]
+solvers = ["ipcs"]
 #solvers = ["stat_newton"]
 
 
-#problems = ["drivencavity","beltrami","karman"]
 #problems = ["drivencavity"]
-problems = ["beltrami", "drivencavity"]
-#problems = ["karman"]
+#problems = ["drivencavity"]
+#problems = ["beltrami", "drivencavity"]
+problems = ["karman"]
 
 
 # Number of refinement levels
-refinements = [1,2,3]
+refinements = [3]
 
 #clear instant cache
 instant_clean = False

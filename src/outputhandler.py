@@ -47,8 +47,8 @@ class KarmanOutputHandler():
     def _karman_file(self, name, num):
         outputdir = self.karman_outputdir()
         if num:
-            return File(os.path.join(outputdir, "ref_%s" % num, name), "compressed")
-        return File(os.path.join(outputdir, "macro", name), "compressed")
+            return os.path.join(outputdir, "ref_%s" % num, name)
+        return os.path.join(outputdir, "macro", name)
 
     def karman_mesh_xml(self, num):
         name = "mesh.xml.gz"
@@ -75,14 +75,14 @@ class KarmanOutputHandler():
         return self._karman_file(name, num)
 
     def karman_save_mesh(self, meshbuilder):
-        self.karman_mesh_xml(meshbuilder.refinelevel) << meshbuilder.mesh
-        self.karman_mesh_pvd(meshbuilder.refinelevel) << meshbuilder.mesh
-        self.karman_mesh_xdmf(meshbuilder.refinelevel) << meshbuilder.mesh
+        File(self.karman_mesh_xml(meshbuilder.refinelevel),"compressed") << meshbuilder.mesh
+        File(self.karman_mesh_pvd(meshbuilder.refinelevel),"compressed") << meshbuilder.mesh
+        File(self.karman_mesh_xdmf(meshbuilder.refinelevel) ,"compressed")<< meshbuilder.mesh
 
     def karman_save_boundaryfunction(self, meshbuilder):
-        self.karman_boundary_xdmf(meshbuilder.refinelevel) << meshbuilder.boundaryfunction
-        self.karman_boundary_xml(meshbuilder.refinelevel) << meshbuilder.boundaryfunction
-        self.karman_boundary_pvd(meshbuilder.refinelevel) << meshbuilder.boundaryfunction
+        File(self.karman_boundary_xdmf(meshbuilder.refinelevel),"compressed") << meshbuilder.boundaryfunction
+        File(self.karman_boundary_xml(meshbuilder.refinelevel),"compressed") << meshbuilder.boundaryfunction
+        File(self.karman_boundary_pvd(meshbuilder.refinelevel),"compressed") << meshbuilder.boundaryfunction
 
 
 class ProblemSolverOutputHandler():

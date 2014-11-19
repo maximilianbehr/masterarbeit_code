@@ -1,9 +1,24 @@
 # -*- coding: utf-8 -*-
 
-import socket
+import os
+
+#import outputhandler from parent path
+if ".." not in os.environ['PYTHONPATH']:
+    os.environ['PYTHONPATH'] = "..:" + os.environ['PYTHONPATH']
+from outputhandler import KarmanOutputHandler
+
 
 from problembase import ProblemBase
-from problem_mesh import karman as karmanmesh
+from problem_mesh.karman import circle
+from problem_mesh.karman import GammaLower
+from problem_mesh.karman import GammaLeft
+from problem_mesh.karman import GammaUpper
+from problem_mesh.karman import GammaBall
+
+from dolfin.cpp.mesh import Mesh
+from dolfin.cpp.function import Constant
+from dolfin.cpp.function import Expression
+from dolfin.cpp.fem import DirichletBC
 
 
 
@@ -15,26 +30,23 @@ class Problem(ProblemBase):
 
         # Load problem_mesh
         refinement_level = options["refinement_level"]
-        if refinement_level > 5:
-            raise RuntimeError, "No problem_mesh available for refinement level %d" % refinement_level
-
-        self.mesh = Mesh(karmanmesh.KARMAN_REFN_MESH_FILE(parameters["refinement_algorithm"], refinement_level))
-
+        kohandler = KarmanOutputHandler()
+        self.mesh = Mesh(kohandler.karman_mesh_xml(refinement_level))
 
         # Create right-hand side function
         self.f = Constant((0, 0))
 
         # choose U such that U*2*r=1 and then RE=1/nu
-        self.Umax = 1.0 / (2.0 * karmanmesh.circle["r"])
+        self.Umax = 1.0 / (2.0 * circle["r"])
 
         # Set viscosity (Re = 1000)
-        self.nu = 1.0 / 1000.0
+        self.nu = 1.0 / 100.0
 
         # Set end time
         self.T = 8.0
 
     def RE(self):
-        return (self.U * 2.0 * karmanmesh.circle["r"]) / self.nu
+        return (self.U * 2.0 *circle["r"]) / self.nu
 
 
     def initial_conditions(self, V, Q):
@@ -47,14 +59,15 @@ class Problem(ProblemBase):
     def boundary_conditions(self, V, Q, t):
 
         # Create boundary condition
-        self.u_in = Expression(("Umax*(1-x[1])*x[1]*2", "0.0"), t=t, Umax=self.Umax)
-        # self.u_in = Expression(('4*(x[1]*(1-x[1]))*sin(pi*t/8.0)', '0.0'), t=t)
+        #self.u_in = Expression(("U*(1-x[1])*x[1]*2*t", "0.0"), t=t, U=self.Umax)
+        self.u_in = Expression(("U*(1-x[1])*x[1]*2*t", "0.0"),  U=self.Umax)
+        #self.u_in = Expression(('4*(x[1]*(1-x[1]))*sin(pi*t/8.0)', '0.0'), t=t)
 
-        self.u_inflow = DirichletBC(V, self.u_in, karmanmesh.GammaLeft())
+        self.u_inflow = DirichletBC(V, self.u_in, GammaLeft())
         self.u_noslip = Constant((0, 0))
-        self.u_noslip_upper = DirichletBC(V, self.u_noslip, karmanmesh.GammaUpper())
-        self.u_noslip_lower = DirichletBC(V, self.u_noslip, karmanmesh.GammaLower())
-        self.u_noslip_ball = DirichletBC(V, self.u_noslip, karmanmesh.GammaBall())
+        self.u_noslip_upper = DirichletBC(V, self.u_noslip, GammaUpper())
+        self.u_noslip_lower = DirichletBC(V, self.u_noslip, GammaLower())
+        self.u_noslip_ball = DirichletBC(V, self.u_noslip,GammaBall())
 
         # Collect boundary conditions
         bcu = [self.u_noslip_upper, self.u_noslip_lower, self.u_noslip_ball, self.u_inflow]
@@ -71,11 +84,11 @@ class Problem(ProblemBase):
     def stat_boundary_conditions(self, W):
 
         # Create boundary condition
-        u_in = Expression(("Umax*(1-x[1])*x[1]*2", "0"), Umax=self.Umax)
-        noslip_upper = DirichletBC(W.sub(0), (0, 0), karmanmesh.GammaUpper())
-        noslip_lower = DirichletBC(W.sub(0), (0, 0), karmanmesh.GammaLower())
-        noslip_ball = DirichletBC(W.sub(0), (0, 0), karmanmesh.GammaBall())
-        inflow = DirichletBC(W.sub(0), u_in, karmanmesh.GammaLeft())
+        u_in = Expression(("U*(1-x[1])*x[1]*2", "0"), U=self.Umax)
+        noslip_upper = DirichletBC(W.sub(0), (0, 0), GammaUpper())
+        noslip_lower = DirichletBC(W.sub(0), (0, 0), GammaLower())
+        noslip_ball = DirichletBC(W.sub(0), (0, 0), GammaBall())
+        inflow = DirichletBC(W.sub(0), u_in, GammaLeft())
         bcu = [noslip_upper, noslip_lower, noslip_ball, inflow]
 
 
@@ -89,7 +102,8 @@ class Problem(ProblemBase):
 
 
     def update(self, t, u, p):
-        self.u_in.t = t
+        pass
+        #self.u_in.t = t
 
     def functional(self, t, u, p):
         return 0.0
