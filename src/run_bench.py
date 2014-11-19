@@ -1,4 +1,3 @@
-
 import os
 
 if ".." not in os.environ['PYTHONPATH']:
@@ -15,15 +14,18 @@ solvers = ["chorin", "css1", "css2", "ipcs", "stat_newton"]
 
 
 #problems = ["drivencavity"]
-problems = ["beltrami", "drivencavity","karman"]
+problems = ["beltrami", "drivencavity", "karman"]
 #problems = ["karman"]
 
 
 # Number of refinement levels
 refinements = [2,3,4,5]
+#refinements = [2]
+
 
 #Reynoldszahl
 REs = [100,200,300,400,500]
+#REs = [100]
 
 
 #clear instant cache
@@ -35,6 +37,9 @@ for RE in REs:
             for solver in solvers:
                 if instant_clean:
                     os.system("instant-clean")
-                if solver == "stat_newton" and (not problem=="karman"):
+
+                #use only stat_newton for karman
+                if not solver == "stat_newton" or problem=="karman":
                     print "python ns.py {0} {1} refinement_level={2} RE={3} debug=True".format(problem, solver, str(refinement),RE)
                     os.system("python ns.py {0} {1} refinement_level={2} RE={3} debug=True".format(problem, solver, str(refinement),RE))
+

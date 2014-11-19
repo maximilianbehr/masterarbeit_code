@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-
+import os
 import time
 from dolfin.cpp.common import set_log_active
 from dolfin.cpp.common import list_timings
@@ -103,7 +103,7 @@ def main(args):
 
     #get outputdir
     psohandler = ProblemSolverOutputHandler(problem_name,solver_name)
-    options["outputdir"]=os.path.join(psohandler.outputdir(),options["RE"])
+    options["outputdir"]=os.path.join(psohandler.outputdir(),str(options["RE"]))
 
 
     # Set global DOLFIN parameters
