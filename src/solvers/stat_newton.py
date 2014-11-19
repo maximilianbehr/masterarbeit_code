@@ -57,27 +57,32 @@ class Solver(SolverBase):
         # split w
         (u, p) = w.split()
 
-        #save data
-        if self.options["save_solution"]:
-            # Save velocity and pressure
-            solvername = self.__module__.split(".")[-1].lower()
-            dir = problem.output_location(solvername)
-
-            # Create files for saving
-            print dir
-            File(dir + "/velo.pvd") << u
-            File(dir + "/pressure.pvd") << p
-
-        # Save vectors in xml format
-        if self.options["save_xml"]:
-            file = File(dir + "/w_velo_pressure.xml", "compressed")
-            file << w.vector()
-
         return Function(u), Function(p)
 
 
     def eval(self):
         return 0, 0
+
+    def save(self, problem, t, u, p):
+        outputdir = self.options["outputdir"]
+
+        #save data
+        if self.options["save_solution"]:
+            # Save velocity and pressure
+
+            # Create files for saving
+            File(outputdir + "/velo.pvd") << u
+            File(outputdir + "/pressure.pvd") << p
+
+        # Save vectors in xml format
+        if self.options["save_xml"]:
+            file = File(outputdir + "/w_velo_pressure.xml", "compressed")
+            file << w.vector()
+
+
+
+
+
 
     def __str__(self):
         return "Newton Stationary"

@@ -89,21 +89,22 @@ def main(args):
     # Get problem and solver
     problem_name, solver_name = args[:2]
 
-    #get outputdir
-    psohandler = ProblemSolverOutputHandler(problem_name,solver_name)
-    OPTIONS["outputdir"]=psohandler.outputdir()
-
     # Get options
     options = OPTIONS.copy()
     for arg in args[2:]:
         try:
             key, value = arg.split("=")
             try:
-                options[key] = eval(value)
+                options[key.strip()] = eval(value.strip())
             except:
                 options[key] = str(value)
         except:
             print "Warning: Unhandled command-line argument", arg
+
+    #get outputdir
+    psohandler = ProblemSolverOutputHandler(problem_name,solver_name)
+    options["outputdir"]=os.path.join(psohandler.outputdir(),options["RE"])
+
 
     # Set global DOLFIN parameters
     parameters["form_compiler"]["optimize"] = True

@@ -15,10 +15,7 @@ from problem_mesh.karman import GammaLeft
 from problem_mesh.karman import GammaUpper
 from problem_mesh.karman import GammaBall
 
-from dolfin.cpp.mesh import Mesh
-from dolfin.cpp.function import Constant
-from dolfin.cpp.function import Expression
-from dolfin.cpp.fem import DirichletBC
+from dolfin import *
 
 
 
@@ -27,6 +24,7 @@ from dolfin.cpp.fem import DirichletBC
 class Problem(ProblemBase):
     def __init__(self, options):
         ProblemBase.__init__(self, options)
+        #self.dt = 0.1
 
         # Load problem_mesh
         refinement_level = options["refinement_level"]
@@ -39,11 +37,12 @@ class Problem(ProblemBase):
         # choose U such that U*2*r=1 and then RE=1/nu
         self.Umax = 1.0 / (2.0 * circle["r"])
 
-        # Set viscosity (Re = 1000)
-        self.nu = 1.0 / 100.0
+        # Set viscosity (Re = 100)
+        #self.nu = 1.0 / 100.0
+        self.nu = 1.0/options["RE"]
 
         # Set end time
-        self.T = 8.0
+        self.T = 15.0
 
     def RE(self):
         return (self.U * 2.0 *circle["r"]) / self.nu
@@ -61,7 +60,7 @@ class Problem(ProblemBase):
         # Create boundary condition
         #self.u_in = Expression(("U*(1-x[1])*x[1]*2*t", "0.0"), t=t, U=self.Umax)
         self.u_in = Expression(("U*(1-x[1])*x[1]*2*t", "0.0"),  U=self.Umax)
-        #self.u_in = Expression(('4*(x[1]*(1-x[1]))*sin(pi*t/8.0)', '0.0'), t=t)
+        #self.u_in = Expression(('4*(x[1]*(1-x[1]))*sin(t*pi/8.0)', '0.0'),t=t)
 
         self.u_inflow = DirichletBC(V, self.u_in, GammaLeft())
         self.u_noslip = Constant((0, 0))
@@ -102,8 +101,7 @@ class Problem(ProblemBase):
 
 
     def update(self, t, u, p):
-        pass
-        #self.u_in.t = t
+        self.u_in.t = t
 
     def functional(self, t, u, p):
         return 0.0

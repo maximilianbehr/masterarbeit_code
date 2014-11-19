@@ -130,6 +130,3 @@ class ProblemBase:
     def pressure_bc(self, Q):
         return Constant(0)
 
-    def RE(self):
-        "return Reynoldsnumber"
-        pass

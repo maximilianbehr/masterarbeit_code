@@ -2,6 +2,7 @@
 
 from src.solvers.solverbase import *
 
+#TODO check pbar
 
 class Solver(SolverBase):
     "Consistent splitting scheme by Guermond and Shen."

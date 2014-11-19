@@ -33,7 +33,7 @@ class Problem(ProblemBase):
         self.f = Constant((0, 0))
 
         # Set viscosity (Re = 1000)
-        self.nu = 1.0 / 1000.0
+        self.nu = 1.0 / options["RE"]
         self.U = 1.0
 
         # Set end-time

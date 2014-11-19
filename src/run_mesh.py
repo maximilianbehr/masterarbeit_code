@@ -23,7 +23,7 @@ if __name__ == "__main__":
         kohandler.karman_save_boundaryfunction(meshbuilder)
 
         begin("Refinement with %s" % parameters["refinement_algorithm"])
-        for ref in range(1, 5):
+        for ref in range(1, 6):
             info("Refinement {0}".format(ref))
 
             #refine mesh
