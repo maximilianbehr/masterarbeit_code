@@ -103,7 +103,8 @@ def main(args):
 
     #get outputdir
     psohandler = ProblemSolverOutputHandler(problem_name,solver_name)
-    options["outputdir"]=os.path.join(psohandler.outputdir(),str(options["RE"]))
+
+    options["outputdir"]=os.path.join(psohandler.outputdir(),str(options.get("RE","")))
 
 
     # Set global DOLFIN parameters
