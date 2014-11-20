@@ -15,8 +15,8 @@ class Solver(SolverBase):
 
 
         # Define function spaces (P2-P1)
-        V = VectorFunctionSpace(mesh, "Lagrange", 2)
-        Q = FunctionSpace(mesh, "Lagrange", 1)
+        V = VectorFunctionSpace(mesh, "CG", 2)
+        Q = FunctionSpace(mesh, "CG", 1)
         W = V * Q
 
         # define test functions
@@ -34,7 +34,6 @@ class Solver(SolverBase):
 
         # get boundary conditions
         bc = problem.stat_boundary_conditions(W)
-
 
         # build weak formulation
         a1 = inner(grad(u) * u, v) * dx
@@ -55,7 +54,11 @@ class Solver(SolverBase):
         solver.solve()
 
         # split w
-        (u, p) = w.split()
+        (u, p) = w.split(deepcopy=True)
+
+        if self.options["sa"]:
+            self.save(problem,u,p)
+
 
         return Function(u), Function(p)
 
@@ -63,21 +66,30 @@ class Solver(SolverBase):
     def eval(self):
         return 0, 0
 
-    def save(self, problem, t, u, p):
-        outputdir = self.options["outputdir"]
 
-        #save data
-        if self.options["save_solution"]:
-            # Save velocity and pressure
+           "RE": None,
+           "u_pvd": None,
+           "p_pvd": None,
+           "u_xml": None,
+           "p_xml": None,
+           "debug": False,
+           "krylov_solver_absolute_tolerance": 1e-25,
+           "krylov_solver_relative_tolerance": 1e-12,
+           "krylov_solver_monitor_convergence": False,
+           }
 
-            # Create files for saving
-            File(outputdir + "/velo.pvd") << u
-            File(outputdir + "/pressure.pvd") << p
+    def save(self, problem, u, p):
+        if self.options["u_pvd"]:
+            File(self.options["u_pvd"])<<u
 
-        # Save vectors in xml format
-        if self.options["save_xml"]:
-            file = File(outputdir + "/w_velo_pressure.xml", "compressed")
-            file << w.vector()
+        if self.options["p_pvd"]:
+            File(self.options["p_pvd"])<<p
+
+        if self.options["u_xml"]:
+            File(self.options["u_xml"])<<u
+
+        if self.options["p_xml"]:
+            File(self.options["p_xml"])<<p
 
 
 

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import os
 import time
 from dolfin.cpp.common import set_log_active
@@ -10,30 +9,6 @@ from problems import Problem, problems
 from solvers import Solver, solvers
 
 from outputhandler import ProblemSolverOutputHandler
-
-
-# Default options
-OPTIONS = {"refinement_level": 0,
-           "dt_division": 0,
-           "save_solution": True,
-           "save_frequency": 20,
-           "check_mem_usage": True,
-           "check_frequency": 10,
-           "save_solution_at_t=T": True,
-           "save_xml": True,
-           "save_TimeSeries_u": False,
-           "save_TimeSeries_p": False,
-           "plot_functional": False,
-           "compute_stress": True,
-           "compute_divergence": True,
-           "debug": False,
-           "max_steps": None,
-           "krylov_solver_absolute_tolerance": 1e-25,
-           "krylov_solver_relative_tolerance": 1e-12,
-           "krylov_solver_monitor_convergence": False,
-           "newton_solver_max_iterations": 25
-}
-parameters["refinement_algorithm"] = "bisection"
 
 
 def save_results(problem, solver, num_dofs, cputime, wct, functional, dt_division, error):
@@ -61,45 +36,23 @@ def save_results(problem, solver, num_dofs, cputime, wct, functional, dt_divisio
                (time.asctime(), problem, solver, num_dofs, cputime, wct, functional, str(dt_division), str(error)))
     file.close()
 
+def ns(problem_name, solver_name, inoptions):
 
-def usage():
-    """Print usage"""
-    print """\
-Usage: ns problem solver
 
-Available problems:
+    options = inoptions.copy()
 
-%s
 
-Available solvers:
-
-%s
-""" % ("\n".join("  " + p for p in problems),
-       "\n".join("  " + s for s in solvers))
+    # Set global DOLFIN parameters
+    parameters["form_compiler"]["optimize"] = options["form_compiler_optimize"]
+    parameters["form_compiler"]["cpp_optimize"] = options["form_compiler_cpp_optimize"]
+    parameters["krylov_solver"]["absolute_tolerance"] = options["krylov_solver_absolute_tolerance"]
+    parameters["krylov_solver"]["relative_tolerance"] = options["krylov_solver_relative_tolerance"]
+    parameters["krylov_solver"]["monitor_convergence"] = options["krylov_solver_monitor_convergence"]
 
 
 def main(args):
     """Parse command-line arguments and run solver"""
 
-    # Check arguments
-    if not len(args) >= 2:
-        usage()
-        return 2
-
-    # Get problem and solver
-    problem_name, solver_name = args[:2]
-
-    # Get options
-    options = OPTIONS.copy()
-    for arg in args[2:]:
-        try:
-            key, value = arg.split("=")
-            try:
-                options[key.strip()] = eval(value.strip())
-            except:
-                options[key] = str(value)
-        except:
-            print "Warning: Unhandled command-line argument", arg
 
     #get outputdir
     psohandler = ProblemSolverOutputHandler(problem_name,solver_name)
@@ -107,12 +60,7 @@ def main(args):
     options["outputdir"]=os.path.join(psohandler.outputdir(),str(options.get("RE","")))
 
 
-    # Set global DOLFIN parameters
-    parameters["form_compiler"]["optimize"] = True
-    parameters["form_compiler"]["cpp_optimize"] = True
-    parameters["krylov_solver"]["absolute_tolerance"] = options["krylov_solver_absolute_tolerance"]
-    parameters["krylov_solver"]["relative_tolerance"] = options["krylov_solver_relative_tolerance"]
-    parameters["krylov_solver"]["monitor_convergence"] = options["krylov_solver_monitor_convergence"]
+
 
     # Set debug level
     set_log_active(options["debug"])
@@ -144,6 +92,3 @@ def main(args):
 
     return 0
 
-
-if __name__ == "__main__":
-    sys.exit(main(sys.argv[1:]))

@@ -30,8 +30,8 @@ class Solver(SolverBase):
 
 
         # Define function spaces (P2-P1)
-        V = VectorFunctionSpace(mesh, "Lagrange", 2)
-        Q = FunctionSpace(mesh, "Lagrange", 1)
+        V = VectorFunctionSpace(mesh, "CG", 2)
+        Q = FunctionSpace(mesh, "CG", 1)
         W = V * Q
 
          # define test functions

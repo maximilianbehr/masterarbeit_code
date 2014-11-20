@@ -1,6 +1,7 @@
 #!/bin/sh
 
 
+
 if [ $# -eq 0  -o $#  -gt 1 ]
   then
     echo "usage: . ./fenics_mac.sh 1.2.0|1.3.0|snapshot";
@@ -32,7 +33,7 @@ PVPYTHON="/Applications/paraview.app/Contents/bin"
 PARAVIEW_PYTHONPATH="/Applications/paraview.app/Contents/Python/paraview"
 
 export PATH=${PVPYTHON}:${PATH}
-export PYTHONPATH=${PARAVIEWPYTHON}:${PYTHONPATH}
+export PYTHONPATH=${PARAVIEWPYTHON}:`pwd`:${PYTHONPATH}
 
 
 

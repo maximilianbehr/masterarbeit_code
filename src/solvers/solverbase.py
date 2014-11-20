@@ -47,7 +47,6 @@ class SolverBase:
 
 
     def save(self, problem, t, u, p):
-        #solvername = self.__module__.split(".")[-1].lower()
         outputdir = self.options["outputdir"]
 
         # Save solution
@@ -82,15 +81,6 @@ class SolverBase:
             file = File(outputdir + "/t=%1.2e" % t + "_pressure.xml", "compressed")
             file << p.vector()
 
-        # Save TimeSeries for u
-        #if self.options["save_TimeSeries_u"]:
-        #    tseries_v = TimeSeries(dir + "/time_series_u", True)
-        #    tseries_v.store(u.vector(), t)
-
-        # Save Time Series for p
-        #if self.options["save_TimeSeries_p"]:
-        #    tseries_p = TimeSeries(dir + "/time_series_p", True)
-        #    tseries_p.store(p.vector(), t)
 
     def update(self, problem, t, u, p):
         "Update problem at time t"
@@ -103,7 +93,7 @@ class SolverBase:
         if self.options["compute_divergence"]:
             check_divergence(u, p.function_space())
 
-        # Update problem FIXME: Should this be called before problem.functional??
+        # Update problem
         problem.update_problem(t, u, p)
 
         # Evaluate functional and error
@@ -143,17 +133,7 @@ class SolverBase:
 
 
     def eval(self):
-        "Return last functional value and maximum error in functional value on [0, T]"
-
-        # Plot values
-        if self.options["plot_functional"]:
-            import pylab as p
-
-            p.plot(self._t, self._M)
-            p.xlabel('t')
-            p.ylabel('Functional')
-            p.grid(True)
-            p.show()
+        """"Return last functional value and maximum error in functional value on [0, T]"""
 
         # Return value
         if self._e[0] is None:
@@ -162,28 +142,23 @@ class SolverBase:
             return self._M[-1], max([0.0] + self._e)
 
     def cputime(self):
-        "Return accumulated CPU time."
+        """"Return accumulated CPU time."""
         return self._cputime
 
 
 def epsilon(u):
-    "Return symmetric gradient."
+    """Return symmetric gradient."""
     return 0.5 * (grad(u) + grad(u).T)
 
 
 def sigma(u, p, nu):
-    "Return stress tensor."
+    """Return stress tensor."""
     return 2 * nu * epsilon(u) - p * Identity(u.cell().d)
 
 
-def is_periodic(bcs):
-    "Check if boundary conditions are periodic."
-    # return all(isinstance(bc, PeriodicBC) for bc in bcs)
-    return all(isinstance(bc, PeriodicBoundaryComputation) for bc in bcs)
-
 
 def has_converged(r, iter, method, maxiter=default_maxiter, tolerance=default_tolerance):
-    "Check if solution has converged."
+    """Check if solution has converged."""
     print "Residual = ", r
     if r < tolerance:
         print "%s iteration converged in %d iteration(s)." % (method, iter + 1)
@@ -194,7 +169,7 @@ def has_converged(r, iter, method, maxiter=default_maxiter, tolerance=default_to
 
 
 def check_divergence(u, Q):
-    "Check divergence of velocity."
+    """Check divergence of velocity."""
 
     # Compute L2 norm of divergence
     print "||div u||_L2 =", norm(u, "Hdiv0")

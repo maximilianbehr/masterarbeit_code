@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import os
 
-#import outputhandler from parent path
-if ".." not in os.environ['PYTHONPATH']:
-    os.environ['PYTHONPATH'] = "..:" + os.environ['PYTHONPATH']
-from outputhandler import KarmanOutputHandler
-
+from src.outputhandler import KarmanOutputHandler
 
 from problembase import ProblemBase
 from problem_mesh.karman import circle
@@ -24,7 +19,6 @@ from dolfin import *
 class Problem(ProblemBase):
     def __init__(self, options):
         ProblemBase.__init__(self, options)
-        #self.dt = 0.1
 
         # Load problem_mesh
         refinement_level = options["refinement_level"]
@@ -38,7 +32,6 @@ class Problem(ProblemBase):
         self.Umax = 1.0 / (2.0 * circle["r"])
 
         # Set viscosity (Re = 100)
-        #self.nu = 1.0 / 100.0
         self.nu = 1.0/options["RE"]
 
         # Set end time
@@ -58,8 +51,7 @@ class Problem(ProblemBase):
     def boundary_conditions(self, V, Q, t):
 
         # Create boundary condition
-        #self.u_in = Expression(("U*(1-x[1])*x[1]*2*t", "0.0"), t=t, U=self.Umax)
-        self.u_in = Expression(("U*(1-x[1])*x[1]*2*t", "0.0"),  U=self.Umax)
+        self.u_in = Expression(("U*(1-x[1])*x[1]*2*t", "0.0"),t=t , U=self.Umax)
         #self.u_in = Expression(('4*(x[1]*(1-x[1]))*sin(t*pi/8.0)', '0.0'),t=t)
 
         self.u_inflow = DirichletBC(V, self.u_in, GammaLeft())
