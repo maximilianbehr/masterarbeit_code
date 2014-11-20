@@ -21,9 +21,7 @@ class Problem(ProblemBase):
         ProblemBase.__init__(self, options)
 
         # Load problem_mesh
-        refinement_level = options["refinement_level"]
-        kohandler = KarmanOutputHandler()
-        self.mesh = Mesh(kohandler.karman_mesh_xml(refinement_level))
+        self.mesh = Mesh(self.options["mesh"])
 
         # Create right-hand side function
         self.f = Constant((0, 0))

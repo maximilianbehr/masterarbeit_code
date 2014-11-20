@@ -33,8 +33,8 @@ if __name__=="__main__":
             for solver in solvers:
                 if instant_clean:
                     os.system("instant-clean")
-                print "python ns.py {0} {1} refinement_level={2} debug=True".format(problem, solver, str(refinement))
-                os.system("python ns.py {0} {1} refinement_level={2} debug=True".format(problem, solver, str(refinement)))
+                print "python call_solver.py {0} {1} refinement_level={2} debug=True".format(problem, solver, str(refinement))
+                os.system("python call_solver.py {0} {1} refinement_level={2} debug=True".format(problem, solver, str(refinement)))
 
 
 

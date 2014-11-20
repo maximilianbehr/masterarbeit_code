@@ -123,3 +123,27 @@ class ProblemSolverOutputHandler():
             raise NotImplementedError("Output Path for %s not implemented" % hostname)
 
 
+    def _file(self, name, num, RE):
+        assert(num > 0)
+        outputdir = self.outputdir()
+        return os.path.join(outputdir, "ref_%s" % num, "RE_{0}".format(RE), name)
+
+    def u_xml(self, num, RE):
+        name = "u.xml"
+        return self._file(name, num, RE)
+
+    def p_xml(self, num, RE):
+        name = "p.xml"
+        return self._file(name, num, RE)
+
+    def u_pvd(self, num, RE):
+        name = "u.pvd"
+        return self._file(name, num, RE)
+
+    def p_pvd(self, num, RE):
+        name = "p.pvd"
+        return self._file(name, num, RE)
+
+    def options_json(self,num,RE):
+        name = "options.json"
+        return self._file(name, num, RE)

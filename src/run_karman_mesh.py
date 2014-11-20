@@ -6,24 +6,28 @@ from problems.problem_mesh.karman import MeshBuilder
 from outputhandler import KarmanOutputHandler
 
 
+
+refalgs =  ["bisection", "iterative_bisection", "recursive_bisection", "regular_cut"]
+refs = range(1,6)
+
 if __name__ == "__main__":
 
     # object for saving mesh and boundary function
     kohandler = KarmanOutputHandler()
 
-    for refalg in ["bisection", "iterative_bisection", "recursive_bisection", "regular_cut"]:
+    for refalg in refalgs:
 
         parameters["refinement_algorithm"] = refalg
 
         # build macro mesh
         meshbuilder = MeshBuilder()
 
-        # save mesh and meshfunction
+        # save macro mesh and meshfunction
         kohandler.karman_save_mesh(meshbuilder)
         kohandler.karman_save_boundaryfunction(meshbuilder)
 
         begin("Refinement with %s" % parameters["refinement_algorithm"])
-        for ref in range(1, 6):
+        for ref in refs:
             info("Refinement {0}".format(ref))
 
             #refine mesh

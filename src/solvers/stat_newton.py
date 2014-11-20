@@ -51,34 +51,27 @@ class Solver(SolverBase):
         nsproblem = NonlinearVariationalProblem(F, w, bc, dF)
         solver = NonlinearVariationalSolver(nsproblem)
         solver.parameters["newton_solver"]["maximum_iterations"] = self.options["newton_solver_max_iterations"]
+        solver.parameters["newton_solver"]["absolute_tolerance"] = self.options["newton_solver_absolute_tolerance"]
+        solver.parameters["newton_solver"]["relative_tolerance"] = self.options["newton_solver_relative_tolerance"]
+
         solver.solve()
+        import ipdb
+        ipdb.set_trace()
 
         # split w
         (u, p) = w.split(deepcopy=True)
 
-        if self.options["sa"]:
-            self.save(problem,u,p)
+        # save
+        self.save(u,p)
 
-
-        return Function(u), Function(p)
+        return u,p
 
 
     def eval(self):
         return 0, 0
 
 
-           "RE": None,
-           "u_pvd": None,
-           "p_pvd": None,
-           "u_xml": None,
-           "p_xml": None,
-           "debug": False,
-           "krylov_solver_absolute_tolerance": 1e-25,
-           "krylov_solver_relative_tolerance": 1e-12,
-           "krylov_solver_monitor_convergence": False,
-           }
-
-    def save(self, problem, u, p):
+    def save(self, u, p):
         if self.options["u_pvd"]:
             File(self.options["u_pvd"])<<u
 
@@ -91,9 +84,13 @@ class Solver(SolverBase):
         if self.options["p_xml"]:
             File(self.options["p_xml"])<<p
 
-
-
-
+        if self.options["options_json"]:
+            try:
+                import json
+                fname = self.options["options_json"]
+                json.dump(self.options,open(fname,"w"))
+            except ImportError:
+                print "Cannot import json. options not stored"
 
 
     def __str__(self):

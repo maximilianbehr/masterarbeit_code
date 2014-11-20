@@ -2,7 +2,6 @@ import os
 
 
 OPTIONS = {"refinement_level": 0,
-           "dt_division": 0,
            "save_solution": True,
            "save_frequency": 20,
            "check_mem_usage": True,
@@ -33,6 +32,6 @@ for RE in REs:
             for solver in solvers:
                 if instant_clean:
                     os.system("instant-clean")
-                cmd = "python ns.py {0} {1} refinement_level={2} RE={3} debug=True".format(problem, solver, str(refinement),RE)
+                cmd = "python call_solver.py {0} {1} refinement_level={2} RE={3} debug=True".format(problem, solver, str(refinement),RE)
                 print cmd
                 os.system(cmd)
