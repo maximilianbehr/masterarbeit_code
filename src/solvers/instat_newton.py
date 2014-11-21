@@ -16,7 +16,7 @@ class Solver(SolverBase):
     def solve(self, problem):
         info("Newton Instationary assumes external forces f=0.")
 
-        theta = 0.5 #crank nicelson
+        theta = 1
 
         # Get problem parameters
         mesh = problem.mesh
