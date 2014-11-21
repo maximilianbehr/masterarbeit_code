@@ -55,8 +55,6 @@ class Solver(SolverBase):
         solver.parameters["newton_solver"]["relative_tolerance"] = self.options["newton_solver_relative_tolerance"]
 
         solver.solve()
-        import ipdb
-        ipdb.set_trace()
 
         # split w
         (u, p) = w.split(deepcopy=True)
@@ -83,14 +81,6 @@ class Solver(SolverBase):
 
         if self.options["p_xml"]:
             File(self.options["p_xml"])<<p
-
-        if self.options["options_json"]:
-            try:
-                import json
-                fname = self.options["options_json"]
-                json.dump(self.options,open(fname,"w"))
-            except ImportError:
-                print "Cannot import json. options not stored"
 
 
     def __str__(self):

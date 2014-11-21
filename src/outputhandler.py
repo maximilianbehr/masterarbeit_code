@@ -132,9 +132,17 @@ class ProblemSolverOutputHandler():
         name = "u.xml"
         return self._file(name, num, RE)
 
+    def u_t_xml(self, num, RE):
+        name = "u_{0:1.2e}.xml"
+        return self._file(name, num,RE)
+
     def p_xml(self, num, RE):
         name = "p.xml"
         return self._file(name, num, RE)
+
+    def p_t_xml(self, num, RE):
+        name = "u_{0:1.2e}.xml"
+        return self._file(name, num,RE)
 
     def u_pvd(self, num, RE):
         name = "u.pvd"

@@ -17,8 +17,8 @@ OPTIONS = {"mesh": 0,
            "form_compiler_optimize": True,
            "form_compiler_cpp_optimize": True,
            "newton_solver_max_iterations": 20,
-           "newton_solver_absolute_tolerance": 1e-15,
-           "newton_solver_relative_tolerance": 1e-13
+           "newton_solver_absolute_tolerance": 1e-14,
+           "newton_solver_relative_tolerance": 1e-14
            }
 
 

@@ -1,45 +1,60 @@
 import os
+from outputhandler import KarmanOutputHandler,ProblemSolverOutputHandler
+from call_solver import call
+from dolfin import parameters
 
-# Default options
-OPTIONS = {"refinement_level": 0,
-           "dt_division": 0,
-           "save_solution": True,
-           "save_frequency": 20,
+OPTIONS = {"refinement_level": None,
+           "u_pvd": None,
+           "p_pvd": None,
+           "u_xml": None,
+           "p_xml": None,
+           "u_t_xml": None,
+           "p_t_xml": None,
+           "save_solution_at_t=T": True,
+           "options_json": None,
+           "save_frequency": 10,
            "check_mem_usage": True,
            "check_frequency": 10,
-           "save_solution_at_t=T": True,
-           "save_xml": True,
-           "compute_stress": True,
            "compute_divergence": True,
-           "debug": False,
+           "debug": True,
            "max_steps": None,
+           "dt": None,
+           "dt_division": 0,
            "krylov_solver_absolute_tolerance": 1e-25,
            "krylov_solver_relative_tolerance": 1e-12,
            "krylov_solver_monitor_convergence": False,
-}
+           "form_compiler_optimize": True,
+           "form_compiler_cpp_optimize": True,
+           }
 
 
-parameters["refinement_algorithm"] = "bisection"
-if __name__=="__main__":
 
-    #test problems from nsbench
-    instant_clean = False
-    refinements = [3]
-    problems = ["beltrami", "drivencavity"]
-    solvers = ["chorin", "css1", "css2", "ipcs"]
 
+#karman
+parameters["refinement_algorithm"]="bisection"
+instant_clean = False
+REs = [100]
+refinements = [4]
+problems = ["beltrami"]
+solvers = ["chorin", "css1", "css2", "ipcs"]
+for RE in REs:
     for refinement in refinements:
         for problem in problems:
             for solver in solvers:
+                kohandler = KarmanOutputHandler()
+                psohandler = ProblemSolverOutputHandler(problem,solver)
+
+                OPTIONS["refinement_level"] = refinement
+                OPTIONS["u_pvd"] = psohandler.u_pvd(refinement,RE)
+                OPTIONS["p_pvd"] = psohandler.p_pvd(refinement,RE)
+                OPTIONS["u_xml"] = psohandler.u_xml(refinement,RE)
+                OPTIONS["p_xml"] = psohandler.p_xml(refinement,RE)
+                OPTIONS["u_t_xml"] = psohandler.u_t_xml(refinement,RE)
+                OPTIONS["p_t_xml"] = psohandler.p_t_xml(refinement,RE)
+                OPTIONS["options_json"] = psohandler.options_json(refinement,RE)
+
                 if instant_clean:
                     os.system("instant-clean")
-                print "python call_solver.py {0} {1} refinement_level={2} debug=True".format(problem, solver, str(refinement))
-                os.system("python call_solver.py {0} {1} refinement_level={2} debug=True".format(problem, solver, str(refinement)))
-
-
-
-
-
-
+                call(problem, solver, OPTIONS)
 
 

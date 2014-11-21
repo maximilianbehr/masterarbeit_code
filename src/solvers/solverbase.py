@@ -3,9 +3,6 @@ from os import getpid
 from commands import getoutput
 from dolfin import *
 
-# Common solver parameters
-maxiter = default_maxiter = 200
-tolerance = default_tolerance = 1e-4
 
 
 class SolverBase:
@@ -46,40 +43,31 @@ class SolverBase:
         raise NotImplementedError
 
 
+
+
     def save(self, problem, t, u, p):
-        outputdir = self.options["outputdir"]
 
-        # Save solution
-        if self.options["save_solution"]:
-            # Save velocity and pressure
-            frequency = self.options["save_frequency"]
-            if (self._timestep - 1) % frequency == 0:
-                # Create files for saving
-                if self._ufile is None:
-                    self._ufile = File(outputdir + "/velo.pvd")
-                if self._pfile is None:
-                    self._pfile = File(outputdir + "/pressure.pvd")
-                self._ufile << (u, t)
-                self._pfile << (p, t)
+        frequency = self.options["save_frequency"]
+        if ((self._timestep - 1) % frequency == 0) or (self.options["save_solution_at_t=T"] and t>=problem.T):
 
-        # Save solution at t = T
-        if self.options["save_solution_at_t=T"]:
-            if t >= problem.T:
-                # Create files for saving
-                if self._ufile is None:
-                    self._ufile = File(outputdir + "/velo.pvd")
-                if self._pfile is None:
-                    self._pfile = File(outputdir + "/pressure.pvd")
-                self._ufile << (u, t)
-                self._pfile << (p, t)
+                if self.options["u_pvd"]:
+                    if self._ufile is None:
+                        self._ufile = File(self.options["u_pvd"])
+                    self._ufile << (u,t)
 
-        # Save vectors in xml format
-        if self.options["save_xml"] and (self._timestep - 1) % frequency == 0:
-            file = File(outputdir + "/t=%1.2e" % t + "_velo.xml", "compressed")
-            file << u.vector()
+                if self.options["p_pvd"]:
+                    if self._pfile is None:
+                        self._pfile = File(self.options["p_pvd"])
+                    self._pfile << (p,t)
 
-            file = File(outputdir + "/t=%1.2e" % t + "_pressure.xml", "compressed")
-            file << p.vector()
+                if self.options["u_xml"]:
+                    file = File(self.options["u_xml"].format(t), "compressed")
+                    file << u.vector()
+
+                if self.options["p_xml"]:
+                    file = File(self.options["p_xml"].format(t), "compressed")
+                    file << p.vector()
+
 
 
     def update(self, problem, t, u, p):
@@ -155,17 +143,10 @@ def sigma(u, p, nu):
     """Return stress tensor."""
     return 2 * nu * epsilon(u) - p * Identity(u.cell().d)
 
-
-
-def has_converged(r, iter, method, maxiter=default_maxiter, tolerance=default_tolerance):
-    """Check if solution has converged."""
-    print "Residual = ", r
-    if r < tolerance:
-        print "%s iteration converged in %d iteration(s)." % (method, iter + 1)
-        return True
-    elif iter == maxiter - 1:
-        raise RuntimeError, "%s iteration did not converge." % method
-    return False
+def is_periodic(bcs):
+    "Check if boundary conditions are periodic."
+    # return all(isinstance(bc, PeriodicBC) for bc in bcs)
+    return all(isinstance(bc, PeriodicBoundaryComputation) for bc in bcs)
 
 
 def check_divergence(u, Q):

@@ -21,9 +21,6 @@ class Solver(SolverBase):
         # Get problem parameters
         mesh = problem.mesh
 
-        if problem.dt is None:
-            warning.warn("small steps sizes in time, solver needs long time,specifiy dt in your problem")
-
         warning.warn("solver assumes equidistant time discretization")
         dt, t, t_range = problem.timestep(problem)
         idt = 1.0/dt

@@ -75,7 +75,7 @@ class ProblemBase:
 
         # FIXME: This looks very complex, should be cleaned up
 
-        T = problem.T
+        T = self.options.get("T",problem.T)
         U = problem.U
         nu = problem.nu
         h = self.mesh.hmin()
@@ -84,18 +84,17 @@ class ProblemBase:
             dt = 0.25 * h ** 2 / (U * (nu + h * U))
             n = self.options["max_steps"]
             T = n * dt
-            t_range = linspace(0, T, n + 1)[1:]
         else:
 
-            if self.options["dt_division"] != 0 and problem.dt is not None:
-                dt = (problem.dt) / int(sqrt(2) ** self.options["dt_division"])
+            if self.options["dt_division"] != 0 and self.options["dt"] is not None:
+                dt = (self.options["dt"]) / int(sqrt(2) ** self.options["dt_division"])
                 n = int(T / dt + 1.0)
                 dt = T / n
-                print 'Using problem.dt and time step refinements'
+                print 'Using options["dt"] and time step refinements'
 
             # Use time step specified in problem if available
-            elif not problem.dt is None:
-                dt = problem.dt
+            elif not self.options["dt"] is None:
+                dt = self.options["dt"]
                 print dt
                 n = int(T / dt)
                 print 'Using problem.dt'

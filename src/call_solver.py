@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+import os
 import pprint
 from dolfin.cpp.common import set_log_active
 from dolfin.cpp.common import list_timings
@@ -49,6 +50,19 @@ def call(problem_name, solver_name, inoptions):
 
     # Set debug level
     set_log_active(options["debug"])
+
+    #save options dict
+    if options["options_json"]:
+        try:
+            import json
+            fname = options["options_json"]
+            if not os.path.exists(os.path.dirname(fname)):
+                 os.makedirs(os.path.dirname(fname))
+            with open(fname,"w") as handle:
+                json.dump(options,handle)
+        except ImportError:
+            print "Cannot import json. options not stored"
+
 
     # Create problem and solver
     problem = Problem(problem_name, options)
