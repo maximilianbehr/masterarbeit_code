@@ -32,8 +32,6 @@ class Problem(ProblemBase):
         # Set viscosity (Re = 100)
         self.nu = 1.0/options["RE"]
 
-        # Set end time
-        self.T = options["T"]
 
     def RE(self):
         return (self.U * 2.0 *circle["r"]) / self.nu
