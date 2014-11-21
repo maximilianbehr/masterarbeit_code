@@ -19,17 +19,17 @@ kohandler = KarmanOutputHandler()
 psohandler = ProblemSolverOutputHandler("karman", "stat_newton")
 
 mesh = Mesh(kohandler.karman_mesh_xml(ref))
-#boundary function
 boundaryfunction = MeshFunction("size_t",mesh,kohandler.karman_boundary_xml(ref))
 
-#stationary solution to stabilize
-u_stat = Function(V,psohandler.u_xml(ref,RE))
 
 
 g = Expression(("1/r * (x[0]-x0)", "1/r * (x[1]-y0)"), r = circle["r"], x0 = circle["x0"], y0 = circle["y0"] )
 
 V = VectorFunctionSpace(mesh,"CG",2)
-Q = VectorFunctionSpace(mesh,"CG",1)
+Q = FunctionSpace(mesh,"CG",1)
+
+u_stat = Function(V,psohandler.u_xml(ref,RE))
+
 
 #trial functions
 dudt = TrialFunction(V)
@@ -58,10 +58,10 @@ K_var = inner(grad(u_stat)*u,w_test)*dx
 
 R_var = inner(grad(u)*u_stat,w_test)*dx
 
-G_var = - p*div(w_test)*dx
+G_var = -1*p*div(w_test)*dx
 
 
-Gt_var = - div(u)*p_test*dx
+Gt_var = div(u)*p_test*dx
 
 
 #assemble matrices
