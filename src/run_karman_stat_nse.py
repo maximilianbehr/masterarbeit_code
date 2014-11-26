@@ -26,8 +26,8 @@ OPTIONS = {"mesh": 0,
 
 #karman
 instant_clean = False
-REs = [100]
-refinements = [4]
+REs = [100,200,300,400,500]
+refinements = [1,2,3,4]
 problems = ["karman"]
 solvers = ["stat_newton"]
 for RE in REs:
@@ -47,4 +47,8 @@ for RE in REs:
 
                 if instant_clean:
                     os.system("instant-clean")
-                call(problem, solver, OPTIONS)
+
+                try:
+                    call(problem, solver, OPTIONS)
+                except:
+                    pass
