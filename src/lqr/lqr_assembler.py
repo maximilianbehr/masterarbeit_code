@@ -1,31 +1,16 @@
+import os
+
 from scipy.sparse.csr import csr_matrix
 from scipy.sparse import lil_matrix
-
-import numpy as np
+from scipy.io import mmwrite
+from scipy.io import savemat
 
 from dolfin import *
-from src.outputhandler import KarmanOutputHandler
-from src.outputhandler import ProblemSolverOutputHandler
 from src.problems.problem_mesh.karman import circle
 from src.problems.problem_mesh.karman import GammaBallCtrlLower
 from src.problems.problem_mesh.karman import GammaBallCtrlUpper
 
 
-ref = 2
-RE = 400
-nu = 1.0 / RE
-penalty_eps = 0.01
-
-kohandler = KarmanOutputHandler()
-psohandler = ProblemSolverOutputHandler("karman", "stat_newton")
-
-OPTIONS = {
-    "RE": 100,
-    "mesh": kohandler.karman_mesh_xml(ref),
-    "boundaryfunction": kohandler.karman_boundary_xml(ref),
-    "u_stat": psohandler.u_xml(ref, RE),
-    "penalty_eps": 0.01
-}
 
 
 # set matrix reordering off
@@ -39,22 +24,19 @@ class Observer(SubDomain):
         return between(x[0], (3.0, 3.5))
 
 
-
 class LQR_Assembler():
-
-    def __init__(self,argoptions):
-        self.options = argoptions.copy
+    def __init__(self, argoptions):
+        self.options = argoptions.copy()
         self.mesh = Mesh(self.options["mesh"])
         self.boundaryfunction = MeshFunction("size_t", self.mesh, self.options["boundaryfunction"])
         self.g = Expression(("1/r * (x[0]-x0)", "1/r * (x[1]-y0)"), r=circle["r"], x0=circle["x0"], y0=circle["y0"])
         self.V = VectorFunctionSpace(self.mesh, "CG", 2)
         self.Q = FunctionSpace(self.mesh, "CG", 1)
 
-        psohandler = ProblemSolverOutputHandler("karman", "stat_newton")
-        self.u_stat = Function(self.V, psohandler.u_xml(ref, RE))
+        self.u_stat = Function(self.V, self.options["u_stat"])
 
 
-    def _get_sparsedata(self,m):
+    def _get_sparsedata(self, m):
         """Function returns a scipy CSR Matrix for given Matrix (dolfin) M"""
         try:
             rowptr, colptr, vals = m.data()
@@ -67,26 +49,28 @@ class LQR_Assembler():
 
     def unparameterized_lns_variational(self):
         # trial functions
-        dudt = TrialFunction(V)
-        u = TrialFunction(V)
-        p = TrialFunction(Q)
+        dudt = TrialFunction(self.V)
+        u = TrialFunction(self.V)
+        p = TrialFunction(self.Q)
 
         # test functions
-        w_test = TestFunction(V)
-        p_test = TestFunction(Q)
+        w_test = TestFunction(self.V)
+        p_test = TestFunction(self.Q)
 
-        #weak formulation of linearized navier stokes eqn
-        ds = Measure('ds')[boundaryfunction]
+        # weak formulation of linearized navier stokes eqn
+        ds = Measure('ds')[self.boundaryfunction]
         self.var = {}
 
         self.var["M"] = inner(dudt, w_test) * dx
-        self.var["S"] = inner(grad(u), grad(w_test)) * dx  #1/nu spaeter ranmultiplizieren
-        self.var["B_upper"] = inner(g, w_test) * ds(GammaBallCtrlUpper.index)  #1/nu 1/eps spaeter ran
-        self.var["B_lower"] = inner(g, w_test) * ds(GammaBallCtrlLower.index)  #1/nu 1/eps spaeter ran
-        self.var["M_upper"] = inner(u, w_test) * ds(GammaBallCtrlUpper.index)  #1/nu 1/eps spaeter ran
-        self.var["M_lower"] = inner(u, w_test) * ds(GammaBallCtrlLower.index)  #1/nu 1/eps spaeter ran
-        self.var["K"] = inner(grad(u_stat) * u, w_test) * dx
-        self.var["R"] = inner(grad(u) * u_stat, w_test) * dx
+        self.var["S"] = self.options["RE"] * inner(grad(u), grad(w_test)) * dx
+        self.var["Bupper"] = self.options["RE"] * inner(self.g, w_test) * ds(
+            GammaBallCtrlUpper.index)  #1/eps spaeter ran
+        self.var["Blower"] = self.options["RE"] * inner(self.g, w_test) * ds(
+            GammaBallCtrlLower.index)  #1/eps spaeter ran
+        self.var["Mupper"] = self.options["RE"] * inner(u, w_test) * ds(GammaBallCtrlUpper.index)  #1/eps spaeter ran
+        self.var["Mlower"] = self.options["RE"] * inner(u, w_test) * ds(GammaBallCtrlLower.index)  #1/eps spaeter ran
+        self.var["K"] = inner(grad(self.u_stat) * u, w_test) * dx
+        self.var["R"] = inner(grad(u) * self.u_stat, w_test) * dx
         self.var["G"] = -1 * p * div(w_test) * dx
 
         #nebenbedingung mit -1 multiplizieren
@@ -97,7 +81,7 @@ class LQR_Assembler():
         if not self.var:
             raise ValueError("Call unparameterized_lns_variational to initialize attribute var.")
 
-        #store backend
+        # store backend
         la_backend = parameters["linear_algebra_backend"]
 
         # assemble matrices for PETSC backend
@@ -113,7 +97,7 @@ class LQR_Assembler():
         if not self.var:
             raise ValueError("Call unparameterized_lns_variational to initialize attribute var.")
 
-        #store backend
+        # store backend
         la_backend = parameters["linear_algebra_backend"]
 
         # assemble matrices for PETSC backend
@@ -131,14 +115,14 @@ class LQR_Assembler():
 
         self.npsc = {}
         for key, val in self.ublas.iteritems():
-            if key == "B_upper" or key == "B_lower":
+            if key == "Bupper" or key == "Blower":
                 self.npsc[key] = val.array().reshape(val.array().size, 1)
             else:
                 self.npsc[key] = self._get_sparsedata(val)
 
-        self.npsc["B"] = np.concatenate((self.npsc["B_upper"], self.npsc["B_lower"]), axis=1)
+        self.npsc["B"] = np.concatenate((self.npsc["Bupper"], self.npsc["Blower"]), axis=1)
 
-        #build matrix C
+        # build matrix C
         ob = Observer()
         submesh = SubMesh(self.mesh, ob)
         indices = np.empty(0, dtype=np.int32)
@@ -154,40 +138,71 @@ class LQR_Assembler():
             C[j, i] = 1
             j += 1
 
-        self.npsc["C"]=C.todense()
+        self.npsc["C"] = C.todense()
+
+
+    def unparameterized_lns_mtx(self):
+
+        if not self.npsc:
+            raise ValueError("Call unparameterized_lns_npsc to initialize attribute npsc.")
+
+        if not os.path.exists(os.path.dirname(self.options["M_mtx"])):
+            os.makedirs(os.path.dirname(self.options["M_mtx"]))
+
+        with open(self.options["M_mtx"], "w") as handle:
+            mmwrite(handle, self.npsc["M"])
+
+        with open(self.options["S_mtx"], "w") as handle:
+            mmwrite(handle, self.npsc["S"])
+
+        with open(self.options["Mlower_mtx"], "w") as handle:
+            mmwrite(handle, self.npsc["Mlower"])
+
+        with open(self.options["Mupper_mtx"], "w") as handle:
+            mmwrite(handle, self.npsc["Mupper"])
+
+        with open(self.options["K_mtx"], "w") as handle:
+            mmwrite(handle, self.npsc["K"])
+
+        with open(self.options["R_mtx"], "w") as handle:
+            mmwrite(handle, self.npsc["R"])
+
+        with open(self.options["G_mtx"], "w") as handle:
+            mmwrite(handle, self.npsc["G"])
+
+        with open(self.options["Gt_mtx"], "w") as handle:
+            mmwrite(handle, self.npsc["Gt"])
+
+        with open(self.options["Blower_mtx"], "w") as handle:
+            mmwrite(handle, self.npsc["Blower"])
+
+        with open(self.options["Bupper_mtx"], "w") as handle:
+            mmwrite(handle, self.npsc["Bupper"])
+
+        with open(self.options["B_mtx"], "w") as handle:
+            mmwrite(handle, self.npsc["B"])
+
+        with open(self.options["C_mtx"], "w") as handle:
+            mmwrite(handle, self.npsc["C"])
+
+
+    def unparametrized_lns_mat(self):
+
+        if not self.npsc:
+            raise ValueError("Call unparameterized_lns_npsc to initialize attribute npsc.")
+
+        with open(self.options["mat"], "w") as handle:
+            savemat(handle, self.npsc, do_compression=True)
 
 
 
-from pycmess import options
-from pycmess import equation_dae2
-from pycmess import PYCMESS_OP_TRANSPOSE
-from pycmess import lrnm
-from pycmess import lrnm_res
 
-# create opt instance
-opt = options()
-opt.adi.output = 1;
-opt.nm.output = 1;
-opt.nm.res2_tol = 1e-5;
 
-eqn = equation_dae2()
-eqn.M = mat_numpyscipy["M"]
-eqn.A = 1.0 / nu * (
--mat_numpyscipy["S"] - 1.0 / penalty_eps * (mat_numpyscipy["M_lower"] + mat_numpyscipy["M_upper"])) - mat_numpyscipy[
-    "K"] - mat_numpyscipy["R"]
-eqn.G = -1 * mat_numpyscipy["G"]
-eqn.B = 1.0 / nu * 1.0 / penalty_eps * mat_numpyscipy["B"]
-eqn.C = Ccsr
-eqn.delta = -0.02
 
-#solve generalized riccati equation
-opt.adi.type = PYCMESS_OP_TRANSPOSE
-result = lrnm(eqn, opt)
-Z = result[0]
-res2 = result[1]
-iter = result[2]
-print res2[res2.size - 1]
-result = lrnm_res(eqn, opt, Z)
-res = result[0]
-rel = result[1]
-print "rel= %e \t res= %e \t res/rel= %e \n" % (rel, res, res / rel)
+
+
+
+
+
+
+

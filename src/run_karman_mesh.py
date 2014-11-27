@@ -6,9 +6,8 @@ from problems.problem_mesh.karman import MeshBuilder
 from outputhandler import KarmanOutputHandler
 
 
-
-refalgs =  ["bisection", "iterative_bisection", "recursive_bisection", "regular_cut"]
-refs = range(1,6)
+refalgs = ["bisection", "iterative_bisection", "recursive_bisection", "regular_cut"]
+refs = range(1, 6)
 
 if __name__ == "__main__":
 
@@ -30,7 +29,7 @@ if __name__ == "__main__":
         for ref in refs:
             info("Refinement {0}".format(ref))
 
-            #refine mesh
+            # refine mesh
             meshbuilder.refine()
 
             #save mesh

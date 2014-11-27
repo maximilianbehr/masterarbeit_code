@@ -2,7 +2,7 @@
 
 
 # List of solvers
-solvers = ["chorin", "css1", "css2", "ipcs", "grpc", "stat_newton","instat_newton"]
+solvers = ["chorin", "css1", "css2", "ipcs", "grpc", "stat_newton", "instat_newton"]
 
 # Wrapper for solver classes
 def Solver(name, options):

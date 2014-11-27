@@ -13,14 +13,15 @@ opt.nm.res2_tol = 1e-5;
 eqn = equation_dae2()
 eqn.M = mat_numpyscipy["M"]
 eqn.A = 1.0 / nu * (
--mat_numpyscipy["S"] - 1.0 / penalty_eps * (mat_numpyscipy["M_lower"] + mat_numpyscipy["M_upper"])) - mat_numpyscipy[
-    "K"] - mat_numpyscipy["R"]
+    -mat_numpyscipy["S"] - 1.0 / penalty_eps * (mat_numpyscipy["M_lower"] + mat_numpyscipy["M_upper"])) - \
+        mat_numpyscipy[
+            "K"] - mat_numpyscipy["R"]
 eqn.G = -1 * mat_numpyscipy["G"]
 eqn.B = 1.0 / nu * 1.0 / penalty_eps * mat_numpyscipy["B"]
 eqn.C = Ccsr
 eqn.delta = -0.02
 
-#solve generalized riccati equation
+# solve generalized riccati equation
 opt.adi.type = PYCMESS_OP_TRANSPOSE
 result = lrnm(eqn, opt)
 Z = result[0]

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-from src.outputhandler import KarmanOutputHandler
-
 from problembase import ProblemBase
 from problem_mesh.karman import circle
 from problem_mesh.karman import GammaLower
@@ -30,31 +28,29 @@ class Problem(ProblemBase):
         self.Umax = 1.0 / (2.0 * circle["r"])
 
         # Set viscosity (Re = 100)
-        self.nu = 1.0/options["RE"]
+        self.nu = 1.0 / options["RE"]
 
 
     def RE(self):
-        return (self.U * 2.0 *circle["r"]) / self.nu
+        return (self.U * 2.0 * circle["r"]) / self.nu
 
 
     def initial_conditions(self, V, Q):
-
         u0 = Constant((0, 0))
         p0 = Constant(0)
 
         return u0, p0
 
     def boundary_conditions(self, V, Q, t):
-
         # Create boundary condition
-        self.u_in = Expression(("U*(1-x[1])*x[1]*2*t", "0.0"),t=t , U=self.Umax)
-        #self.u_in = Expression(('4*(x[1]*(1-x[1]))*sin(t*pi/8.0)', '0.0'),t=t)
+        self.u_in = Expression(("U*(1-x[1])*x[1]*2*t", "0.0"), t=t, U=self.Umax)
+        # self.u_in = Expression(('4*(x[1]*(1-x[1]))*sin(t*pi/8.0)', '0.0'),t=t)
 
         self.u_inflow = DirichletBC(V, self.u_in, GammaLeft())
         self.u_noslip = Constant((0, 0))
         self.u_noslip_upper = DirichletBC(V, self.u_noslip, GammaUpper())
         self.u_noslip_lower = DirichletBC(V, self.u_noslip, GammaLower())
-        self.u_noslip_ball = DirichletBC(V, self.u_noslip,GammaBall())
+        self.u_noslip_ball = DirichletBC(V, self.u_noslip, GammaBall())
 
         # Collect boundary conditions
         bcu = [self.u_noslip_upper, self.u_noslip_lower, self.u_noslip_ball, self.u_inflow]
@@ -69,7 +65,6 @@ class Problem(ProblemBase):
         return bcu, bcp
 
     def stat_boundary_conditions(self, W):
-
         # Create boundary condition
         u_in = Expression(("U*(1-x[1])*x[1]*2", "0"), U=self.Umax)
         noslip_upper = DirichletBC(W.sub(0), (0, 0), GammaUpper())

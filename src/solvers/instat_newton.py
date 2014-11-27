@@ -4,7 +4,8 @@ from src.solvers.solverbase import *
 import warning
 from dolfin.cpp.common import info
 
-raise NotImplementedError("Code is not tested. There are faster solvers for solving instationary navier stokes. Dont waste my time for that.")
+raise NotImplementedError(
+    "Code is not tested. There are faster solvers for solving instationary navier stokes. Dont waste my time for that.")
 
 
 class Solver(SolverBase):
@@ -23,7 +24,7 @@ class Solver(SolverBase):
 
         warning.warn("solver assumes equidistant time discretization")
         dt, t, t_range = problem.timestep(problem)
-        idt = 1.0/dt
+        idt = 1.0 / dt
 
 
         # Define function spaces (P2-P1)
@@ -31,7 +32,7 @@ class Solver(SolverBase):
         Q = FunctionSpace(mesh, "CG", 1)
         W = V * Q
 
-         # define test functions
+        # define test functions
         (v, q) = TestFunctions(W)
 
         # define trial function
@@ -44,13 +45,13 @@ class Solver(SolverBase):
 
 
         # current master step
-        T = sigma(u,p,problem.nu)
+        T = sigma(u, p, problem.nu)
 
 
         # previous master step
         w0 = Function(W)
         (u0, p0) = (as_vector((w0[0], w0[1])), w0[2])
-        T0 = sigma(u0,p,problem.nu)
+        T0 = sigma(u0, p, problem.nu)
 
 
         # Define variational forms without master derivative in previous master
@@ -79,7 +80,6 @@ class Solver(SolverBase):
 
         # Time-stepping
         for t in t_range:
-
             # create variational problem and solver
             bcu, bcp = problem.boundary_conditions(V, Q, t)
             bc = bcu + bcp
@@ -95,7 +95,6 @@ class Solver(SolverBase):
 
             # Move to next master step
             w0.assign(w)
-
 
         return u, p
 

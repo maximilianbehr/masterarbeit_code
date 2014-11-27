@@ -75,7 +75,7 @@ class ProblemBase:
 
         # FIXME: This looks very complex, should be cleaned up
 
-        T = self.options.get("T",problem.T)
+        T = self.options.get("T", problem.T)
         U = problem.U
         nu = problem.nu
         h = self.mesh.hmin()

@@ -60,9 +60,9 @@ class Solver(SolverBase):
         (u, p) = w.split(deepcopy=True)
 
         # save
-        self.save(u,p)
+        self.save(u, p)
 
-        return u,p
+        return u, p
 
 
     def eval(self):
@@ -71,16 +71,16 @@ class Solver(SolverBase):
 
     def save(self, u, p):
         if self.options["u_pvd"]:
-            File(self.options["u_pvd"])<<u
+            File(self.options["u_pvd"]) << u
 
         if self.options["p_pvd"]:
-            File(self.options["p_pvd"])<<p
+            File(self.options["p_pvd"]) << p
 
         if self.options["u_xml"]:
-            File(self.options["u_xml"])<<u
+            File(self.options["u_xml"]) << u
 
         if self.options["p_xml"]:
-            File(self.options["p_xml"])<<p
+            File(self.options["p_xml"]) << p
 
 
     def __str__(self):

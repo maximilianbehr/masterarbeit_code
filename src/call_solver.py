@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import time
 import os
 import pprint
+
+import time
 from dolfin.cpp.common import set_log_active
 from dolfin.cpp.common import list_timings
 from dolfin import parameters
@@ -35,9 +36,9 @@ def save_results(problem, solver, num_dofs, cputime, wct, functional, error):
                .format(time.asctime(), problem, solver, num_dofs, cputime, wct, functional, str(error)))
     file.close()
 
-def call(problem_name, solver_name, inoptions):
 
-    #copy options
+def call(problem_name, solver_name, inoptions):
+    # copy options
     options = inoptions.copy()
 
 
@@ -51,15 +52,16 @@ def call(problem_name, solver_name, inoptions):
     # Set debug level
     set_log_active(options["debug"])
 
-    #save options dict
+    # save options dict
     if options["options_json"]:
         try:
             import json
+
             fname = options["options_json"]
             if not os.path.exists(os.path.dirname(fname)):
-                 os.makedirs(os.path.dirname(fname))
-            with open(fname,"w") as handle:
-                json.dump(options,handle)
+                os.makedirs(os.path.dirname(fname))
+            with open(fname, "w") as handle:
+                json.dump(options, handle)
         except ImportError:
             print "Cannot import json. options not stored"
 
@@ -88,5 +90,5 @@ def call(problem_name, solver_name, inoptions):
     functional, error = solver.eval()
 
     # Save results
-    save_results(problem, solver, num_dofs, solver.cputime(), wct, functional,  error)
+    save_results(problem, solver, num_dofs, solver.cputime(), wct, functional, error)
 

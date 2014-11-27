@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from os import getpid
 from commands import getoutput
-from dolfin import *
 
+from dolfin import *
 
 
 class SolverBase:
@@ -43,31 +43,28 @@ class SolverBase:
         raise NotImplementedError
 
 
-
-
     def save(self, problem, t, u, p):
 
         frequency = self.options["save_frequency"]
-        if ((self._timestep - 1) % frequency == 0) or (self.options["save_solution_at_t=T"] and t>=problem.T):
+        if ((self._timestep - 1) % frequency == 0) or (self.options["save_solution_at_t=T"] and t >= problem.T):
 
-                if self.options["u_pvd"]:
-                    if self._ufile is None:
-                        self._ufile = File(self.options["u_pvd"])
-                    self._ufile << (u,t)
+            if self.options["u_pvd"]:
+                if self._ufile is None:
+                    self._ufile = File(self.options["u_pvd"])
+                self._ufile << (u, t)
 
-                if self.options["p_pvd"]:
-                    if self._pfile is None:
-                        self._pfile = File(self.options["p_pvd"])
-                    self._pfile << (p,t)
+            if self.options["p_pvd"]:
+                if self._pfile is None:
+                    self._pfile = File(self.options["p_pvd"])
+                self._pfile << (p, t)
 
-                if self.options["u_xml"]:
-                    file = File(self.options["u_xml"].format(t), "compressed")
-                    file << u.vector()
+            if self.options["u_xml"]:
+                file = File(self.options["u_xml"].format(t), "compressed")
+                file << u.vector()
 
-                if self.options["p_xml"]:
-                    file = File(self.options["p_xml"].format(t), "compressed")
-                    file << p.vector()
-
+            if self.options["p_xml"]:
+                file = File(self.options["p_xml"].format(t), "compressed")
+                file << p.vector()
 
 
     def update(self, problem, t, u, p):
@@ -142,6 +139,7 @@ def epsilon(u):
 def sigma(u, p, nu):
     """Return stress tensor."""
     return 2 * nu * epsilon(u) - p * Identity(u.cell().d)
+
 
 def is_periodic(bcs):
     "Check if boundary conditions are periodic."

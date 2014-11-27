@@ -151,7 +151,7 @@ class MeshBuilder():
 
         self._buildBoundaryFunction()
 
-        #increment refinementlevel
+        # increment refinementlevel
         self.refinelevel += 1
 
 
