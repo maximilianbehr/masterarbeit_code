@@ -7,7 +7,7 @@ from outputhandler import KarmanOutputHandler
 
 
 refalgs = ["bisection", "iterative_bisection", "recursive_bisection", "regular_cut"]
-refs = range(1, 6)
+refs = range(1, 8)
 
 if __name__ == "__main__":
 

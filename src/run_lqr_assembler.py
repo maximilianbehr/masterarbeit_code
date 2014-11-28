@@ -3,12 +3,10 @@ from src.outputhandler import ProblemSolverOutputHandler
 from src.outputhandler import LQRAssemblerOutputHandler
 from src.lqr.lqr_assembler import LQR_Assembler
 
-kohandler = KarmanOutputHandler()
-psohandler = ProblemSolverOutputHandler("karman", "stat_newton")
 
 OPTIONS = {
-    "ref": 2,
-    "RE": 100,
+    "ref": None,
+    "RE": None,
     "mesh": None,
     "boundaryfunction": None,
     "u_stat": None,
@@ -29,20 +27,9 @@ OPTIONS = {
 }
 
 
-# "mesh": kohandler.karman_mesh_xml(),
-# "boundaryfunction": kohandler.karman_boundary_xml(ref),
-# "u_stat": psohandler.u_xml(ref, RE),
-
-
-
-
-
-
-
 # karman
-instant_clean = False
 REs = [100, 200, 300, 400, 500]
-refinements = [1]
+refinements = [2]
 for RE in REs:
     for refinement in refinements:
         kohandler = KarmanOutputHandler()
@@ -66,6 +53,7 @@ for RE in REs:
         OPTIONS["B_mtx"] = lqrohandler.B_mtx(refinement, RE)
         OPTIONS["C_mtx"] = lqrohandler.C_mtx(refinement, RE)
         OPTIONS["mat"] = lqrohandler.mat(refinement, RE)
+        OPTIONS["options_json"] = lqrohandler.options_json(refinement, RE)
 
         lqrassembler = LQR_Assembler(OPTIONS)
         lqrassembler.unparameterized_lns_variational()
@@ -73,3 +61,4 @@ for RE in REs:
         lqrassembler.unparameterized_lns_npsc()
         lqrassembler.unparameterized_lns_mtx()
         lqrassembler.unparametrized_lns_mat()
+        lqrassembler.save_options()

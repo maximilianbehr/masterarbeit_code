@@ -250,5 +250,7 @@ class LQRAssemblerOutputHandler():
         return self._file(name, num, RE)
 
 
-
+    def options_json(self, num, RE):
+        name = "options.json"
+        return self._file(name, num, RE)
 

@@ -18,7 +18,7 @@ OPTIONS = {"mesh": 0,
            "krylov_solver_monitor_convergence": True,
            "form_compiler_optimize": True,
            "form_compiler_cpp_optimize": True,
-           "newton_solver_max_iterations": 20,
+           "newton_solver_max_iterations": 30,
            "newton_solver_absolute_tolerance": 1e-14,
            "newton_solver_relative_tolerance": 1e-14
 }
@@ -28,8 +28,8 @@ OPTIONS = {"mesh": 0,
 
 # karman
 instant_clean = False
-REs = [100, 200, 300, 400, 500]
-refinements = [1, 2, 3, 4]
+REs = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+refinements = [1, 2, 3, 4, 5, 6]
 problems = ["karman"]
 solvers = ["stat_newton"]
 for RE in REs:
@@ -53,4 +53,6 @@ for RE in REs:
                 try:
                     call(problem, solver, OPTIONS)
                 except:
-                    pass
+                    print "Solver Failed: Remove files"
+                    os.remove(OPTIONS["options_json"])
+

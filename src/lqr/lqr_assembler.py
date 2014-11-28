@@ -4,7 +4,7 @@ from scipy.sparse.csr import csr_matrix
 from scipy.sparse import lil_matrix
 from scipy.io import mmwrite
 from scipy.io import savemat
-
+import numpy as np
 from dolfin import *
 from src.problems.problem_mesh.karman import circle
 from src.problems.problem_mesh.karman import GammaBallCtrlLower
@@ -194,6 +194,17 @@ class LQR_Assembler():
         with open(self.options["mat"], "w") as handle:
             savemat(handle, self.npsc, do_compression=True)
 
+    def save_options(self):
+        try:
+            import json
+
+            fname = self.options["options_json"]
+            if not os.path.exists(os.path.dirname(fname)):
+                os.makedirs(os.path.dirname(fname))
+            with open(fname, "w") as handle:
+                json.dump(self.options, handle)
+        except ImportError:
+            print "Cannot import json. options not stored"
 
 
 
