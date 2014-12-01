@@ -9,6 +9,7 @@ from dolfin import *
 from src.problems.problem_mesh.karman import circle
 from src.problems.problem_mesh.karman import GammaBallCtrlLower
 from src.problems.problem_mesh.karman import GammaBallCtrlUpper
+import json
 
 
 
@@ -44,10 +45,10 @@ class LQR_Assembler():
             cols = m.size(1)
             return csr_matrix((vals, colptr, rowptr), (rows, cols))
         except:
-            raise ValueError(u'Implement _get_sparsedata for Matrix Datatype {0:s}'.format(type(m)))
+            raise ValueError(u"Implement _get_sparsedata for Matrix Datatype {0:s}".format(type(m)))
 
 
-    def unparameterized_lns_variational(self):
+    def lns_variational(self):
         # trial functions
         dudt = TrialFunction(self.V)
         u = TrialFunction(self.V)
@@ -62,21 +63,23 @@ class LQR_Assembler():
         self.var = {}
 
         self.var["M"] = inner(dudt, w_test) * dx
-        self.var["S"] = self.options["RE"] * inner(grad(u), grad(w_test)) * dx
-        self.var["Bupper"] = self.options["RE"] * inner(self.g, w_test) * ds(
-            GammaBallCtrlUpper.index)  #1/eps spaeter ran
-        self.var["Blower"] = self.options["RE"] * inner(self.g, w_test) * ds(
-            GammaBallCtrlLower.index)  #1/eps spaeter ran
-        self.var["Mupper"] = self.options["RE"] * inner(u, w_test) * ds(GammaBallCtrlUpper.index)  #1/eps spaeter ran
-        self.var["Mlower"] = self.options["RE"] * inner(u, w_test) * ds(GammaBallCtrlLower.index)  #1/eps spaeter ran
+        self.var["S"] = 1.0/self.options["RE"] * inner(grad(u), grad(w_test)) * dx
+        self.var["Bupper"] = 1.0/self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(self.g, w_test) * ds(
+            GammaBallCtrlUpper.index)
+        self.var["Blower"] = 1.0/self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(self.g, w_test) * ds(
+            GammaBallCtrlLower.index)
+        self.var["Mupper"] = 1.0/self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(u, w_test) * ds(
+            GammaBallCtrlUpper.index)
+        self.var["Mlower"] = 1.0/self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(u, w_test) * ds(
+            GammaBallCtrlLower.index)
         self.var["K"] = inner(grad(self.u_stat) * u, w_test) * dx
         self.var["R"] = inner(grad(u) * self.u_stat, w_test) * dx
         self.var["G"] = -1 * p * div(w_test) * dx
 
-        #nebenbedingung mit -1 multiplizieren
+        # nebenbedingung mit -1 multiplizieren
         self.var["Gt"] = -1 * div(u) * p_test * dx
 
-    def unparameterized_lns_petsc(self):
+    def lns_petsc(self):
 
         if not self.var:
             raise ValueError("Call unparameterized_lns_variational to initialize attribute var.")
@@ -90,10 +93,10 @@ class LQR_Assembler():
         for key, val in self.var.iteritems():
             self.petsc[key] = assemble(val)
 
-        #restore backend
+        # restore backend
         parameters["linear_algebra_backend"] = la_backend
 
-    def unparameterized_lns_ublas(self):
+    def lns_ublas(self):
         if not self.var:
             raise ValueError("Call unparameterized_lns_variational to initialize attribute var.")
 
@@ -106,10 +109,10 @@ class LQR_Assembler():
         for key, val in self.var.iteritems():
             self.ublas[key] = assemble(val)
 
-        #restore backend
+        # restore backend
         parameters["linear_algebra_backend"] = la_backend
 
-    def unparameterized_lns_npsc(self):
+    def lns_npsc(self):
         if not self.ublas:
             raise ValueError("Call unparameterized_lns_ublas( to initialize attribute ublas.")
 
@@ -141,7 +144,7 @@ class LQR_Assembler():
         self.npsc["C"] = C.todense()
 
 
-    def unparameterized_lns_mtx(self):
+    def save_lns_mtx(self):
 
         if not self.npsc:
             raise ValueError("Call unparameterized_lns_npsc to initialize attribute npsc.")
@@ -186,7 +189,7 @@ class LQR_Assembler():
             mmwrite(handle, self.npsc["C"])
 
 
-    def unparametrized_lns_mat(self):
+    def save_lns_mat(self):
 
         if not self.npsc:
             raise ValueError("Call unparameterized_lns_npsc to initialize attribute npsc.")
@@ -195,16 +198,11 @@ class LQR_Assembler():
             savemat(handle, self.npsc, do_compression=True)
 
     def save_options(self):
-        try:
-            import json
-
-            fname = self.options["options_json"]
-            if not os.path.exists(os.path.dirname(fname)):
-                os.makedirs(os.path.dirname(fname))
-            with open(fname, "w") as handle:
-                json.dump(self.options, handle)
-        except ImportError:
-            print "Cannot import json. options not stored"
+        fname = self.options["options_json"]
+        if not os.path.exists(os.path.dirname(fname)):
+            os.makedirs(os.path.dirname(fname))
+        with open(fname, "w") as handle:
+            json.dump(self.options, handle)
 
 
 

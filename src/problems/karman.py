@@ -25,14 +25,10 @@ class Problem(ProblemBase):
         self.f = Constant((0, 0))
 
         # choose U such that U*2*r=1 and then RE=1/nu
-        self.Umax = 1.0 / (2.0 * circle["r"])
+        self.Umax = 6.0 / (2.0 * circle["r"])
 
-        # Set viscosity (Re = 100)
+        # Set viscosity
         self.nu = 1.0 / options["RE"]
-
-
-    def RE(self):
-        return (self.U * 2.0 * circle["r"]) / self.nu
 
 
     def initial_conditions(self, V, Q):
@@ -43,7 +39,7 @@ class Problem(ProblemBase):
 
     def boundary_conditions(self, V, Q, t):
         # Create boundary condition
-        self.u_in = Expression(("U*(1-x[1])*x[1]*2*t", "0.0"), t=t, U=self.Umax)
+        self.u_in = Expression(("U*(1-x[1])*x[1]*t", "0.0"), t=t, U=self.Umax)
         # self.u_in = Expression(('4*(x[1]*(1-x[1]))*sin(t*pi/8.0)', '0.0'),t=t)
 
         self.u_inflow = DirichletBC(V, self.u_in, GammaLeft())
@@ -66,7 +62,7 @@ class Problem(ProblemBase):
 
     def stat_boundary_conditions(self, W):
         # Create boundary condition
-        u_in = Expression(("U*(1-x[1])*x[1]*2", "0"), U=self.Umax)
+        u_in = Expression(("U*(1-x[1])*x[1]", "0"), U=self.Umax)
         noslip_upper = DirichletBC(W.sub(0), (0, 0), GammaUpper())
         noslip_lower = DirichletBC(W.sub(0), (0, 0), GammaLower())
         noslip_ball = DirichletBC(W.sub(0), (0, 0), GammaBall())

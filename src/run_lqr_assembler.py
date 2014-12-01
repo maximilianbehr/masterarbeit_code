@@ -28,10 +28,11 @@ OPTIONS = {
 
 
 # karman
-REs = [100, 200, 300, 400, 500]
+REs = [1, 5, 10, 20, 50, 75, 100, 200, 300, 400, 500]
 refinements = [2]
 for RE in REs:
     for refinement in refinements:
+        print "LQR assembler refinement = {0:d} RE = {1:d}".format(refinement,RE)
         kohandler = KarmanOutputHandler()
         psohandler = ProblemSolverOutputHandler("karman", "stat_newton")
         lqrohandler = LQRAssemblerOutputHandler()
@@ -53,12 +54,12 @@ for RE in REs:
         OPTIONS["B_mtx"] = lqrohandler.B_mtx(refinement, RE)
         OPTIONS["C_mtx"] = lqrohandler.C_mtx(refinement, RE)
         OPTIONS["mat"] = lqrohandler.mat(refinement, RE)
-        OPTIONS["options_json"] = lqrohandler.options_json(refinement, RE)
+        OPTIONS["options_json"] = lqrohandler.options_json_assembler(refinement, RE)
 
         lqrassembler = LQR_Assembler(OPTIONS)
-        lqrassembler.unparameterized_lns_variational()
-        lqrassembler.unparameterized_lns_ublas()
-        lqrassembler.unparameterized_lns_npsc()
-        lqrassembler.unparameterized_lns_mtx()
-        lqrassembler.unparametrized_lns_mat()
+        lqrassembler.lns_variational()
+        lqrassembler.lns_ublas()
+        lqrassembler.lns_npsc()
+        lqrassembler.save_lns_mtx()
+        lqrassembler.save_lns_mat()
         lqrassembler.save_options()

@@ -1,8 +1,8 @@
 import os
 
-from outputhandler import KarmanOutputHandler, ProblemSolverOutputHandler
+from outputhandler import KarmanOutputHandler
+from outputhandler import ProblemSolverOutputHandler
 from call_solver import call
-from dolfin import parameters
 
 
 OPTIONS = {"mesh": None,
@@ -33,12 +33,11 @@ OPTIONS = {"mesh": None,
 
 
 # karman
-parameters["refinement_algorithm"] = "bisection"
 instant_clean = False
-REs = [100]
-refinements = [4]
+REs = [100,200,300,400,500,600,700]
+refinements = [1,2,3,4,4,5]
 problems = ["karman"]
-solvers = ["chorin", "css1", "css2", "ipcs", "stat_newton"]
+solvers = ["chorin", "ipcs"]
 for RE in REs:
     for refinement in refinements:
         for problem in problems:

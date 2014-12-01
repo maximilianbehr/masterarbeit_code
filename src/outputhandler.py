@@ -227,7 +227,6 @@ class LQRAssemblerOutputHandler():
         name = "Gt.mtx"
         return self._file(name, num, RE)
 
-
     def Blower_mtx(self, num, RE):
         name = "B_lower.mtx"
         return self._file(name, num, RE)
@@ -244,13 +243,26 @@ class LQRAssemblerOutputHandler():
         name = "C.mtx"
         return self._file(name, num, RE)
 
-
     def mat(self, num, RE):
         name = "lns.mat"
         return self._file(name, num, RE)
 
-
-    def options_json(self, num, RE):
-        name = "options.json"
+    def options_json_assembler(self, num, RE):
+        name = "options_assembler.json"
         return self._file(name, num, RE)
+
+    def options_json_solver(self, num, RE):
+        name = "options_solver.json"
+        return self._file(name, num, RE)
+
+    def Z_mtx(self, num, RE):
+        name = "Z.mtx"
+        return self._file(name, num, RE)
+
+    def res2_txt(self, num, RE):
+        name = "lqr_res2.txt"
+        return self._file(name,num, RE)
+
+
+
 
