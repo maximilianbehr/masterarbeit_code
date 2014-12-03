@@ -1,5 +1,9 @@
 from src.outputhandler import LQRAssemblerOutputHandler
 from src.lqr.lqr_solver import LQR_Solver
+from src.aux import gettime
+from src.aux import TeeHandler
+from src.aux import deletedir
+
 
 
 OPTIONS = {
@@ -21,7 +25,8 @@ OPTIONS = {
     "nm.output": 1,
     "nm.res2_tol": 1e-9,
     "res2_txt": None,
-    "options_json":None
+    "options_json":None,
+    "logfile": None
 }
 
 
@@ -29,29 +34,45 @@ REs = [1, 5, 10, 20, 50, 75, 100, 200, 300, 400, 500]
 refinements = [2]
 for RE in REs:
     for refinement in refinements:
-        print "LQR solver refinement = {0:d} RE = {1:d}".format(refinement, RE)
-        lqrohandler = LQRAssemblerOutputHandler()
+
+        lqrohandler = LQRAssemblerOutputHandler(refinement, RE)
         OPTIONS["ref"] = refinement
         OPTIONS["RE"] = RE
-        OPTIONS["M_mtx"] = lqrohandler.M_mtx(refinement, RE)
-        OPTIONS["S_mtx"] = lqrohandler.S_mtx(refinement, RE)
-        OPTIONS["Mlower_mtx"] = lqrohandler.Mlower_mtx(refinement, RE)
-        OPTIONS["Mupper_mtx"] = lqrohandler.Mupper_mtx(refinement, RE)
-        OPTIONS["K_mtx"] = lqrohandler.K_mtx(refinement, RE)
-        OPTIONS["R_mtx"] = lqrohandler.R_mtx(refinement, RE)
-        OPTIONS["G_mtx"] = lqrohandler.G_mtx(refinement, RE)
-        OPTIONS["Gt_mtx"] = lqrohandler.Gt_mtx(refinement, RE)
-        OPTIONS["B_mtx"] = lqrohandler.B_mtx(refinement, RE)
-        OPTIONS["C_mtx"] = lqrohandler.C_mtx(refinement, RE)
-        OPTIONS["Z_mtx"] = lqrohandler.Z_mtx(refinement, RE)
-        OPTIONS["options_json"] = lqrohandler.options_json_solver(refinement, RE)
-        OPTIONS["res2_txt"] = lqrohandler.res2_txt(refinement, RE)
+        OPTIONS["M_mtx"] = lqrohandler.M_mtx()
+        OPTIONS["S_mtx"] = lqrohandler.S_mtx()
+        OPTIONS["Mlower_mtx"] = lqrohandler.Mlower_mtx()
+        OPTIONS["Mupper_mtx"] = lqrohandler.Mupper_mtx()
+        OPTIONS["K_mtx"] = lqrohandler.K_mtx()
+        OPTIONS["R_mtx"] = lqrohandler.R_mtx()
+        OPTIONS["G_mtx"] = lqrohandler.G_mtx()
+        OPTIONS["Gt_mtx"] = lqrohandler.Gt_mtx()
+        OPTIONS["B_mtx"] = lqrohandler.B_mtx()
+        OPTIONS["C_mtx"] = lqrohandler.C_mtx()
+        OPTIONS["Z_mtx"] = lqrohandler.Z_mtx()
+        OPTIONS["options_json"] = lqrohandler.options_json_solver()
+        OPTIONS["res2_txt"] = lqrohandler.res2_txt()
+        OPTIONS["logfile"] = lqrohandler.log_solver()
 
-        print "Setup pycmess equation"
-        lqrsolver = LQR_Solver(OPTIONS)
-        print "Setup pycmess options"
-        lqrsolver.setup_nm_adi_options()
-        print "Solve"
-        lqrsolver.solve()
-        print "Save Results"
-        lqrsolver.save()
+        th = TeeHandler(OPTIONS["logfile"])
+        th.start()
+
+        try:
+            print "{0:s}: Setup pycmess equation".format(gettime())
+            lqrsolver = LQR_Solver(OPTIONS)
+
+            print "{0:s}: Setup pycmess options".format(gettime())
+            lqrsolver.setup_nm_adi_options()
+
+            print "{0:s}: Solve".format(gettime())
+            lqrsolver.solve()
+
+            print "{0:s}: Save Results".format(gettime())
+            lqrsolver.save()
+
+            th.stop()
+
+        except Exception, e:
+            print e
+            print "Solver Failed"
+            th.stop()
+

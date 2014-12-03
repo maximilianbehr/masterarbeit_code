@@ -11,7 +11,12 @@ extharddrivemac = "/Volumes/UNTITLED/"
 
 
 class KarmanOutputHandler():
-    def karman_outputdir(self):
+
+    def __init__(self):
+        self.outputdir = self._karman_outputdir()
+
+
+    def _karman_outputdir(self):
         """return outputdir depending on pc name and existence of external harddrive
         for karman meshes and boundary functions
         """
@@ -45,10 +50,9 @@ class KarmanOutputHandler():
 
 
     def _karman_file(self, name, num):
-        outputdir = self.karman_outputdir()
         if num:
-            return os.path.join(outputdir, "ref_%s" % num, name)
-        return os.path.join(outputdir, "macro", name)
+            return os.path.join(self.outputdir, "ref_%s" % num, name)
+        return os.path.join(self.outputdir, "macro", name)
 
     def karman_mesh_xml(self, num):
         name = "mesh.xml.gz"
@@ -86,16 +90,21 @@ class KarmanOutputHandler():
 
 
 class ProblemSolverOutputHandler():
-    def __init__(self, problemname, solvername):
+    def __init__(self, problemname, solvername, num, RE):
+        assert(num >=0)
+        self.num = num
+        self.RE = RE
         self.problemname = problemname
         self.solvername = solvername
+        self.outputdir = self._outputdir()
 
-    def outputdir(self):
+    def _outputdir(self):
         """return outputlocation depending on pc name and existence of external
         for a specific problem and solver"""
 
         refinementalg = parameters["refinement_algorithm"]
-        dirname = os.path.join("results", __version__, self.problemname, self.solvername, refinementalg)
+        dirname = os.path.join("results", __version__, self.problemname, self.solvername, refinementalg,\
+                               "ref_{0:d}".format(self.num), "RE_{0:d}".format(self.RE))
 
         hostname = socket.gethostname()
         if hostname == "pc747":
@@ -122,48 +131,59 @@ class ProblemSolverOutputHandler():
             raise NotImplementedError("Output Path for %s not implemented" % hostname)
 
 
-    def _file(self, name, num, RE):
-        assert (num > 0)
-        outputdir = self.outputdir()
-        return os.path.join(outputdir, "ref_%s" % num, "RE_{0}".format(RE), name)
 
-    def u_xml(self, num, RE):
+    def _file(self, name,):
+        return os.path.join(self.outputdir, name)
+
+    def u_xml(self):
         name = "u.xml"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def u_t_xml(self, num, RE):
+    def u_t_xml(self):
         name = "u_{0:1.2e}.xml"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def p_xml(self, num, RE):
+    def p_xml(self):
         name = "p.xml"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def p_t_xml(self, num, RE):
-        name = "u_{0:1.2e}.xml"
-        return self._file(name, num, RE)
+    def p_t_xml(self):
+        name = "p_{0:1.2e}.xml"
+        return self._file(name)
 
-    def u_pvd(self, num, RE):
+    def u_pvd(self):
         name = "u.pvd"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def p_pvd(self, num, RE):
+    def p_pvd(self):
         name = "p.pvd"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def options_json(self, num, RE):
+    def options_json(self):
         name = "options.json"
-        return self._file(name, num, RE)
+        return self._file(name)
+
+    def log(self):
+        name = "log.log"
+        return self._file(name)
 
 
 class LQRAssemblerOutputHandler():
-    def outputdir(self):
+
+    def __init__(self,num, RE):
+        assert (num > 0)
+        self.num = num
+        self.RE = RE
+        self.outputdir = self._outputdir()
+
+    def _outputdir(self):
         """return outputdir depending on pc name and existence of external harddrive
         for karman meshes and boundary functions
         """
         refinementalg = parameters["refinement_algorithm"]
 
-        dirname = os.path.join("results", __version__, "karman", "lqr_assemble", refinementalg)
+        dirname = os.path.join("results", __version__, "karman", "lqr_assemble", \
+                               refinementalg, "ref_{0:d}".format(self.num), "RE_{0:d}".format(self.RE))
 
         hostname = socket.gethostname()
         if hostname == "pc747":
@@ -190,78 +210,84 @@ class LQRAssemblerOutputHandler():
             raise NotImplementedError("Output Path for %s not implemented" % hostname)
 
 
-    def _file(self, name, num, RE):
-        assert (num > 0)
-        outputdir = self.outputdir()
-        return os.path.join(outputdir, "ref_%s" % num, "RE_{0}".format(RE), name)
+    def _file(self, name):
+        return os.path.join(self.outputdir,  name)
 
-    def M_mtx(self, num, RE):
+    def M_mtx(self):
         name = "M.mtx"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def S_mtx(self, num, RE):
+    def S_mtx(self):
         name = "S.mtx"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def Mlower_mtx(self, num, RE):
+    def Mlower_mtx(self):
         name = "M_lower.mtx"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def Mupper_mtx(self, num, RE):
+    def Mupper_mtx(self):
         name = "M_upper.mtx"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def K_mtx(self, num, RE):
+    def K_mtx(self):
         name = "K.mtx"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def R_mtx(self, num, RE):
+    def R_mtx(self):
         name = "R.mtx"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def G_mtx(self, num, RE):
+    def G_mtx(self):
         name = "G.mtx"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def Gt_mtx(self, num, RE):
+    def Gt_mtx(self):
         name = "Gt.mtx"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def Blower_mtx(self, num, RE):
+    def Blower_mtx(self):
         name = "B_lower.mtx"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def Bupper_mtx(self, num, RE):
+    def Bupper_mtx(self):
         name = "B_upper.mtx"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def B_mtx(self, num, RE):
+    def B_mtx(self):
         name = "B.mtx"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def C_mtx(self, num, RE):
+    def C_mtx(self):
         name = "C.mtx"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def mat(self, num, RE):
+    def mat(self):
         name = "lns.mat"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def options_json_assembler(self, num, RE):
+    def options_json_assembler(self):
         name = "options_assembler.json"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def options_json_solver(self, num, RE):
+    def options_json_solver(self):
         name = "options_solver.json"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def Z_mtx(self, num, RE):
+    def log_assembler(self):
+        name = "log_assembler.log"
+        return self._file(name)
+
+    def log_solver(self):
+        name = "log_solver.log"
+        return self._file(name)
+
+    def Z_mtx(self):
         name = "Z.mtx"
-        return self._file(name, num, RE)
+        return self._file(name)
 
-    def res2_txt(self, num, RE):
+    def res2_txt(self):
         name = "lqr_res2.txt"
-        return self._file(name,num, RE)
+        return self._file(name)
 
 
 

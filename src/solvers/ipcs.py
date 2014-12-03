@@ -12,10 +12,6 @@ class Solver(SolverBase):
 
     def solve(self, problem):
 
-        if str(problem) == "Aneurysm":
-            pc = "jacobi"
-        else:
-            pc = "ilu"
 
         # Get problem parameters
         mesh = problem.mesh
@@ -94,13 +90,14 @@ class Solver(SolverBase):
             if is_periodic(bcp):
                 solve(A2, p1.vector(), b)
             else:
+                #solve(A2, p1.vector(), b, 'gmres', prec)
                 solve(A2, p1.vector(), b, 'gmres', prec)
             if len(bcp) == 0 or is_periodic(bcp): normalize(p1.vector())
 
             # Velocity correction
             b = assemble(L3)
             [bc.apply(A3, b) for bc in bcu]
-            solve(A3, u1.vector(), b, "gmres", pc)
+            solve(A3, u1.vector(), b, "gmres", prec)
 
             # Update
             self.update(problem, t, u1, p1)

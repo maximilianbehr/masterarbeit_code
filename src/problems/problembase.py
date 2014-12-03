@@ -126,6 +126,6 @@ class ProblemBase:
         return dt, t_range[0], t_range
 
     # FIXME: Remove this and merge with boundary_condition()
-    def pressure_bc(self, Q):
-        return Constant(0)
+    #def pressure_bc(self, Q):
+    #    return Constant(0)
 

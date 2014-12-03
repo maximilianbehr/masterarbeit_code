@@ -42,6 +42,7 @@ def call(problem_name, solver_name, inoptions):
     options = inoptions.copy()
 
 
+
     # Set global DOLFIN parameters
     parameters["form_compiler"]["optimize"] = options["form_compiler_optimize"]
     parameters["form_compiler"]["cpp_optimize"] = options["form_compiler_cpp_optimize"]

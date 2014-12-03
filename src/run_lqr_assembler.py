@@ -2,6 +2,9 @@ from src.outputhandler import KarmanOutputHandler
 from src.outputhandler import ProblemSolverOutputHandler
 from src.outputhandler import LQRAssemblerOutputHandler
 from src.lqr.lqr_assembler import LQR_Assembler
+from src.aux import gettime
+from src.aux import TeeHandler
+from src.aux import deletedir
 
 
 OPTIONS = {
@@ -23,7 +26,9 @@ OPTIONS = {
     "Bupper_mtx": None,
     "B_mtx": None,
     "C_mtx": None,
-    "mat": None
+    "mat": None,
+    "options_json": None,
+    "logfile": None
 }
 
 
@@ -32,34 +37,64 @@ REs = [1, 5, 10, 20, 50, 75, 100, 200, 300, 400, 500]
 refinements = [2]
 for RE in REs:
     for refinement in refinements:
-        print "LQR assembler refinement = {0:d} RE = {1:d}".format(refinement,RE)
+
         kohandler = KarmanOutputHandler()
-        psohandler = ProblemSolverOutputHandler("karman", "stat_newton")
-        lqrohandler = LQRAssemblerOutputHandler()
+        psohandler = ProblemSolverOutputHandler("karman", "stat_newton",refinement,RE)
+        lqrohandler = LQRAssemblerOutputHandler(refinement, RE)
         OPTIONS["ref"] = refinement
         OPTIONS["RE"] = RE
         OPTIONS["mesh"] = kohandler.karman_mesh_xml(refinement)
         OPTIONS["boundaryfunction"] = kohandler.karman_boundary_xml(refinement)
-        OPTIONS["u_stat"] = psohandler.u_xml(refinement, RE)
-        OPTIONS["M_mtx"] = lqrohandler.M_mtx(refinement, RE)
-        OPTIONS["S_mtx"] = lqrohandler.S_mtx(refinement, RE)
-        OPTIONS["Mlower_mtx"] = lqrohandler.Mlower_mtx(refinement, RE)
-        OPTIONS["Mupper_mtx"] = lqrohandler.Mupper_mtx(refinement, RE)
-        OPTIONS["K_mtx"] = lqrohandler.K_mtx(refinement, RE)
-        OPTIONS["R_mtx"] = lqrohandler.R_mtx(refinement, RE)
-        OPTIONS["G_mtx"] = lqrohandler.G_mtx(refinement, RE)
-        OPTIONS["Gt_mtx"] = lqrohandler.Gt_mtx(refinement, RE)
-        OPTIONS["Blower_mtx"] = lqrohandler.Blower_mtx(refinement, RE)
-        OPTIONS["Bupper_mtx"] = lqrohandler.Bupper_mtx(refinement, RE)
-        OPTIONS["B_mtx"] = lqrohandler.B_mtx(refinement, RE)
-        OPTIONS["C_mtx"] = lqrohandler.C_mtx(refinement, RE)
-        OPTIONS["mat"] = lqrohandler.mat(refinement, RE)
-        OPTIONS["options_json"] = lqrohandler.options_json_assembler(refinement, RE)
+        OPTIONS["u_stat"] = psohandler.u_xml()
+        OPTIONS["M_mtx"] = lqrohandler.M_mtx()
+        OPTIONS["S_mtx"] = lqrohandler.S_mtx()
+        OPTIONS["Mlower_mtx"] = lqrohandler.Mlower_mtx()
+        OPTIONS["Mupper_mtx"] = lqrohandler.Mupper_mtx()
+        OPTIONS["K_mtx"] = lqrohandler.K_mtx()
+        OPTIONS["R_mtx"] = lqrohandler.R_mtx()
+        OPTIONS["G_mtx"] = lqrohandler.G_mtx()
+        OPTIONS["Gt_mtx"] = lqrohandler.Gt_mtx()
+        OPTIONS["Blower_mtx"] = lqrohandler.Blower_mtx()
+        OPTIONS["Bupper_mtx"] = lqrohandler.Bupper_mtx()
+        OPTIONS["B_mtx"] = lqrohandler.B_mtx()
+        OPTIONS["C_mtx"] = lqrohandler.C_mtx()
+        OPTIONS["mat"] = lqrohandler.mat()
+        OPTIONS["options_json"] = lqrohandler.options_json_assembler()
+        OPTIONS["logfile"] = lqrohandler.log_assembler()
 
-        lqrassembler = LQR_Assembler(OPTIONS)
-        lqrassembler.lns_variational()
-        lqrassembler.lns_ublas()
-        lqrassembler.lns_npsc()
-        lqrassembler.save_lns_mtx()
-        lqrassembler.save_lns_mat()
-        lqrassembler.save_options()
+
+
+        th = TeeHandler(OPTIONS["logfile"])
+        th.start()
+        try:
+            print "{0:s}: LQR assembler refinement={1:d} RE={2:d}".format(gettime(), refinement, RE)
+            lqrassembler = LQR_Assembler(OPTIONS)
+
+            print "{0:s}: Build Variational Formulation".format(gettime())
+            lqrassembler.lns_variational()
+
+            print "{0:s}: Assemble uBLAS".format(gettime())
+            lqrassembler.lns_ublas()
+
+            print "{0:s}: Assemble NPSC".format(gettime())
+            lqrassembler.lns_npsc()
+
+            print "{0:s}: Save as mtx".format(gettime())
+            lqrassembler.save_lns_mtx()
+
+            print "{0:s}: Save as mat".format(gettime())
+            lqrassembler.save_lns_mat()
+
+            print "{0:s}: Save options".format(gettime())
+            lqrassembler.save_options()
+
+            th.stop()
+
+        except Exception, e:
+            print e
+            th.stop()
+            print "Assembler Failed: Remove files and Directory"
+            deletedir(lqrohandler.outputdir)
+
+
+

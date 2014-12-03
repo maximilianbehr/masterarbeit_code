@@ -33,10 +33,9 @@ OPTIONS = {"refinement_level": None,
 
 
 # karman
-parameters["refinement_algorithm"] = "bisection"
 instant_clean = False
 REs = [100]
-refinements = [4]
+refinements = [1,2,3]
 problems = ["beltrami"]
 solvers = ["chorin", "css1", "css2", "ipcs"]
 for RE in REs:
@@ -44,16 +43,16 @@ for RE in REs:
         for problem in problems:
             for solver in solvers:
                 kohandler = KarmanOutputHandler()
-                psohandler = ProblemSolverOutputHandler(problem, solver)
+                psohandler = ProblemSolverOutputHandler(problem, solver,refinement, RE)
 
                 OPTIONS["refinement_level"] = refinement
-                OPTIONS["u_pvd"] = psohandler.u_pvd(refinement, RE)
-                OPTIONS["p_pvd"] = psohandler.p_pvd(refinement, RE)
-                OPTIONS["u_xml"] = psohandler.u_xml(refinement, RE)
-                OPTIONS["p_xml"] = psohandler.p_xml(refinement, RE)
-                OPTIONS["u_t_xml"] = psohandler.u_t_xml(refinement, RE)
-                OPTIONS["p_t_xml"] = psohandler.p_t_xml(refinement, RE)
-                OPTIONS["options_json"] = psohandler.options_json(refinement, RE)
+                OPTIONS["u_pvd"] = psohandler.u_pvd()
+                OPTIONS["p_pvd"] = psohandler.p_pvd()
+                OPTIONS["u_xml"] = psohandler.u_xml()
+                OPTIONS["p_xml"] = psohandler.p_xml()
+                OPTIONS["u_t_xml"] = psohandler.u_t_xml()
+                OPTIONS["p_t_xml"] = psohandler.p_t_xml()
+                OPTIONS["options_json"] = psohandler.options_json()
 
                 if instant_clean:
                     os.system("instant-clean")
