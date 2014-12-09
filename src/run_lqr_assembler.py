@@ -5,7 +5,12 @@ from src.lqr.lqr_assembler import LQR_Assembler
 from src.aux import gettime
 from src.aux import TeeHandler
 from src.aux import deletedir
+import traceback
 
+from dolfin import parameters
+
+# set dof reordering off
+parameters["reorder_dofs_serial"] = False
 
 OPTIONS = {
     "ref": None,
@@ -39,7 +44,7 @@ for RE in REs:
     for refinement in refinements:
 
         kohandler = KarmanOutputHandler()
-        psohandler = ProblemSolverOutputHandler("karman", "stat_newton",refinement,RE)
+        psohandler = ProblemSolverOutputHandler("karman", "stat_newton", refinement, RE)
         lqrohandler = LQRAssemblerOutputHandler(refinement, RE)
         OPTIONS["ref"] = refinement
         OPTIONS["RE"] = RE
@@ -61,8 +66,6 @@ for RE in REs:
         OPTIONS["mat"] = lqrohandler.mat()
         OPTIONS["options_json"] = lqrohandler.options_json_assembler()
         OPTIONS["logfile"] = lqrohandler.log_assembler()
-
-
 
         th = TeeHandler(OPTIONS["logfile"])
         th.start()
@@ -91,7 +94,7 @@ for RE in REs:
             th.stop()
 
         except Exception, e:
-            print e
+            traceback.print_exc()
             th.stop()
             print "Assembler Failed: Remove files and Directory"
             deletedir(lqrohandler.outputdir)

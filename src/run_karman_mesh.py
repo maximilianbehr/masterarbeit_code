@@ -5,10 +5,13 @@ from dolfin.cpp.common import info
 from problems.problem_mesh.karman import MeshBuilder
 from outputhandler import KarmanOutputHandler
 
+# set dof reordering off
+parameters["reorder_dofs_serial"] = False
 
+# refalgs = ["bisection", "iterative_bisection", "recursive_bisection", "regular_cut"]
+refalgs = ["recursive_bisection"]
 
-refalgs = ["bisection", "iterative_bisection", "recursive_bisection", "regular_cut"]
-refs = range(1, 8)
+refs = range(1, 7)
 
 if __name__ == "__main__":
 
@@ -40,6 +43,5 @@ if __name__ == "__main__":
             kohandler.karman_save_boundaryfunction(meshbuilder)
 
         end()
-
 
 

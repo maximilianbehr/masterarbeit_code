@@ -9,10 +9,7 @@ import os
 import json
 
 
-
 class LQR_Solver():
-
-
     def __init__(self, argoptions):
         self.options = None
         self.opt = None
@@ -22,7 +19,7 @@ class LQR_Solver():
 
         self.options = argoptions.copy()
 
-        #read data
+        # read data
         M = mmread(self.options["M_mtx"])
         S = mmread(self.options["S_mtx"])
         Mlower = mmread(self.options["Mlower_mtx"])
@@ -37,14 +34,13 @@ class LQR_Solver():
         #setup equation
         self.eqn = equation_dae2()
         self.eqn.M = M
-        self.eqn.A = -S-Mlower-Mupper-K-R
+        self.eqn.A = -S - Mlower - Mupper - K - R
         self.eqn.G = -G
         self.eqn.B = B
         self.eqn.C = C
         self.eqn.delta = self.options["dae2_delta"]
 
     def setup_nm_adi_options(self):
-
         # setup nm and adi options
         self.opt = options()
         self.opt.adi.output = self.options["adi.output"]
@@ -56,14 +52,14 @@ class LQR_Solver():
         result = lrnm(self.eqn, self.opt)
         self.Z = result[0]
         self.res2 = result[1]
-        #self.iter = result[2]
+        # self.iter = result[2]
 
 
     def save(self):
         with open(self.options["Z_mtx"], "w") as handle:
             mmwrite(handle, self.Z)
 
-        savetxt(self.options["res2_txt"],self.res2)
+        savetxt(self.options["res2_txt"], self.res2)
 
         fname = self.options["options_json"]
         if not os.path.exists(os.path.dirname(fname)):

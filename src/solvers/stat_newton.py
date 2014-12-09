@@ -66,8 +66,6 @@ class Solver(SolverBase):
         if self.options["compute_divergence"]:
             check_divergence(u, p.function_space())
 
-
-
         return u, p
 
 

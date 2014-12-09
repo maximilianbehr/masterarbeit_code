@@ -35,7 +35,7 @@ OPTIONS = {"refinement_level": None,
 # karman
 instant_clean = False
 REs = [100]
-refinements = [1,2,3]
+refinements = [1, 2, 3]
 problems = ["beltrami"]
 solvers = ["chorin", "css1", "css2", "ipcs"]
 for RE in REs:
@@ -43,7 +43,7 @@ for RE in REs:
         for problem in problems:
             for solver in solvers:
                 kohandler = KarmanOutputHandler()
-                psohandler = ProblemSolverOutputHandler(problem, solver,refinement, RE)
+                psohandler = ProblemSolverOutputHandler(problem, solver, refinement, RE)
 
                 OPTIONS["refinement_level"] = refinement
                 OPTIONS["u_pvd"] = psohandler.u_pvd()

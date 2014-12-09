@@ -1,28 +1,39 @@
 from dolfin import *
+from scipy.sparse import csr_matrix
 
 
-
-# parameters["reorder_dofs_serial"]=False
-
-
-
-mesh = UnitSquareMesh(10, 10)
-
-
-class Observer(SubDomain):
-    """Left Boundary"""
-
-    def inside(self, x, on_boundary):
-        return between(x[0], (1. / 4, 3. / 4))
+def tocsr(m):
+    rowptr, colptr, vals = m.data()
+    rows = m.size(0)
+    cols = m.size(1)
+    return csr_matrix((vals, colptr, rowptr), (rows, cols))
 
 
-ob = Observer()
-submesh = SubMesh(mesh, ob)
+parameters["linear_algebra_backend"] = "uBLAS"
 
-indices_cells_in_observer = submesh.data().array("parent_cell_indices", 2)
+mesh = Mesh('/Users/daniels/PycharmProjects/master/data/1.3.0+/karman/recursive_bisection/macro/mesh.xml.gz')
 
+# dof reordering off
+parameters["reorder_dofs_serial"] = False
 V = VectorFunctionSpace(mesh, "CG", 2)
+Q = FunctionSpace(mesh, "CG", 1)
+q = TestFunction(Q)
+p = TrialFunction(Q)
+Qd = Q.dofmap()
+M_var = inner(p, q) * dx
+M = assemble(M_var)
+M_csr = tocsr(M)
 
-for i in indices_cells_in_observer:
-    print V.sub(0).dofmap().cell_dofs(i), V.sub(1).dofmap().cell_dofs(i), V.dofmap().cell_dofs(i)
+
+# dof reordering on
+
+parameters["reorder_dofs_serial"] = True
+V2 = VectorFunctionSpace(mesh, "CG", 2)
+Q2 = FunctionSpace(mesh, "CG", 1)
+q2 = TestFunction(Q2)
+p2 = TrialFunction(Q2)
+Qd2 = Q2.dofmap()
+M2_var = inner(p2, q2) * dx
+M2 = assemble(M2_var)
+M2_csr = tocsr(M2)
 

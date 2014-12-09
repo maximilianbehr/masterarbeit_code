@@ -31,7 +31,7 @@ class Problem(ProblemBase):
         # Set viscosity
         self.nu = 1.0 / options["RE"]
 
-        self.T = options.get("T",None)
+        self.T = options.get("T", None)
 
 
     def initial_conditions(self, V, Q):
@@ -42,11 +42,11 @@ class Problem(ProblemBase):
 
     def boundary_conditions(self, V, Q, t):
         # Create boundary condition
-        if t <0.5:
+        if t < 0.5:
             self.u_in = Expression(("U*(1-x[1])*x[1]*t*2", "0.0"), t=t, U=self.Umax)
         else:
             self.u_in = Expression(("U*(1-x[1])*x[1]", "0.0"), U=self.Umax)
-        #self.u_in = Expression(('4*(x[1]*(1-x[1]))*sin(t*pi/8.0)', '0.0'),t=t)
+        # self.u_in = Expression(('4*(x[1]*(1-x[1]))*sin(t*pi/8.0)', '0.0'),t=t)
 
         self.u_inflow = DirichletBC(V, self.u_in, GammaLeft())
         self.u_noslip = Constant((0, 0))
@@ -62,7 +62,7 @@ class Problem(ProblemBase):
         #self.p_out = Constant(0)
         #self.p_right = DirichletBC(Q, self.p_out, GammaRight())
         #bcp = [self.p_right]
-        #bcp = []
+        bcp = []
 
         return bcu, bcp
 

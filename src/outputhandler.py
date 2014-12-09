@@ -11,7 +11,6 @@ extharddrivemac = "/Volumes/UNTITLED/"
 
 
 class KarmanOutputHandler():
-
     def __init__(self):
         self.outputdir = self._karman_outputdir()
 
@@ -91,7 +90,7 @@ class KarmanOutputHandler():
 
 class ProblemSolverOutputHandler():
     def __init__(self, problemname, solvername, num, RE):
-        assert(num >=0)
+        assert (num >= 0)
         self.num = num
         self.RE = RE
         self.problemname = problemname
@@ -103,7 +102,7 @@ class ProblemSolverOutputHandler():
         for a specific problem and solver"""
 
         refinementalg = parameters["refinement_algorithm"]
-        dirname = os.path.join("results", __version__, self.problemname, self.solvername, refinementalg,\
+        dirname = os.path.join("results", __version__, self.problemname, self.solvername, refinementalg, \
                                "ref_{0:d}".format(self.num), "RE_{0:d}".format(self.RE))
 
         hostname = socket.gethostname()
@@ -131,8 +130,7 @@ class ProblemSolverOutputHandler():
             raise NotImplementedError("Output Path for %s not implemented" % hostname)
 
 
-
-    def _file(self, name,):
+    def _file(self, name, ):
         return os.path.join(self.outputdir, name)
 
     def u_xml(self):
@@ -169,8 +167,7 @@ class ProblemSolverOutputHandler():
 
 
 class LQRAssemblerOutputHandler():
-
-    def __init__(self,num, RE):
+    def __init__(self, num, RE):
         assert (num > 0)
         self.num = num
         self.RE = RE
@@ -211,7 +208,7 @@ class LQRAssemblerOutputHandler():
 
 
     def _file(self, name):
-        return os.path.join(self.outputdir,  name)
+        return os.path.join(self.outputdir, name)
 
     def M_mtx(self):
         name = "M.mtx"
@@ -288,6 +285,56 @@ class LQRAssemblerOutputHandler():
     def res2_txt(self):
         name = "lqr_res2.txt"
         return self._file(name)
+
+    def M_PETSC(self):
+        name = "M.PETSC"
+        return self._file(name)
+
+    def S_PETSC(self):
+        name = "S.PETSC"
+        return self._file(name)
+
+    def Mlower_PETSC(self):
+        name = "M_lower.PETSC"
+        return self._file(name)
+
+    def Mupper_PETSC(self):
+        name = "M_upper.PETSC"
+        return self._file(name)
+
+    def K_PETSC(self):
+        name = "K.PETSC"
+        return self._file(name)
+
+    def R_PETSC(self):
+        name = "R.PETSC"
+        return self._file(name)
+
+    def G_PETSC(self):
+        name = "G.PETSC"
+        return self._file(name)
+
+    def Gt_PETSC(self):
+        name = "Gt.PETSC"
+        return self._file(name)
+
+    def Blower_PETSC(self):
+        name = "B_lower.PETSC"
+        return self._file(name)
+
+    def Bupper_PETSC(self):
+        name = "B_upper.PETSC"
+        return self._file(name)
+
+    def B_PETSC(self):
+        name = "B.PETSC"
+        return self._file(name)
+
+    def C_PETSC(self):
+        name = "C.PETSC"
+        return self._file(name)
+
+
 
 
 

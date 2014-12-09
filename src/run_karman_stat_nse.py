@@ -6,8 +6,10 @@ from outputhandler import ProblemSolverOutputHandler
 from src.aux import gettime
 from src.aux import TeeHandler
 from src.aux import deletedir
+from dolfin import parameters
 
-
+# set dof reordering off
+parameters["reorder_dofs_serial"] = False
 
 OPTIONS = {"mesh": None,
            "RE": None,
@@ -17,10 +19,10 @@ OPTIONS = {"mesh": None,
            "p_xml": None,
            "options_json": None,
            "logfile": None,
-           "debug": True,
+           "debug": False,
            "krylov_solver_absolute_tolerance": 1e-25,
            "krylov_solver_relative_tolerance": 1e-14,
-           "krylov_solver_monitor_convergence": True,
+           "krylov_solver_monitor_convergence": False,
            "form_compiler_optimize": True,
            "form_compiler_cpp_optimize": True,
            "newton_solver_max_iterations": 40,
@@ -29,14 +31,12 @@ OPTIONS = {"mesh": None,
            "compute_divergence": True
 }
 
-
-
 # karman
 instant_clean = False
-#REs = [1, 5, 10, 20, 50, 75, 100, 200, 300, 400, 500]
-REs = [1, 5, 10, 20, 50]
-#refinements = [1, 2, 3, 4]
-refinements = [1]
+REs = [1, 5, 10, 20, 50, 75, 100, 200, 300, 400, 500, 600, 700, 750]
+# REs = [1, 5, 10, 20, 50]
+refinements = [1, 2, 3, 4]
+#refinements = [1]
 
 problem = "karman"
 solver = "stat_newton"
@@ -58,16 +58,19 @@ for refinement in refinements:
         th = TeeHandler(OPTIONS["logfile"])
         th.start()
 
-        print "{0:s}: Karman Stationary ref = {1:d} RE = {2:d}".format(gettime(),refinement,RE)
+        print "{0:s}: Karman Stationary ref = {1:d} RE = {2:d}".format(gettime(), refinement, RE)
         try:
             if instant_clean:
                 os.system("instant-clean")
 
             call(problem, solver, OPTIONS)
             th.stop()
-        except Exception,e:
+            print "--------------------------------------------------------------"
+        except Exception, e:
             traceback.print_exc()
             th.stop()
             print "Solver Failed: Remove files and Directory"
             deletedir(psohandler.outputdir)
+            # Reynoldsnumber to large increment refinement level
+            break
 

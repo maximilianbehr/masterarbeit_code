@@ -12,12 +12,6 @@ from src.problems.problem_mesh.karman import GammaBallCtrlUpper
 import json
 
 
-
-
-# set matrix reordering off
-parameters['reorder_dofs_serial'] = False
-
-
 class Observer(SubDomain):
     """Domain for building submesh"""
 
@@ -59,18 +53,18 @@ class LQR_Assembler():
         p_test = TestFunction(self.Q)
 
         # weak formulation of linearized navier stokes eqn
-        ds = Measure('ds')[self.boundaryfunction]
+        ds = Measure("ds")[self.boundaryfunction]
         self.var = {}
 
         self.var["M"] = inner(dudt, w_test) * dx
-        self.var["S"] = 1.0/self.options["RE"] * inner(grad(u), grad(w_test)) * dx
-        self.var["Bupper"] = 1.0/self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(self.g, w_test) * ds(
+        self.var["S"] = 1.0 / self.options["RE"] * inner(grad(u), grad(w_test)) * dx
+        self.var["Bupper"] = 1.0 / self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(self.g, w_test) * ds(
             GammaBallCtrlUpper.index)
-        self.var["Blower"] = 1.0/self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(self.g, w_test) * ds(
+        self.var["Blower"] = 1.0 / self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(self.g, w_test) * ds(
             GammaBallCtrlLower.index)
-        self.var["Mupper"] = 1.0/self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(u, w_test) * ds(
+        self.var["Mupper"] = 1.0 / self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(u, w_test) * ds(
             GammaBallCtrlUpper.index)
-        self.var["Mlower"] = 1.0/self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(u, w_test) * ds(
+        self.var["Mlower"] = 1.0 / self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(u, w_test) * ds(
             GammaBallCtrlLower.index)
         self.var["K"] = inner(grad(self.u_stat) * u, w_test) * dx
         self.var["R"] = inner(grad(u) * self.u_stat, w_test) * dx
@@ -189,6 +183,25 @@ class LQR_Assembler():
             mmwrite(handle, self.npsc["C"])
 
 
+    def save_petsc(self):
+        """@todo dump B_lower, B_upper as vectors"""
+        if not self.petsc:
+            raise AttributeError("Call lns_petsc to initialize attribute petsc.")
+
+        if not os.path.exists(os.path.dirname(self.options["M_PETSC"])):
+            os.makedirs(os.path.dirname(self.options["M_PETSC"]))
+
+        as_backend_type(self.petsc["M"]).binary_dump(self.options["M_PETSC"])
+        as_backend_type(self.petsc["S"]).binary_dump(self.options["S_PETSC"])
+        as_backend_type(self.petsc["Mlower"]).binary_dump(self.options["Mlower_PETSC"])
+        as_backend_type(self.petsc["Mupper"]).binary_dump(self.options["Mupper_PETSC"])
+        as_backend_type(self.petsc["K"]).binary_dump(self.options["K_PETSC"])
+        as_backend_type(self.petsc["R"]).binary_dump(self.options["R_PETSC"])
+        as_backend_type(self.petsc["G"]).binary_dump(self.options["G_PETSC"])
+        as_backend_type(self.petsc["Gt"]).binary_dump(self.options["Gt_PETSC"])
+        as_backend_type(self.petsc["C"]).binary_dump(self.options["C_PETSC"])
+
+
     def save_lns_mat(self):
 
         if not self.npsc:
@@ -203,7 +216,6 @@ class LQR_Assembler():
             os.makedirs(os.path.dirname(fname))
         with open(fname, "w") as handle:
             json.dump(self.options, handle)
-
 
 
 

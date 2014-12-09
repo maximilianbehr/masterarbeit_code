@@ -9,6 +9,7 @@ class SolverBase:
     "Base class for all solvers."
 
     def __init__(self, options):
+        print "Dof reordering {0:s}".format(str(parameters["reorder_dofs_serial"]))
 
         # Store options
         self.options = options

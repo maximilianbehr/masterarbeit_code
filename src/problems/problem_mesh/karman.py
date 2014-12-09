@@ -9,6 +9,7 @@ from dolfin.cpp.mesh import Mesh
 from dolfin.cpp.mesh import MeshFunction
 from dolfin.cpp.function import near
 from dolfin.cpp.function import between
+from dolfin import parameters
 
 
 "constants for rectangular domain"""
@@ -109,6 +110,7 @@ class MeshBuilder():
 
 
     def __init__(self):
+        print "Dof reordering {0:s}".format(str(parameters["reorder_dofs_serial"]))
         self.mesh = None
         self.boundaryfunction = None
         self.domain = None

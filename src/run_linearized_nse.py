@@ -1,4 +1,7 @@
 from src.outputhandler import LQRAssemblerOutputHandler
+from src.outputhandler import KarmanOutputHandler
+from src.outputhandler import ProblemSolverOutputHandler
+
 from src.lqr.lqr_solver import LQR_Solver
 from src.aux import gettime
 from src.aux import TeeHandler
@@ -11,6 +14,7 @@ parameters["reorder_dofs_serial"] = False
 OPTIONS = {
     "ref": None,
     "RE": None,
+    "mesh": None,
     "M_mtx": None,
     "S_mtx": None,
     "Mlower_mtx": None,
@@ -20,21 +24,28 @@ OPTIONS = {
     "G_mtx": None,
     "Gt_mtx": None,
     "B_mtx": None,
-    "C_mtx": None,
-    "Z_mtx": None,
-    "dae2_delta": -0.02,
-    "adi.output": 1,
-    "nm.output": 1,
-    "nm.res2_tol": 1e-9,
-    "res2_txt": None,
     "options_json": None,
-    "logfile": None
+    "logfile": None,
+    "dt": 0.1,
+    "T": 12,
+    "u_pvd": None,
+    "u_xml": None,
+    "u_t_xml": None,
+    "save_frequency": 10,
+    "pertubation_eps": 0.001,
+    "u_stat": None
+
 }
 
-REs = [1, 5, 10, 20, 50, 75, 100, 200, 300, 400, 500]
+REs = [1]
 refinements = [2]
 for RE in REs:
     for refinement in refinements:
+
+        kohandler = KarmanOutputHandler()
+        psohandler = ProblemSolverOutputHandler(problem, solver, refinement, RE)
+
+        OPTIONS["mesh"] = kohandler.karman_mesh_xml(refinement)
 
         lqrohandler = LQRAssemblerOutputHandler(refinement, RE)
         OPTIONS["ref"] = refinement

@@ -27,7 +27,8 @@ def save_results(problem, solver, num_dofs, cputime, wct, functional, error):
 
     # Print DOLFIN summary
     set_log_active(True)
-    list_timings()
+    if solver.options["debug"]:
+        list_timings()
 
     # Append to file
     filename = "../results/results.log"
@@ -72,7 +73,8 @@ def call(problem_name, solver_name, inoptions):
     solver = Solver(solver_name, options)
     print "Problem: " + str(problem)
     print "Solver:  " + str(solver)
-    print pprint.pprint(options)
+    if options["debug"]:
+        print pprint.pprint(options)
 
 
 

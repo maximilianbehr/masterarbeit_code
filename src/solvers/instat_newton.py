@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from src.solvers.solverbase import *
-import warning
 from dolfin.cpp.common import info
 
 raise NotImplementedError(
@@ -22,7 +21,6 @@ class Solver(SolverBase):
         # Get problem parameters
         mesh = problem.mesh
 
-        warning.warn("solver assumes equidistant time discretization")
         dt, t, t_range = problem.timestep(problem)
         idt = 1.0 / dt
 
@@ -78,17 +76,24 @@ class Solver(SolverBase):
         # define Jacobian
         J = derivative(F, w)
 
+        varproblem = NonlinearVariationalProblem(F, w, bc, J)
+        solver = NonlinearVariationalSolver(varproblem)
+        solver.parameters['newton_solver']['maximum_iterations'] = 20
+
         # Time-stepping
+        self.start_timing()
         for t in t_range:
-            # create variational problem and solver
+            solver.solve()
+
             bcu, bcp = problem.boundary_conditions(V, Q, t)
             bc = bcu + bcp
-            problem = NonlinearVariationalProblem(F, w, bc, J)
-            solver = NonlinearVariationalSolver(problem)
-            solver.parameters['newton_solver']['maximum_iterations'] = 20
+
+
+
+
 
             # Extract solutions:
-            (u, p) = w.split()
+            (u, p) = w.split(deepcopy=True)
 
             # update problem and save to file
             self.update(problem, t, u, p)
