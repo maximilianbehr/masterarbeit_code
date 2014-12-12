@@ -21,31 +21,38 @@ class Linearized_NSE_SIM():
         Gt = mmread(self.options["Gt_mtx"])
         B = mmread(self.options["B_mtx"])
 
-        self.np = self.G.shape[1]
-        self.nv = self.M.shape[0]
-
-        upperblock = hstack([self.M - self.dt * (-S - Mlower - Mupper - K - R), self.dt * (-G)])
-        lowerblock = hstack([self.dt * (-Gt), csr_matrix(self.np)])
-        self.M_ode = vstack([upperblock, lowerblock])
-        self.M_lift = vstack([self.M, csr_matrix(self.np)])
+        self.np = G.shape[1]
+        self.nv = M.shape[0]
 
         self.dt = self.options["dt"]
         self.T = self.options["T"]
         self.t = 0
         self.k = 1
 
+        upperblock = hstack([M - self.dt * (-S - Mlower - Mupper - K - R), self.dt * (-G)])
+        lowerblock = hstack([self.dt * (-Gt), csr_matrix((self.np, self.np))])
+        self.M_ode = vstack([upperblock, lowerblock])
+        self.M_lift = vstack([M, csr_matrix((self.np, self.nv))])
+
         self.mesh = Mesh(self.options["mesh"])
         self.V = VectorFunctionSpace(self.mesh, "CG", 2)
         self.Q = FunctionSpace(self.mesh, "CG", 1)
+
         self.u_stat = Function(self.V, self.options["u_stat"])
 
+        import ipdb
+
+        ipdb.set_trace()
+
+        # conversions and scipy io functions
+        self.u_k = self.u_stat.vector().array().reshape(len(self.u_stat.vector().vector()), 1)
+        self.u_k *= self.options["pertubation_eps"]
 
     def u_k_next(self):
         Muk = self.M_lift * self.u_k
-        u_k_next = spsolve(self.M_ode, Muk, permc_spec='COLAMD', use_umfpack=True)
+        u_k_next = spsolve(self.M_ode, Muk, permc_spec="COLAMD", use_umfpack="True")
         self.k += 1
         self.u_k = u_k_next[0:self.nv]
-
 
     def save(self):
 
@@ -60,7 +67,7 @@ class Linearized_NSE_SIM():
                 self._ufile << (u_dolfin, self.t)
 
             if self.options["u_xml"]:
-                file = File(self.options["u_xml"].format(self.t), "compressed")
+                file = File(self.options["u_t_xml"].format(self.t), "compressed")
                 file << u_dolfin.vector()
 
     def solve_ode(self):

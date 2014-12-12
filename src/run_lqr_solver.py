@@ -23,18 +23,22 @@ OPTIONS = {
     "C_mtx": None,
     "Z_mtx": None,
     "dae2_delta": -0.02,
-    "adi.output": 1,
+    "adi.output": 0,
     "nm.output": 1,
     "nm.res2_tol": 1e-9,
+    "nm.rel_change_tol": 1e-14,
     "res2_txt": None,
     "options_json": None,
     "logfile": None
 }
 
-REs = [1, 5, 10, 20, 50, 75, 100, 200, 300, 400, 500]
-refinements = [2]
-for RE in REs:
-    for refinement in refinements:
+# REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200]
+REs = [1, 2, 3, 4, 5]
+#refinements = [1, 2, 3, 4, 5]
+refinements = [1, 2, 3]
+
+for refinement in refinements:
+    for RE in REs:
 
         lqrohandler = LQRAssemblerOutputHandler(refinement, RE)
         OPTIONS["ref"] = refinement

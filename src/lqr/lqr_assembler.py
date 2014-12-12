@@ -4,19 +4,18 @@ from scipy.sparse.csr import csr_matrix
 from scipy.sparse import lil_matrix
 from scipy.io import mmwrite
 from scipy.io import savemat
+from scipy.io import mmread
+from scipy.sparse import hstack
+from scipy.sparse import vstack
+from scipy.sparse import csr_matrix
+from scipy.sparse.linalg import spsolve
+from scipy.linalg import eigvals
 import numpy as np
 from dolfin import *
 from src.problems.problem_mesh.karman import circle
 from src.problems.problem_mesh.karman import GammaBallCtrlLower
 from src.problems.problem_mesh.karman import GammaBallCtrlUpper
 import json
-
-
-class Observer(SubDomain):
-    """Domain for building submesh"""
-
-    def inside(self, x, on_boundary):
-        return between(x[0], (3.0, 3.5))
 
 
 class LQR_Assembler():
@@ -106,6 +105,37 @@ class LQR_Assembler():
         # restore backend
         parameters["linear_algebra_backend"] = la_backend
 
+    def buildC(self):
+
+        p1 = Point(self.options["observer_point1_x"], self.options["observer_point1_y"])
+        p2 = Point(self.options["observer_point2_x"], self.options["observer_point2_y"])
+        points = [p1, p2]
+
+        dists = {p1: float("inf"), p2: float("inf")}
+        idxs = {p1: 0, p2: 0}
+
+        # find cell indices with midpoint has minimal distance
+        for c in cells(self.mesh):
+            for p in points:
+                cdist = c.midpoint().distance(p)
+                if cdist < dists[p]:
+                    dists[p] = cdist
+                    idxs[p] = c.index()
+
+        #collect vertical dofs of cells with midpoint has minimal distance
+        verticaldofs = np.empty(0, dtype=np.int32)
+        for idx in idxs.values():
+            verticaldofs = np.union1d(verticaldofs, self.V.sub(1).dofmap().cell_dofs(idx))
+
+        #buid matrix
+        C = lil_matrix((verticaldofs.size, self.V.dim()))
+        j = 0
+        for i in verticaldofs:
+            C[j, i] = 1
+            j += 1
+
+        return C.todense()
+
     def lns_npsc(self):
         if not self.ublas:
             raise ValueError("Call unparameterized_lns_ublas( to initialize attribute ublas.")
@@ -119,23 +149,7 @@ class LQR_Assembler():
 
         self.npsc["B"] = np.concatenate((self.npsc["Bupper"], self.npsc["Blower"]), axis=1)
 
-        # build matrix C
-        ob = Observer()
-        submesh = SubMesh(self.mesh, ob)
-        indices = np.empty(0, dtype=np.int32)
-        for i in submesh.data().array("parent_cell_indices", 2):
-            indices = np.union1d(indices, self.V.sub(1).dofmap().cell_dofs(i))
-
-        if indices.size == 0:
-            raise ValueError("There are no cells with dofs in the domain. Change inside Method in Observer")
-
-        C = lil_matrix((indices.size, self.V.dim()))
-        j = 0
-        for i in indices:
-            C[j, i] = 1
-            j += 1
-
-        self.npsc["C"] = C.todense()
+        self.npsc["C"] = self.buildC()
 
 
     def save_lns_mtx(self):
@@ -217,6 +231,21 @@ class LQR_Assembler():
         with open(fname, "w") as handle:
             json.dump(self.options, handle)
 
+
+    def eigenvals(self):
+        import ipdb
+
+        ipdb.set_trace()
+        np = self.npsc["G"].shape[1]
+        upperblockM = hstack([self.npsc["M"], 0.02 * self.npsc["G"]])
+        lowerblockM = hstack([0.02 * self.npsc["Gt"], csr_matrix((np, np))])
+        M = vstack([upperblockM, lowerblockM]).todense()
+        upperblockA = hstack(
+            [-self.npsc["S"] - self.npsc["R"] - self.npsc["K"] - self.npsc["Mlower"] - self.npsc["Mupper"],
+             self.npsc["G"]])
+        lowerblockA = hstack([self.npsc["Gt"], csr_matrix((np, np))])
+        A = vstack([upperblockA, lowerblockA]).todense()
+        eigs = eigvals(A, M, overwrite_a=True, check_finite=False)
 
 
 

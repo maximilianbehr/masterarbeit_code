@@ -1,8 +1,9 @@
 from src.outputhandler import LQRAssemblerOutputHandler
 from src.outputhandler import KarmanOutputHandler
 from src.outputhandler import ProblemSolverOutputHandler
+from src.outputhandler import Linearized_NSE_SIM_OutputHandler
 
-from src.lqr.lqr_solver import LQR_Solver
+from src.lqr.linearized_nse import Linearized_NSE_SIM
 from src.aux import gettime
 from src.aux import TeeHandler
 from src.aux import deletedir
@@ -10,6 +11,8 @@ from dolfin import parameters
 
 # set dof reordering off
 parameters["reorder_dofs_serial"] = False
+parameters["form_compiler"]["optimize"] = True
+parameters["form_compiler"].add("eliminate_zeros", True)
 
 OPTIONS = {
     "ref": None,
@@ -29,7 +32,6 @@ OPTIONS = {
     "dt": 0.1,
     "T": 12,
     "u_pvd": None,
-    "u_xml": None,
     "u_t_xml": None,
     "save_frequency": 10,
     "pertubation_eps": 0.001,
@@ -39,17 +41,17 @@ OPTIONS = {
 
 REs = [1]
 refinements = [2]
-for RE in REs:
-    for refinement in refinements:
 
+for refinement in refinements:
+    for RE in REs:
         kohandler = KarmanOutputHandler()
-        psohandler = ProblemSolverOutputHandler(problem, solver, refinement, RE)
-
-        OPTIONS["mesh"] = kohandler.karman_mesh_xml(refinement)
-
         lqrohandler = LQRAssemblerOutputHandler(refinement, RE)
+        psohandler = ProblemSolverOutputHandler("karman", "stat_newton", refinement, RE)
+        lnsesimhandler = Linearized_NSE_SIM_OutputHandler(refinement, RE)
+
         OPTIONS["ref"] = refinement
         OPTIONS["RE"] = RE
+        OPTIONS["mesh"] = kohandler.karman_mesh_xml(refinement)
         OPTIONS["M_mtx"] = lqrohandler.M_mtx()
         OPTIONS["S_mtx"] = lqrohandler.S_mtx()
         OPTIONS["Mlower_mtx"] = lqrohandler.Mlower_mtx()
@@ -62,31 +64,27 @@ for RE in REs:
         OPTIONS["C_mtx"] = lqrohandler.C_mtx()
         OPTIONS["Z_mtx"] = lqrohandler.Z_mtx()
         OPTIONS["options_json"] = lqrohandler.options_json_solver()
-        OPTIONS["res2_txt"] = lqrohandler.res2_txt()
         OPTIONS["logfile"] = lqrohandler.log_solver()
+        OPTIONS["u_pvd"] = lnsesimhandler.u_pvd()
+        OPTIONS["u_t_xml"] = lnsesimhandler.u_t_xml()
+
 
         th = TeeHandler(OPTIONS["logfile"])
         th.start()
 
-        try:
-            print "{0:s}: Setup pycmess equation".format(gettime())
-            lqrsolver = LQR_Solver(OPTIONS)
+        # try:
+        print "{0:s}: Setup Linearized_NSE_SIM equation".format(gettime())
+        linearized_nse_sim = Linearized_NSE_SIM(OPTIONS)
 
-            print "{0:s}: Setup pycmess options".format(gettime())
-            lqrsolver.setup_nm_adi_options()
+        print "{0:s}: Solve Linearized Navier Stokes".format(gettime())
+        linearized_nse_sim.solve_ode()
 
-            print "{0:s}: Solve".format(gettime())
-            lqrsolver.solve()
+        th.stop()
 
-            print "{0:s}: Save Results".format(gettime())
-            lqrsolver.save()
-
-            th.stop()
-
-        except Exception, e:
-            print e
-            print "Solver Failed"
-            th.stop()
-            # Reynoldsnumber to large increment refinement level
-            break
+        # except Exception, e:
+        #    print e
+        #    print "Solver Failed"
+        #    th.stop()
+        #    # Reynoldsnumber to large increment refinement level
+        #    break
 

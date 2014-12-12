@@ -46,6 +46,7 @@ class LQR_Solver():
         self.opt.adi.output = self.options["adi.output"]
         self.opt.nm.output = self.options["nm.output"]
         self.opt.nm.res2_tol = self.options["nm.res2_tol"]
+        self.opt.nm.rel_change_tol = self.options["nm.rel_change_tol"]
         self.opt.adi.type = PYCMESS_OP_TRANSPOSE
 
     def solve(self):
@@ -53,6 +54,8 @@ class LQR_Solver():
         self.Z = result[0]
         self.res2 = result[1]
         # self.iter = result[2]
+        if self.res2[-1] > self.opt.nm.res2_tol:
+            raise ValueError("Newton ADI did not converge")
 
 
     def save(self):

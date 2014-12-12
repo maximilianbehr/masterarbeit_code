@@ -11,6 +11,9 @@ from dolfin import parameters
 
 # set dof reordering off
 parameters["reorder_dofs_serial"] = False
+parameters["form_compiler"]["optimize"] = True
+parameters["form_compiler"].add("eliminate_zeros", True)
+
 
 OPTIONS = {
     "ref": None,
@@ -33,15 +36,19 @@ OPTIONS = {
     "C_mtx": None,
     "mat": None,
     "options_json": None,
-    "logfile": None
+    "logfile": None,
+    "observer_point1_x": 3.5,
+    "observer_point1_y": 0.25,
+    "observer_point2_x": 3.5,
+    "observer_point2_y": 0.75
 }
 
 
 # karman
-REs = [1, 5, 10, 20, 50, 75, 100, 200, 300, 400, 500]
-refinements = [2]
-for RE in REs:
-    for refinement in refinements:
+REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200]
+refinements = [1, 2, 3, 4]
+for refinement in refinements:
+    for RE in REs:
 
         kohandler = KarmanOutputHandler()
         psohandler = ProblemSolverOutputHandler("karman", "stat_newton", refinement, RE)
@@ -91,6 +98,9 @@ for RE in REs:
             print "{0:s}: Save options".format(gettime())
             lqrassembler.save_options()
 
+            print "{0:s}: Compute Eigenvalues".format(gettime())
+            lqrassembler.eigenvals()
+
             th.stop()
 
         except Exception, e:
@@ -98,6 +108,6 @@ for RE in REs:
             th.stop()
             print "Assembler Failed: Remove files and Directory"
             deletedir(lqrohandler.outputdir)
-
+            break
 
 

@@ -7,6 +7,8 @@ from outputhandler import KarmanOutputHandler
 
 # set dof reordering off
 parameters["reorder_dofs_serial"] = False
+parameters["form_compiler"]["optimize"] = True
+parameters["form_compiler"].add("eliminate_zeros", True)
 
 # refalgs = ["bisection", "iterative_bisection", "recursive_bisection", "regular_cut"]
 refalgs = ["recursive_bisection"]

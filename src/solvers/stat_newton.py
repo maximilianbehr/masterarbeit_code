@@ -15,9 +15,9 @@ class Solver(SolverBase):
 
 
         # Define function spaces (P2-P1)
-        V = VectorFunctionSpace(mesh, "CG", 2)
-        Q = FunctionSpace(mesh, "CG", 1)
-        W = V * Q
+        self.V = VectorFunctionSpace(mesh, "CG", 2)
+        self.Q = FunctionSpace(mesh, "CG", 1)
+        W = self.V * self.Q
 
         # define test functions
         (v, q) = TestFunctions(W)
@@ -74,17 +74,21 @@ class Solver(SolverBase):
 
 
     def save(self, u, p):
+        interu = interpolate(u, self.V)
+        interp = interpolate(p, self.Q)
+
+
         if self.options["u_pvd"]:
-            File(self.options["u_pvd"]) << u
+            File(self.options["u_pvd"]) << interu
 
         if self.options["p_pvd"]:
-            File(self.options["p_pvd"]) << p
+            File(self.options["p_pvd"]) << interp
 
         if self.options["u_xml"]:
-            File(self.options["u_xml"]) << u
+            File(self.options["u_xml"]) << interu
 
         if self.options["p_xml"]:
-            File(self.options["p_xml"]) << p
+            File(self.options["p_xml"]) << interp
 
 
     def __str__(self):

@@ -11,6 +11,8 @@ from dolfin import parameters
 
 # set dof reordering off
 parameters["reorder_dofs_serial"] = False
+parameters["form_compiler"]["optimize"] = True
+parameters["form_compiler"].add("eliminate_zeros", True)
 
 OPTIONS = {"mesh": None,
            "RE": None,
