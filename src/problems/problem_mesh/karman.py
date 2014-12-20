@@ -1,15 +1,23 @@
 # -*- coding: utf-8 -*-
 from numpy import sqrt
-
 from dolfin.cpp.mesh import SubDomain
-from dolfin.cpp.mesh import Rectangle
-from dolfin.cpp.mesh import Circle
-from dolfin.cpp.mesh import refine
 from dolfin.cpp.mesh import Mesh
 from dolfin.cpp.mesh import MeshFunction
 from dolfin.cpp.function import near
 from dolfin.cpp.function import between
+from dolfin.cpp.mesh import refine
 from dolfin import parameters
+from dolfin import __version__
+from distutils.version import LooseVersion
+if LooseVersion(__version__) < LooseVersion("1.4.0"):
+    from dolfin.cpp.mesh import Rectangle
+    from dolfin.cpp.mesh import Circle
+else:
+    from mshr import generate_mesh
+    from mshr import Circle
+    from mshr import Rectangle
+    from dolfin import Point
+
 
 
 "constants for rectangular domain"""
@@ -120,15 +128,28 @@ class MeshBuilder():
         self._buildMesh()
         self._buildBoundaryFunction()
 
-    def _buildDomain(self):
-        """use Constants related to the geometry for building CSG"""
-        rectangledomain = Rectangle(rect["x0"], rect["y0"], rect["x1"], rect["y1"])
-        balldomain = Circle(circle["x0"], circle["y0"], circle["r"], circle["fragments"])
-        self.domain = rectangledomain - balldomain
 
 
-    def _buildMesh(self):
-        self.mesh = Mesh(self.domain, initialresolution)
+    if LooseVersion(__version__)<LooseVersion("1.4.0"):
+
+        def _buildDomain(self):
+            """use Constants related to the geometry for building CSG"""
+            rectangledomain = Rectangle(rect["x0"], rect["y0"], rect["x1"], rect["y1"])
+            balldomain = Circle(circle["x0"], circle["y0"], circle["r"], circle["fragments"])
+            self.domain = rectangledomain - balldomain
+
+        def _buildMesh(self):
+            self.mesh = Mesh(self.domain, initialresolution)
+    else:
+        def _buildDomain(self):
+            """use Constants related to the geometry for building CSG"""
+            rectangledomain = Rectangle(Point(rect["x0"], rect["y0"]), Point(rect["x1"], rect["y1"]))
+            balldomain = Circle(Point(circle["x0"], circle["y0"]), circle["r"])
+            self.domain = rectangledomain - balldomain
+
+        def _buildMesh(self):
+            self.mesh = generate_mesh(self.domain, initialresolution)
+
 
 
     def _buildBoundaryFunction(self):

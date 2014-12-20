@@ -1,5 +1,6 @@
 import os
 import socket
+import sys
 
 from dolfin import __version__
 from dolfin.cpp.io import File
@@ -40,10 +41,14 @@ class KarmanOutputHandler():
             else:
                 return os.path.abspath(os.path.join("/scratch/behr/master/src/", dirname))
         elif hostname == "jack":
-            if os.path.isdir(extharddrivemac):
-                return os.path.join(extharddrivemac, dirname)
+            if sys.platform=="linux2" or sys.platform=="linux":
+                return os.path.abspath(os.path.join("/home/daniels/PycharmProjects/master/", dirname))
             else:
-                return os.path.abspath(os.path.join("/Users/daniels/PycharmProjects/master/", dirname))
+                if os.path.isdir(extharddrivemac):
+                    return os.path.join(extharddrivemac, dirname)
+                else:
+                    return os.path.abspath(os.path.join("/Users/daniels/PycharmProjects/master/", dirname))
+
         else:
             raise NotImplementedError("Output Path for %s not implemented" % hostname)
 
@@ -122,9 +127,13 @@ class ProblemSolverOutputHandler():
             return os.path.abspath(os.path.join("/scratch/behr/master/src/", dirname))
 
         elif hostname == "jack":
-            if os.path.isdir(extharddrivemac):
-                return os.path.join(extharddrivemac, dirname)
-            return os.path.abspath(os.path.join("/Users/daniels/PycharmProjects/master/", dirname))
+            if sys.platform=="linux2" or sys.platform=="linux":
+                return os.path.abspath(os.path.join("/home/daniels/PycharmProjects/master/", dirname))
+            else:
+                if os.path.isdir(extharddrivemac):
+                    return os.path.join(extharddrivemac, dirname)
+                else:
+                    return os.path.abspath(os.path.join("/Users/daniels/PycharmProjects/master/", dirname))
 
         else:
             raise NotImplementedError("Output Path for %s not implemented" % hostname)
@@ -199,10 +208,13 @@ class LQRAssemblerOutputHandler():
             else:
                 return os.path.abspath(os.path.join("/scratch/behr/master/src/", dirname))
         elif hostname == "jack":
-            if os.path.isdir(extharddrivemac):
-                return os.path.join(extharddrivemac, dirname)
+            if sys.platform=="linux2" or sys.platform=="linux":
+                return os.path.abspath(os.path.join("/home/daniels/PycharmProjects/master/", dirname))
             else:
-                return os.path.abspath(os.path.join("/Users/daniels/PycharmProjects/master/", dirname))
+                if os.path.isdir(extharddrivemac):
+                    return os.path.join(extharddrivemac, dirname)
+                else:
+                    return os.path.abspath(os.path.join("/Users/daniels/PycharmProjects/master/", dirname))
         else:
             raise NotImplementedError("Output Path for %s not implemented" % hostname)
 
@@ -367,11 +379,15 @@ class Linearized_NSE_SIM_OutputHandler():
                 return os.path.join(extharddrive, dirname)
             else:
                 return os.path.abspath(os.path.join("/scratch/behr/master/src/", dirname))
+
         elif hostname == "jack":
-            if os.path.isdir(extharddrivemac):
-                return os.path.join(extharddrivemac, dirname)
+            if sys.platform=="linux2" or sys.platform=="linux":
+                return os.path.abspath(os.path.join("/home/daniels/PycharmProjects/master/", dirname))
             else:
-                return os.path.abspath(os.path.join("/Users/daniels/PycharmProjects/master/", dirname))
+                if os.path.isdir(extharddrivemac):
+                    return os.path.join(extharddrivemac, dirname)
+                else:
+                    return os.path.abspath(os.path.join("/Users/daniels/PycharmProjects/master/", dirname))
         else:
             raise NotImplementedError("Output Path for %s not implemented" % hostname)
 
