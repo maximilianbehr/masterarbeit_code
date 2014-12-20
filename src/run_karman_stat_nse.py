@@ -37,7 +37,6 @@ OPTIONS = {"mesh": None,
 instant_clean = False
 REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200, 300, 400, 500, 600, 700, 750]
 refinements = [1, 2, 3, 4]
-# refinements = [5]
 
 
 problem = "karman"
