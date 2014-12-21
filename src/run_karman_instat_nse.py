@@ -42,26 +42,15 @@ OPTIONS = {"mesh": None,
 }
 
 
-
-
-
 # karman
 instant_clean = False
-REs = [1, 2, 5, 100, 200, 300, 400, 500, 600, 700]
-refinements = [1, 2, 3, 4, 5]
-
-# REs = [1, 2, 5, 10, 25, 35, 50, 75,100]
-#REs = [ 120, 150, 200, 250, 300]
-# REs = [1]
-#refinements = [1]
+REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200, 300, 400, 500, 600, 700, 750]
+refinements = [1, 2, 3, 4]
 
 problem = "karman"
-#solvers = ["ipcs"]
-#solvers = ["chorin"]
-#solvers = ["ipcs", "chorin"]
-solvers = ["instat_newton"]
 
-#OPTIONS["dt"] = 0.00001
+solvers = ["ipcs", "chorin", "instat_newton"]
+
 
 for refinement in refinements:
     for solver in solvers:

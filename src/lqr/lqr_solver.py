@@ -2,11 +2,17 @@ from pycmess import options
 from pycmess import equation_dae2
 from pycmess import PYCMESS_OP_TRANSPOSE
 from pycmess import lrnm
-from scipy.io import mmread
-from scipy.io import mmwrite
 from numpy import savetxt
 import os
 import json
+from scipy.io import mmwrite
+from scipy.io import mmread
+from scipy.sparse import hstack
+from scipy.sparse import vstack
+from scipy.sparse import csr_matrix
+from scipy.linalg import eigvals
+import numpy
+import matplotlib.pyplot as plt
 
 
 class LQR_Solver():
@@ -20,24 +26,24 @@ class LQR_Solver():
         self.options = argoptions.copy()
 
         # read data
-        M = mmread(self.options["M_mtx"])
-        S = mmread(self.options["S_mtx"])
-        Mlower = mmread(self.options["Mlower_mtx"])
-        Mupper = mmread(self.options["Mupper_mtx"])
-        K = mmread(self.options["K_mtx"])
-        R = mmread(self.options["R_mtx"])
-        G = mmread(self.options["G_mtx"])
-        Gt = mmread(self.options["Gt_mtx"])
-        B = mmread(self.options["B_mtx"])
-        C = mmread(self.options["C_mtx"])
+        self.M = mmread(self.options["M_mtx"])
+        self.S = mmread(self.options["S_mtx"])
+        self.Mlower = mmread(self.options["Mlower_mtx"])
+        self.Mupper = mmread(self.options["Mupper_mtx"])
+        self.K = mmread(self.options["K_mtx"])
+        self.R = mmread(self.options["R_mtx"])
+        self.G = mmread(self.options["G_mtx"])
+        self.Gt = mmread(self.options["Gt_mtx"])
+        self.B = mmread(self.options["B_mtx"])
+        self.C = mmread(self.options["C_mtx"])
 
         #setup equation
         self.eqn = equation_dae2()
-        self.eqn.M = M
-        self.eqn.A = -S - Mlower - Mupper - K - R
-        self.eqn.G = -G
-        self.eqn.B = B
-        self.eqn.C = C
+        self.eqn.M = self.M
+        self.eqn.A = -self.S - self.Mlower - self.Mupper - self.K - self.R
+        self.eqn.G = self.G
+        self.eqn.B = self.B
+        self.eqn.C = self.C
         self.eqn.delta = self.options["dae2_delta"]
 
     def setup_nm_adi_options(self):
@@ -69,4 +75,72 @@ class LQR_Solver():
             os.makedirs(os.path.dirname(fname))
         with open(fname, "w") as handle:
             json.dump(self.options, handle)
+
+    def eigenvals(self):
+
+        np = self.eqn.G.shape[1]
+        upperblockM = hstack([self.eqn.M, self.eqn.delta*self.eqn.G])
+        lowerblockM = hstack([self.eqn.delta*self.eqn.G.T, csr_matrix((np, np))])
+        M = vstack([upperblockM, lowerblockM])
+        upperblockA = hstack([self.eqn.A, self.eqn.G])
+        lowerblockA = hstack([self.eqn.G.T, csr_matrix((np, np))])
+        A = vstack([upperblockA,lowerblockA])
+        eigs = eigvals(A.todense(), M.todense(), overwrite_a=True, check_finite=False)
+        eigs = eigs[numpy.argsort(numpy.absolute(eigs))]
+        mmwrite(self.options["eig_mtx"], numpy.matrix(eigs))
+
+        stable_eigs = eigs[eigs.real<0]
+        unstable_eigs = eigs[eigs.real>=0]
+
+        fig, ax = plt.subplots()
+        ax.plot(stable_eigs.real, stable_eigs.imag, "rx")
+        ax.plot(unstable_eigs.real,unstable_eigs.imag, "bx")
+        plt.axvline(x=1.0/self.eqn.delta, linewidth=1, color="g",ls="dashed")
+        xlimit = numpy.max(numpy.ceil(numpy.absolute(eigs.real)))
+        ylimit = numpy.max(numpy.ceil(numpy.absolute(eigs.imag)))
+        plt.xlim((-xlimit, xlimit))
+        plt.ylim((-ylimit, ylimit))
+        plt.xscale("symlog")
+        plt.xlabel("Real")
+        plt.ylabel("Imaginary")
+        #plt.show()
+        plt.savefig(self.options["eig_eps"])
+
+    def eigenvals_nopenalty(self):
+
+        np = self.eqn.G.shape[1]
+        upperblockM = hstack([self.eqn.M, self.eqn.delta*self.eqn.G])
+        lowerblockM = hstack([self.eqn.delta*self.eqn.G.T, csr_matrix((np, np))])
+        M = vstack([upperblockM, lowerblockM])
+        upperblockA = hstack([-self.S - self.K - self.R, self.eqn.G])
+        lowerblockA = hstack([self.eqn.G.T, csr_matrix((np, np))])
+        A = vstack([upperblockA, lowerblockA])
+        eigs = eigvals(A.todense(), M.todense(), overwrite_a=True, check_finite=False)
+        eigs = eigs[numpy.argsort(numpy.absolute(eigs))]
+        mmwrite(self.options["eig_nopenalty_mtx"], numpy.matrix(eigs))
+
+        stable_eigs = eigs[eigs.real<0]
+        unstable_eigs = eigs[eigs.real>=0]
+
+        fig, ax = plt.subplots()
+        ax.plot(stable_eigs.real, stable_eigs.imag, "rx")
+        ax.plot(unstable_eigs.real,unstable_eigs.imag, "bx")
+        plt.axvline(x=1.0/self.eqn.delta, linewidth=1, color="g",ls="dashed")
+        xlimit = numpy.max(numpy.ceil(numpy.absolute(eigs.real)))
+        ylimit = numpy.max(numpy.ceil(numpy.absolute(eigs.imag)))
+        plt.xlim((-xlimit, xlimit))
+        plt.ylim((-ylimit, ylimit))
+        plt.xscale("symlog")
+        plt.xlabel("Real")
+        plt.ylabel("Imaginary")
+        #plt.show()
+        plt.savefig(self.options["eig_nopenalty_eps"])
+
+
+
+
+
+
+
+
 

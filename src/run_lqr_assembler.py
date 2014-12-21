@@ -98,9 +98,6 @@ for refinement in refinements:
             print "{0:s}: Save options".format(gettime())
             lqrassembler.save_options()
 
-            print "{0:s}: Compute Eigenvalues".format(gettime())
-            lqrassembler.eigenvals()
-
             th.stop()
 
         except Exception, e:

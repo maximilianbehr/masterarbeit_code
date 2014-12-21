@@ -1,21 +1,15 @@
 import os
 
-from scipy.sparse.csr import csr_matrix
 from scipy.sparse import lil_matrix
 from scipy.io import mmwrite
 from scipy.io import savemat
-from scipy.io import mmread
-from scipy.sparse import hstack
-from scipy.sparse import vstack
 from scipy.sparse import csr_matrix
-from scipy.sparse.linalg import spsolve
-from scipy.linalg import eigvals
-import numpy as np
 from dolfin import *
 from src.problems.problem_mesh.karman import circle
 from src.problems.problem_mesh.karman import GammaBallCtrlLower
 from src.problems.problem_mesh.karman import GammaBallCtrlUpper
 import json
+import numpy as np
 
 
 class LQR_Assembler():
@@ -67,10 +61,8 @@ class LQR_Assembler():
             GammaBallCtrlLower.index)
         self.var["K"] = inner(grad(self.u_stat) * u, w_test) * dx
         self.var["R"] = inner(grad(u) * self.u_stat, w_test) * dx
-        self.var["G"] = -1 * p * div(w_test) * dx
-
-        # nebenbedingung mit -1 multiplizieren
-        self.var["Gt"] = -1 * div(u) * p_test * dx
+        self.var["G"] = p * div(w_test) * dx
+        self.var["Gt"] = div(u) * p_test * dx
 
     def lns_petsc(self):
 
@@ -232,20 +224,7 @@ class LQR_Assembler():
             json.dump(self.options, handle)
 
 
-    def eigenvals(self):
-        import ipdb
 
-        ipdb.set_trace()
-        np = self.npsc["G"].shape[1]
-        upperblockM = hstack([self.npsc["M"], 0.02 * self.npsc["G"]])
-        lowerblockM = hstack([0.02 * self.npsc["Gt"], csr_matrix((np, np))])
-        M = vstack([upperblockM, lowerblockM]).todense()
-        upperblockA = hstack(
-            [-self.npsc["S"] - self.npsc["R"] - self.npsc["K"] - self.npsc["Mlower"] - self.npsc["Mupper"],
-             self.npsc["G"]])
-        lowerblockA = hstack([self.npsc["Gt"], csr_matrix((np, np))])
-        A = vstack([upperblockA, lowerblockA]).todense()
-        eigs = eigvals(A, M, overwrite_a=True, check_finite=False)
 
 
 

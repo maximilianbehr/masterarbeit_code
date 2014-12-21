@@ -29,11 +29,15 @@ OPTIONS = {
     "nm.rel_change_tol": 1e-14,
     "res2_txt": None,
     "options_json": None,
-    "logfile": None
+    "logfile": None,
+    "eig_eps": None,
+    "eig_nopenalty_eps": None,
+    "eig_mtx": None,
+    "eig_nopenalty_mtx": None
 }
 
 # REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200]
-REs = [1, 2, 3, 4, 5]
+REs = [1, 2, 3, 4, 5, 10, 20, 50]
 #refinements = [1, 2, 3, 4, 5]
 refinements = [1, 2, 3]
 
@@ -57,6 +61,10 @@ for refinement in refinements:
         OPTIONS["options_json"] = lqrohandler.options_json_solver()
         OPTIONS["res2_txt"] = lqrohandler.res2_txt()
         OPTIONS["logfile"] = lqrohandler.log_solver()
+        OPTIONS["eig_eps"] = lqrohandler.eig_eps()
+        OPTIONS["eig_nopenalty_eps"] = lqrohandler.eig_nopenalty_eps()
+        OPTIONS["eig_mtx"] = lqrohandler.eig_mtx()
+        OPTIONS["eig_nopenalty_mtx"] = lqrohandler.eig_nopenalty_mtx()
 
         th = TeeHandler(OPTIONS["logfile"])
         th.start()
@@ -68,11 +76,17 @@ for refinement in refinements:
             print "{0:s}: Setup pycmess options".format(gettime())
             lqrsolver.setup_nm_adi_options()
 
-            print "{0:s}: Solve".format(gettime())
-            lqrsolver.solve()
+            if refinement <= 1:
+                print "{0:s}: Compute Eigenvalues".format(gettime())
+                lqrsolver.eigenvals()
+                print "{0:s}: Compute Eigenvalues no penalty".format(gettime())
+                lqrsolver.eigenvals_nopenalty()
 
-            print "{0:s}: Save Results".format(gettime())
-            lqrsolver.save()
+            #print "{0:s}: Solve".format(gettime())
+            #lqrsolver.solve()
+
+            #print "{0:s}: Save Results".format(gettime())
+            #lqrsolver.save()
 
             th.stop()
 

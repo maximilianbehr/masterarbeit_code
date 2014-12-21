@@ -298,6 +298,22 @@ class LQRAssemblerOutputHandler():
         name = "lqr_res2.txt"
         return self._file(name)
 
+    def eig_eps(self):
+        name = "eig.eps"
+        return self._file(name)
+
+    def eig_nopenalty_eps(self):
+        name = "eig_nopenalty.eps"
+        return self._file(name)
+
+    def eig_mtx(self):
+        name = "eig.mtx"
+        return self._file(name)
+
+    def eig_nopenalty_mtx(self):
+        name = "eig_nopenalty.mtx"
+        return self._file(name)
+
     def M_PETSC(self):
         name = "M.PETSC"
         return self._file(name)
