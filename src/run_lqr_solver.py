@@ -42,13 +42,13 @@ OPTIONS = {
     "eig_nopenalty_mtx": None
 }
 
-# REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200]
+REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200]
 #REs = [1, 2, 3, 4, 5, 10, 20, 50]
-REs = [50]
+#REs = [50]
 
 #refinements = [1, 2, 3, 4, 5]
 refinements = [1, 2, 3]
-compute_eigenvalues = False
+compute_eigenvalues = True
 
 for refinement in refinements:
     for RE in REs:

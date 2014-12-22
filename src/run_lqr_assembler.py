@@ -51,6 +51,7 @@ for refinement in refinements:
     for RE in REs:
 
         kohandler = KarmanOutputHandler()
+        #psohandler = ProblemSolverOutputHandler("karman", "stat_newton", refinement, 1)
         psohandler = ProblemSolverOutputHandler("karman", "stat_newton", refinement, RE)
         lqrohandler = LQRAssemblerOutputHandler(refinement, RE)
         OPTIONS["ref"] = refinement
