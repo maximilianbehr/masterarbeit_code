@@ -49,11 +49,21 @@ class LQR_Solver():
     def setup_nm_adi_options(self):
         # setup nm and adi options
         self.opt = options()
-        self.opt.adi.output = self.options["adi.output"]
         self.opt.nm.output = self.options["nm.output"]
         self.opt.nm.res2_tol = self.options["nm.res2_tol"]
         self.opt.nm.rel_change_tol = self.options["nm.rel_change_tol"]
+        self.opt.nm.maxit = self.options["nm.maxit"]
+
+        self.opt.adi.output = self.options["adi.output"]
+        self.opt.adi.res2_tol = self.options["adi.res2_tol"]
+        self.opt.adi.maxit = self.options["adi.maxit"]
         self.opt.adi.type = PYCMESS_OP_TRANSPOSE
+
+        self.opt.adi.shifts.arp_m = self.options["adi.shifts.arp_m"]
+        self.opt.adi.shifts.arp_p = self.options["adi.shifts.arp_p"]
+        self.opt.adi.shifts.l0 = self.options["adi.shifts.l0"]
+
+
 
     def solve(self):
         result = lrnm(self.eqn, self.opt)

@@ -23,10 +23,16 @@ OPTIONS = {
     "C_mtx": None,
     "Z_mtx": None,
     "dae2_delta": -0.02,
-    "adi.output": 0,
+    "adi.output": 1,
     "nm.output": 1,
     "nm.res2_tol": 1e-9,
-    "nm.rel_change_tol": 1e-14,
+    "nm.rel_change_tol": 1e-10,
+    "nm.maxit": 50,
+    "adi.res2_tol": 1e-14,
+    "adi.maxit": 500,
+    "adi.shifts.arp_p": 60,
+    "adi.shifts.arp_m": 50,
+    "adi.shifts.l0": 40,
     "res2_txt": None,
     "options_json": None,
     "logfile": None,
@@ -37,9 +43,12 @@ OPTIONS = {
 }
 
 # REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200]
-REs = [1, 2, 3, 4, 5, 10, 20, 50]
+#REs = [1, 2, 3, 4, 5, 10, 20, 50]
+REs = [50]
+
 #refinements = [1, 2, 3, 4, 5]
 refinements = [1, 2, 3]
+compute_eigenvalues = False
 
 for refinement in refinements:
     for RE in REs:
@@ -76,17 +85,17 @@ for refinement in refinements:
             print "{0:s}: Setup pycmess options".format(gettime())
             lqrsolver.setup_nm_adi_options()
 
-            if refinement <= 1:
+            if refinement <= 1 and compute_eigenvalues:
                 print "{0:s}: Compute Eigenvalues".format(gettime())
                 lqrsolver.eigenvals()
                 print "{0:s}: Compute Eigenvalues no penalty".format(gettime())
                 lqrsolver.eigenvals_nopenalty()
 
-            #print "{0:s}: Solve".format(gettime())
-            #lqrsolver.solve()
+            print "{0:s}: Solve".format(gettime())
+            lqrsolver.solve()
 
-            #print "{0:s}: Save Results".format(gettime())
-            #lqrsolver.save()
+            print "{0:s}: Save Results".format(gettime())
+            lqrsolver.save()
 
             th.stop()
 
@@ -95,5 +104,5 @@ for refinement in refinements:
             print "Solver Failed"
             th.stop()
             # Reynoldsnumber to large increment refinement level
-            break
+            #break
 
