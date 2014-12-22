@@ -26,16 +26,19 @@ class LQR_Solver():
         self.options = argoptions.copy()
 
         # read data
-        self.M = mmread(self.options["M_mtx"])
-        self.S = mmread(self.options["S_mtx"])
-        self.Mlower = mmread(self.options["Mlower_mtx"])
-        self.Mupper = mmread(self.options["Mupper_mtx"])
-        self.K = mmread(self.options["K_mtx"])
-        self.R = mmread(self.options["R_mtx"])
-        self.G = mmread(self.options["G_mtx"])
-        self.Gt = mmread(self.options["Gt_mtx"])
+        self.M = mmread(self.options["M_mtx"]).tocsr()
+        self.S = mmread(self.options["S_mtx"]).tocsr()
+        self.Mlower = mmread(self.options["Mlower_mtx"]).tocsr()
+        self.Mupper = mmread(self.options["Mupper_mtx"]).tocsr()
+        self.K = mmread(self.options["K_mtx"]).tocsr()
+        self.R = mmread(self.options["R_mtx"]).tocsr()
+        self.G = mmread(self.options["G_mtx"]).tocsr()
+        self.Gt = mmread(self.options["Gt_mtx"]).tocsr()
         self.B = mmread(self.options["B_mtx"])
         self.C = mmread(self.options["C_mtx"])
+
+        if self.options["Feed0_mtx"]:
+            self.Feed0 = mmread(self.options["Feed0_mtx"])
 
         #setup equation
         self.eqn = equation_dae2()
@@ -46,10 +49,6 @@ class LQR_Solver():
         self.eqn.C = self.C
         self.eqn.delta = self.options["dae2_delta"]
 
-
-
-
-
     def setup_nm_adi_options(self):
         # setup nm and adi options
         self.opt = options()
@@ -57,6 +56,9 @@ class LQR_Solver():
         self.opt.nm.res2_tol = self.options["nm.res2_tol"]
         self.opt.nm.rel_change_tol = self.options["nm.rel_change_tol"]
         self.opt.nm.maxit = self.options["nm.maxit"]
+        if self.options["Feed0_mtx"]:
+            self.opt.nm.nm_K0 = self.Feed0
+
 
         self.opt.adi.output = self.options["adi.output"]
         self.opt.adi.res2_tol = self.options["adi.res2_tol"]
@@ -91,7 +93,6 @@ class LQR_Solver():
             json.dump(self.options, handle)
 
     def eigenvals(self):
-
         np = self.eqn.G.shape[1]
         upperblockM = hstack([self.eqn.M, self.eqn.delta*self.eqn.G])
         lowerblockM = hstack([self.eqn.delta*self.eqn.G.T, csr_matrix((np, np))])
@@ -102,13 +103,14 @@ class LQR_Solver():
         eigs = eigvals(A.todense(), M.todense(), overwrite_a=True, check_finite=False)
         eigs = eigs[numpy.argsort(numpy.absolute(eigs))]
         mmwrite(self.options["eig_mtx"], numpy.matrix(eigs))
-
         stable_eigs = eigs[eigs.real<0]
-        unstable_eigs = eigs[eigs.real>=0]
+        unstable_eigs = eigs[eigs.real>0]
+        zero_eigs = eigs[eigs.real==0]
 
         fig, ax = plt.subplots()
         ax.plot(stable_eigs.real, stable_eigs.imag, "rx")
         ax.plot(unstable_eigs.real,unstable_eigs.imag, "bx")
+        ax.plot(zero_eigs.real,zero_eigs.imag,"gx")
         plt.axvline(x=1.0/self.eqn.delta, linewidth=1, color="g",ls="dashed")
         xlimit = numpy.max(numpy.ceil(numpy.absolute(eigs.real)))
         ylimit = numpy.max(numpy.ceil(numpy.absolute(eigs.imag)))
@@ -134,11 +136,13 @@ class LQR_Solver():
         mmwrite(self.options["eig_nopenalty_mtx"], numpy.matrix(eigs))
 
         stable_eigs = eigs[eigs.real<0]
-        unstable_eigs = eigs[eigs.real>=0]
+        unstable_eigs = eigs[eigs.real>0]
+        zero_eigs = eigs[eigs.real==0]
 
         fig, ax = plt.subplots()
         ax.plot(stable_eigs.real, stable_eigs.imag, "rx")
         ax.plot(unstable_eigs.real,unstable_eigs.imag, "bx")
+        ax.plot(zero_eigs.real,zero_eigs.imag,"gx")
         plt.axvline(x=1.0/self.eqn.delta, linewidth=1, color="g",ls="dashed")
         xlimit = numpy.max(numpy.ceil(numpy.absolute(eigs.real)))
         ylimit = numpy.max(numpy.ceil(numpy.absolute(eigs.imag)))
@@ -150,51 +154,39 @@ class LQR_Solver():
         #plt.show()
         plt.savefig(self.options["eig_nopenalty_eps"])
 
+    def eigenvals_bernoulli(self):
+
+        if not self.options["Feed0_mtx"]:
+            raise ValueError('No Bernoulli FeedBack given in options')
 
 
-import scipy
+        np = self.eqn.G.shape[1]
+        upperblockM = hstack([self.eqn.M, self.eqn.delta*self.eqn.G])
+        lowerblockM = hstack([self.eqn.delta*self.eqn.G.T, csr_matrix((np, np))])
+        M = vstack([upperblockM, lowerblockM])
+        upperblockA = hstack([self.eqn.A-self.B*self.Feed0.T, self.eqn.G])
+        lowerblockA = hstack([self.eqn.G.T, csr_matrix((np, np))])
+        A = vstack([upperblockA,lowerblockA])
+        eigs = eigvals(A.todense(), M.todense(), overwrite_a=True, check_finite=False)
+        eigs = eigs[numpy.argsort(numpy.absolute(eigs))]
+        mmwrite(self.options["eig_bernoulli_mtx"], numpy.matrix(eigs))
+        stable_eigs = eigs[eigs.real<0]
+        unstable_eigs = eigs[eigs.real>0]
+        zero_eigs = eigs[eigs.real==0]
 
+        fig, ax = plt.subplots()
+        ax.plot(stable_eigs.real, stable_eigs.imag, "rx")
+        ax.plot(unstable_eigs.real,unstable_eigs.imag, "bx")
+        ax.plot(zero_eigs.real,zero_eigs.imag,"gx")
+        plt.axvline(x=1.0/self.eqn.delta, linewidth=1, color="g",ls="dashed")
+        xlimit = numpy.max(numpy.ceil(numpy.absolute(eigs.real)))
+        ylimit = numpy.max(numpy.ceil(numpy.absolute(eigs.imag)))
+        plt.xlim((-xlimit, xlimit))
+        plt.ylim((-ylimit, ylimit))
+        plt.xscale("symlog")
+        plt.xlabel("Real")
+        plt.ylabel("Imaginary")
+        #plt.show()
+        plt.savefig(self.options["eig_bernoulli_eps"])
 
-if __name__=="__main__":
-
-    A = -8*numpy.matrix(numpy.eye(6,6))
-    B = 3*numpy.matrix(numpy.eye(6,6))
-    E = 0.5*numpy.matrix(numpy.eye(6,6))
-
-
-    if not A.shape==B.shape:
-        raise ValueError('A and B must have the same number of rows and cols!')
-
-    n = A.shape[0]
-    #parameters for iteration
-    it = 0
-    maxit = 50
-    eps = numpy.finfo(numpy.float).eps
-    tol = 10*n*numpy.sqrt(eps)
-    Err = 1
-    onemore = 0
-    convergence = Err <= tol
-
-    Enrm = numpy.linalg.norm(E, 1)
-    PE, LE, UE = scipy.linalg.lu(E)
-    de = numpy.abs(numpy.diag(UE))
-    if numpy.any(de < n*eps*Enrm):
-        raise RuntimeWarning('E must not be singular.')
-    de = de**(1.0/n)
-    de = numpy.prod(de)
-
-
-    while (it < maxit) and ((not convergence) or (convergence and (onemore < 2))):
-        P, L, U = scipy.linalg.lu(A)
-        Ainv = numpy.dot(E, numpy.linalg.solve(U, numpy.linalg.solve(L, P)))
-        #determinant scaling
-        da = numpy.abs(numpy.diag(U))
-        cs = numpy.float(numpy.prod(da**(1.0/n)))/de
-        A = (A/cs + cs*Ainv*E)/2
-        B = (B/cs + cs*Ainv*B*Ainv.T)/2;
-        Err = numpy.linalg.norm(A-E, 1)/Enrm
-        it += 1
-        print "Step {0:d}, conv. crit. = {1:e}".format(it, Err)
-        if convergence:
-            onemore += 1
 

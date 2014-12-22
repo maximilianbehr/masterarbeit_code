@@ -294,6 +294,14 @@ class LQRAssemblerOutputHandler():
         name = "Z.mtx"
         return self._file(name)
 
+    def Feed0_mtx(self):
+        name = "Feed0.mtx"
+        return self._file(name)
+
+    def Feed1_mtx(self):
+        name = "Feed1.mtx"
+        return self._file(name)
+
     def res2_txt(self):
         name = "lqr_res2.txt"
         return self._file(name)
@@ -306,12 +314,20 @@ class LQRAssemblerOutputHandler():
         name = "eig_nopenalty.eps"
         return self._file(name)
 
+    def eig_bernoulli_eps(self):
+        name = "eig_bernoulli.eps"
+        return self._file(name)
+
     def eig_mtx(self):
         name = "eig.mtx"
         return self._file(name)
 
     def eig_nopenalty_mtx(self):
         name = "eig_nopenalty.mtx"
+        return self._file(name)
+
+    def eig_bernoulli_mtx(self):
+        name = "eig_bernoulli.mtx"
         return self._file(name)
 
     def M_PETSC(self):

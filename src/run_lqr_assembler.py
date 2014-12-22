@@ -46,12 +46,11 @@ OPTIONS = {
 
 # karman
 REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200]
-refinements = [1, 2, 3, 4]
+refinements = [1, 2]
 for refinement in refinements:
     for RE in REs:
 
         kohandler = KarmanOutputHandler()
-        #psohandler = ProblemSolverOutputHandler("karman", "stat_newton", refinement, 1)
         psohandler = ProblemSolverOutputHandler("karman", "stat_newton", refinement, RE)
         lqrohandler = LQRAssemblerOutputHandler(refinement, RE)
         OPTIONS["ref"] = refinement

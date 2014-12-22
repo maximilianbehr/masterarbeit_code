@@ -3,6 +3,7 @@ from src.lqr.lqr_solver import LQR_Solver
 from src.aux import gettime
 from src.aux import TeeHandler
 from src.aux import deletedir
+import os
 from dolfin import parameters
 
 # set dof reordering off
@@ -22,13 +23,14 @@ OPTIONS = {
     "B_mtx": None,
     "C_mtx": None,
     "Z_mtx": None,
+    "Feed0_mtx": None,
     "dae2_delta": -0.02,
     "adi.output": 1,
     "nm.output": 1,
     "nm.res2_tol": 1e-9,
-    "nm.rel_change_tol": 1e-10,
-    "nm.maxit": 50,
-    "adi.res2_tol": 1e-14,
+    "nm.rel_change_tol": 1e-13,
+    "nm.maxit": 20,
+    "adi.res2_tol": 5e-15,
     "adi.maxit": 500,
     "adi.shifts.arp_p": 60,
     "adi.shifts.arp_m": 50,
@@ -38,16 +40,20 @@ OPTIONS = {
     "logfile": None,
     "eig_eps": None,
     "eig_nopenalty_eps": None,
+    "eig_bernoulli_eps": None,
     "eig_mtx": None,
-    "eig_nopenalty_mtx": None
+    "eig_nopenalty_mtx": None,
+    "eig_bernoulli_mtx": None
 }
 
-REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200]
+#REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200]
 #REs = [1, 2, 3, 4, 5, 10, 20, 50]
 #REs = [50]
+REs = [1, 2, 3, 4, 5, 10, 20, 50]
+
 
 #refinements = [1, 2, 3, 4, 5]
-refinements = [1, 2, 3]
+refinements = [1]
 compute_eigenvalues = True
 
 for refinement in refinements:
@@ -67,13 +73,18 @@ for refinement in refinements:
         OPTIONS["B_mtx"] = lqrohandler.B_mtx()
         OPTIONS["C_mtx"] = lqrohandler.C_mtx()
         OPTIONS["Z_mtx"] = lqrohandler.Z_mtx()
+        if os.path.isfile(lqrohandler.Feed0_mtx()):
+            OPTIONS["Feed0_mtx"] = lqrohandler.Feed0_mtx()
+
         OPTIONS["options_json"] = lqrohandler.options_json_solver()
         OPTIONS["res2_txt"] = lqrohandler.res2_txt()
         OPTIONS["logfile"] = lqrohandler.log_solver()
         OPTIONS["eig_eps"] = lqrohandler.eig_eps()
         OPTIONS["eig_nopenalty_eps"] = lqrohandler.eig_nopenalty_eps()
+        OPTIONS["eig_bernoulli_eps"] = lqrohandler.eig_bernoulli_eps()
         OPTIONS["eig_mtx"] = lqrohandler.eig_mtx()
         OPTIONS["eig_nopenalty_mtx"] = lqrohandler.eig_nopenalty_mtx()
+        OPTIONS["eig_bernoulli_mtx"] = lqrohandler.eig_bernoulli_mtx()
 
         th = TeeHandler(OPTIONS["logfile"])
         th.start()
@@ -90,12 +101,14 @@ for refinement in refinements:
                 lqrsolver.eigenvals()
                 print "{0:s}: Compute Eigenvalues no penalty".format(gettime())
                 lqrsolver.eigenvals_nopenalty()
+                print "{0:s}: Compute Eigenvalues with Bernoulli Stabilization".format(gettime())
+                lqrsolver.eigenvals_bernoulli()
 
-            print "{0:s}: Solve".format(gettime())
-            lqrsolver.solve()
+            #print "{0:s}: Solve".format(gettime())
+            #lqrsolver.solve()
 
-            print "{0:s}: Save Results".format(gettime())
-            lqrsolver.save()
+            #print "{0:s}: Save Results".format(gettime())
+            #lqrsolver.save()
 
             th.stop()
 
