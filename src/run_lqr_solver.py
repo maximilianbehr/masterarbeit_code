@@ -77,6 +77,7 @@ for refinement in refinements:
         OPTIONS["Z_mtx"] = lqrohandler.Z_mtx()
         OPTIONS["Kinf_mtx"] = lqrohandler.Kinf_mtx()
 
+        #take bernoulli feedback
         #if os.path.isfile(lqrohandler.Feed0_mtx()):
         #    OPTIONS["Feed0_mtx"] = lqrohandler.Feed0_mtx()
 
