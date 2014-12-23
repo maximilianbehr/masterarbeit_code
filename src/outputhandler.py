@@ -294,6 +294,10 @@ class LQRAssemblerOutputHandler():
         name = "Z.mtx"
         return self._file(name)
 
+    def Kinf_mtx(self):
+        name = "Kinf.mtx"
+        return self._file(name)
+
     def Feed0_mtx(self):
         name = "Feed0.mtx"
         return self._file(name)

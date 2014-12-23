@@ -1,4 +1,4 @@
-function [Feed0, Feed1]=initial_feedback_cylinderwake(Mmtx, Amtx, Gmtx, Bmtx,Cmtx)
+function [Feed0, Feed1]=initial_feedback_karman(Mmtx, Smtx,Rmtx,Kmtx,Mlowermtx, Muppermtx, Gmtx, Bmtx,Cmtx)
 % Compute the initial feedback with projection method 
 % H. Weichelt, J. Saak, P. Kürschner September 2011
 %
@@ -8,25 +8,33 @@ function [Feed0, Feed1]=initial_feedback_cylinderwake(Mmtx, Amtx, Gmtx, Bmtx,Cmt
 %%build full matrices
 
 M = mmread(Mmtx);
-A = mmread(Amtx);
+S = mmread(Smtx);
+R = mmread(Rmtx);
+K = mmread(Kmtx);
+Mlower = mmread(Mlowermtx);
+Mupper = mmread(Muppermtx);
 G = mmread(Gmtx);
 B = mmread(Bmtx);
 C = mmread(Cmtx);
 
 
-[nv,np] = size(J);
-fullA = [A,G;G',zeros(np,np)];
+[nv,np] = size(G);
+fullA = [-S-R-K-Mlower-Mupper,G;G',zeros(np,np)];
 fullM = [M,zeros(nv,np);zeros(np,nv),zeros(np,np)];
-
+%fullM = [M,-0.02*G;-0.02*G',zeros(np,np)];
 
 % compute right and left eigenvectors
+%neigs = ceil(size(fullA,1)/3);
+%fprintf('compute %d smallest magnitude eigenvalues\n',neigs);
 tic;
-[vr,dr]=eigs(fullA, fullM, 1000,'SM');
+[vr,dr]=eigs(fullA, fullM, 250,'SM');
+%[vr,dr]=eigs(fullA, fullM, neigs,'SM');
 Ir=find(real(diag(dr))>0);
 toc
 
 tic;
-[vl,dl]=eigs(fullA',fullM',1000,'SM');
+[vl,dl]=eigs(fullA',fullM',250,'SM');
+%[vl,dl]=eigs(fullA',fullM',neigs,'SM');
 Il=find(real(diag(dl))>0);
 toc
 
@@ -65,8 +73,5 @@ L0 = (([C sparse(size(C,1),np)] * REV) * XL) * (REV' * fullM');
 
 Feed0=real(K0(:,1:nv))';
 Feed1=real(L0(:,1:nv))';
-
-mmwrite('Feed0.mtx',Feed0);
-mmwrite('Feed1.mtx',Feed1);
 
 end

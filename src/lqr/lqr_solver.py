@@ -26,14 +26,14 @@ class LQR_Solver():
         self.options = argoptions.copy()
 
         # read data
-        self.M = mmread(self.options["M_mtx"]).tocsr()
-        self.S = mmread(self.options["S_mtx"]).tocsr()
-        self.Mlower = mmread(self.options["Mlower_mtx"]).tocsr()
-        self.Mupper = mmread(self.options["Mupper_mtx"]).tocsr()
-        self.K = mmread(self.options["K_mtx"]).tocsr()
-        self.R = mmread(self.options["R_mtx"]).tocsr()
-        self.G = mmread(self.options["G_mtx"]).tocsr()
-        self.Gt = mmread(self.options["Gt_mtx"]).tocsr()
+        self.M = mmread(self.options["M_mtx"])
+        self.S = mmread(self.options["S_mtx"])
+        self.Mlower = mmread(self.options["Mlower_mtx"])
+        self.Mupper = mmread(self.options["Mupper_mtx"])
+        self.K = mmread(self.options["K_mtx"])
+        self.R = mmread(self.options["R_mtx"])
+        self.G = mmread(self.options["G_mtx"])
+        self.Gt = mmread(self.options["Gt_mtx"])
         self.B = mmread(self.options["B_mtx"])
         self.C = mmread(self.options["C_mtx"])
 
@@ -79,10 +79,16 @@ class LQR_Solver():
         if self.res2[-1] > self.opt.nm.res2_tol:
             raise ValueError("Newton ADI did not converge")
 
+        ZTM = self.M.T.dot(self.Z).T
+        BTZ = numpy.dot(self.B.T, self.Z)
+        self.Kinf = numpy.dot(BTZ, ZTM).T
 
     def save(self):
         with open(self.options["Z_mtx"], "w") as handle:
             mmwrite(handle, self.Z)
+
+        with open(self.options["Kinf_mtx"], "w") as handle:
+            mmwrite(handle, self.Kinf)
 
         savetxt(self.options["res2_txt"], self.res2)
 
@@ -121,6 +127,7 @@ class LQR_Solver():
         plt.ylabel("Imaginary")
         #plt.show()
         plt.savefig(self.options["eig_eps"])
+        plt.close("all")
 
     def eigenvals_nopenalty(self):
 
@@ -153,6 +160,7 @@ class LQR_Solver():
         plt.ylabel("Imaginary")
         #plt.show()
         plt.savefig(self.options["eig_nopenalty_eps"])
+        plt.close("all")
 
     def eigenvals_bernoulli(self):
 
@@ -188,5 +196,5 @@ class LQR_Solver():
         plt.ylabel("Imaginary")
         #plt.show()
         plt.savefig(self.options["eig_bernoulli_eps"])
-
+        plt.close("all")
 

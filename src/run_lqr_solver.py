@@ -23,6 +23,7 @@ OPTIONS = {
     "B_mtx": None,
     "C_mtx": None,
     "Z_mtx": None,
+    "Kinf_mtx": None,
     "Feed0_mtx": None,
     "dae2_delta": -0.02,
     "adi.output": 1,
@@ -57,6 +58,7 @@ refinements = [1]
 compute_eigenvalues = True
 
 for refinement in refinements:
+    Kinf = None
     for RE in REs:
 
         lqrohandler = LQRAssemblerOutputHandler(refinement, RE)
@@ -73,8 +75,15 @@ for refinement in refinements:
         OPTIONS["B_mtx"] = lqrohandler.B_mtx()
         OPTIONS["C_mtx"] = lqrohandler.C_mtx()
         OPTIONS["Z_mtx"] = lqrohandler.Z_mtx()
-        if os.path.isfile(lqrohandler.Feed0_mtx()):
-            OPTIONS["Feed0_mtx"] = lqrohandler.Feed0_mtx()
+        OPTIONS["Kinf_mtx"] = lqrohandler.Kinf_mtx()
+
+        #if os.path.isfile(lqrohandler.Feed0_mtx()):
+        #    OPTIONS["Feed0_mtx"] = lqrohandler.Feed0_mtx()
+
+        #take last riccati feedback
+        #if Kinf:
+        #    OPTIONS["Feed0_mtx"] = Kinf
+
 
         OPTIONS["options_json"] = lqrohandler.options_json_solver()
         OPTIONS["res2_txt"] = lqrohandler.res2_txt()
@@ -86,36 +95,38 @@ for refinement in refinements:
         OPTIONS["eig_nopenalty_mtx"] = lqrohandler.eig_nopenalty_mtx()
         OPTIONS["eig_bernoulli_mtx"] = lqrohandler.eig_bernoulli_mtx()
 
+        Kinf = OPTIONS["Kinf_mtx"]
+
         th = TeeHandler(OPTIONS["logfile"])
         th.start()
 
-        try:
-            print "{0:s}: Setup pycmess equation".format(gettime())
-            lqrsolver = LQR_Solver(OPTIONS)
+        #try:
+        print "{0:s}: Setup pycmess equation".format(gettime())
+        lqrsolver = LQR_Solver(OPTIONS)
 
-            print "{0:s}: Setup pycmess options".format(gettime())
-            lqrsolver.setup_nm_adi_options()
+        print "{0:s}: Setup pycmess options".format(gettime())
+        lqrsolver.setup_nm_adi_options()
 
-            if refinement <= 1 and compute_eigenvalues:
-                print "{0:s}: Compute Eigenvalues".format(gettime())
-                lqrsolver.eigenvals()
-                print "{0:s}: Compute Eigenvalues no penalty".format(gettime())
-                lqrsolver.eigenvals_nopenalty()
-                print "{0:s}: Compute Eigenvalues with Bernoulli Stabilization".format(gettime())
-                lqrsolver.eigenvals_bernoulli()
+        #if refinement <= 1 and compute_eigenvalues:
+        #    print "{0:s}: Compute Eigenvalues".format(gettime())
+        #    lqrsolver.eigenvals()
+        #    print "{0:s}: Compute Eigenvalues no penalty".format(gettime())
+        #    lqrsolver.eigenvals_nopenalty()
+        #    print "{0:s}: Compute Eigenvalues with Bernoulli Stabilization".format(gettime())
+        #    lqrsolver.eigenvals_bernoulli()
 
-            #print "{0:s}: Solve".format(gettime())
-            #lqrsolver.solve()
+        print "{0:s}: Solve".format(gettime())
+        lqrsolver.solve()
 
-            #print "{0:s}: Save Results".format(gettime())
-            #lqrsolver.save()
+        print "{0:s}: Save Results".format(gettime())
+        lqrsolver.save()
 
-            th.stop()
+        th.stop()
 
-        except Exception, e:
-            print e
-            print "Solver Failed"
-            th.stop()
-            # Reynoldsnumber to large increment refinement level
-            #break
+        #except Exception, e:
+        #    print e
+        #    print "Solver Failed"
+        #    th.stop()
+        #    # Reynoldsnumber to large increment refinement level
+        #    #break
 
