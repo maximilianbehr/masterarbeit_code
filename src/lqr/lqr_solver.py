@@ -43,7 +43,8 @@ class LQR_Solver():
         #setup equation
         self.eqn = equation_dae2()
         self.eqn.M = self.M
-        self.eqn.A = -self.S - self.Mlower - self.Mupper - self.K - self.R
+        #self.eqn.A = -self.S - self.Mlower - self.Mupper - self.K - self.R
+        self.eqn.A = -self.S - self.K - self.R
         self.eqn.G = self.G
         self.eqn.B = self.B
         self.eqn.C = self.C

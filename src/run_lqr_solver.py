@@ -78,8 +78,8 @@ for refinement in refinements:
         OPTIONS["Kinf_mtx"] = lqrohandler.Kinf_mtx()
 
         #take bernoulli feedback
-        #if os.path.isfile(lqrohandler.Feed0_mtx()):
-        #    OPTIONS["Feed0_mtx"] = lqrohandler.Feed0_mtx()
+        if os.path.isfile(lqrohandler.Feed0_mtx()):
+            OPTIONS["Feed0_mtx"] = lqrohandler.Feed0_mtx()
 
         #take last riccati feedback
         #if Kinf:
@@ -101,33 +101,33 @@ for refinement in refinements:
         th = TeeHandler(OPTIONS["logfile"])
         th.start()
 
-        #try:
-        print "{0:s}: Setup pycmess equation".format(gettime())
-        lqrsolver = LQR_Solver(OPTIONS)
+        try:
+            print "{0:s}: Setup pycmess equation".format(gettime())
+            lqrsolver = LQR_Solver(OPTIONS)
 
-        print "{0:s}: Setup pycmess options".format(gettime())
-        lqrsolver.setup_nm_adi_options()
+            print "{0:s}: Setup pycmess options".format(gettime())
+            lqrsolver.setup_nm_adi_options()
 
-        #if refinement <= 1 and compute_eigenvalues:
-        #    print "{0:s}: Compute Eigenvalues".format(gettime())
-        #    lqrsolver.eigenvals()
-        #    print "{0:s}: Compute Eigenvalues no penalty".format(gettime())
-        #    lqrsolver.eigenvals_nopenalty()
-        #    print "{0:s}: Compute Eigenvalues with Bernoulli Stabilization".format(gettime())
-        #    lqrsolver.eigenvals_bernoulli()
+            #if refinement <= 1 and compute_eigenvalues:
+            #    print "{0:s}: Compute Eigenvalues".format(gettime())
+            #    lqrsolver.eigenvals()
+                #print "{0:s}: Compute Eigenvalues no penalty".format(gettime())
+                #lqrsolver.eigenvals_nopenalty()
+            #    print "{0:s}: Compute Eigenvalues with Bernoulli Stabilization".format(gettime())
+                #lqrsolver.eigenvals_bernoulli()
 
-        print "{0:s}: Solve".format(gettime())
-        lqrsolver.solve()
+            print "{0:s}: Solve".format(gettime())
+            lqrsolver.solve()
 
-        print "{0:s}: Save Results".format(gettime())
-        lqrsolver.save()
+            print "{0:s}: Save Results".format(gettime())
+            lqrsolver.save()
 
-        th.stop()
+            th.stop()
 
-        #except Exception, e:
-        #    print e
-        #    print "Solver Failed"
-        #    th.stop()
-        #    # Reynoldsnumber to large increment refinement level
-        #    #break
+        except Exception, e:
+            print e
+            print "Solver Failed"
+            th.stop()
+            # Reynoldsnumber to large increment refinement level
+            #break
 

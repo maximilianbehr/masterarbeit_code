@@ -16,8 +16,27 @@ class LQR_Assembler():
     def __init__(self, argoptions):
         self.options = argoptions.copy()
         self.mesh = Mesh(self.options["mesh"])
+
         self.boundaryfunction = MeshFunction("size_t", self.mesh, self.options["boundaryfunction"])
-        self.g = Expression(("1/r * (x[0]-x0)", "1/r * (x[1]-y0)"), r=circle["r"], x0=circle["x0"], y0=circle["y0"])
+
+        #upper control term
+        phi1upper = np.pi / 2.0 - np.arccos(1.0 / 8.0)
+        phi2upper = np.pi / 2.0 - np.arccos(6.0 / 8.0)
+        self.gupper = Expression(
+            ("1.0/pow(phi2/2.0-phi1/2.0, 2.0) * (x[0]-x0)* (atan((x[0]-x0)/(x[1]-y0))-phi1) * (phi2-atan((x[0]-x0)/(x[1]-y0)))",
+             "1.0/pow(phi2/2.0-phi1/2.0, 2.0) * (x[1]-y0)* (atan((x[0]-x0)/(x[1]-y0))-phi1) * (phi2-atan((x[0]-x0)/(x[1]-y0)))"),phi1=phi1upper,phi2=phi2upper,x0=circle["x0"],y0=circle["y0"])
+
+
+        #lower control term
+        phi1lower = -np.pi / 2.0 + np.arccos(1.0 / 8.0)
+        phi2lower = -np.pi / 2.0 + np.arccos(6.0 / 8.0)
+        self.glower = Expression(
+            ("1.0/pow(phi2/2.0-phi1/2.0, 2.0) * (x[0]-x0)* (atan((x[0]-x0)/(x[1]-y0))-phi1) * (phi2-atan((x[0]-x0)/(x[1]-y0)))",
+             "1.0/pow(phi2/2.0-phi1/2.0, 2.0) * (x[1]-y0)* (atan((x[0]-x0)/(x[1]-y0))-phi1) * (phi2-atan((x[0]-x0)/(x[1]-y0)))"),phi1=phi1lower,phi2=phi2lower,x0=circle["x0"],y0=circle["y0"])
+
+
+        #self.g = Expression(("1/r * (x[0]-x0)", "1/r * (x[1]-y0)"), r=circle["r"], x0=circle["x0"], y0=circle["y0"])
+
         self.V = VectorFunctionSpace(self.mesh, "CG", 2)
         self.Q = FunctionSpace(self.mesh, "CG", 1)
 
@@ -51,9 +70,9 @@ class LQR_Assembler():
 
         self.var["M"] = inner(dudt, w_test) * dx
         self.var["S"] = 1.0 / self.options["RE"] * inner(grad(u), grad(w_test)) * dx
-        self.var["Bupper"] = 1.0 / self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(self.g, w_test) * ds(
+        self.var["Bupper"] = 1.0 / self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(self.gupper, w_test) * ds(
             GammaBallCtrlUpper.index)
-        self.var["Blower"] = 1.0 / self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(self.g, w_test) * ds(
+        self.var["Blower"] = 1.0 / self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(self.glower, w_test) * ds(
             GammaBallCtrlLower.index)
         self.var["Mupper"] = 1.0 / self.options["RE"] * 1.0 / self.options["penalty_eps"] * inner(u, w_test) * ds(
             GammaBallCtrlUpper.index)
@@ -114,7 +133,7 @@ class LQR_Assembler():
                     dists[p] = cdist
                     idxs[p] = c.index()
 
-        #collect vertical dofs of cells with midpoint has minimal distance
+        # collect vertical dofs of cells with midpoint has minimal distance
         verticaldofs = np.empty(0, dtype=np.int32)
         for idx in idxs.values():
             verticaldofs = np.union1d(verticaldofs, self.V.sub(1).dofmap().cell_dofs(idx))
