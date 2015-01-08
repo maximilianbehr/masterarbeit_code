@@ -52,12 +52,14 @@ class SolverBase:
             if self.options["u_pvd"]:
                 if self._ufile is None:
                     self._ufile = File(self.options["u_pvd"])
-                self._ufile << (u, t)
+                #self._ufile << (u, t)
+                self._ufile << u
 
             if self.options["p_pvd"]:
                 if self._pfile is None:
                     self._pfile = File(self.options["p_pvd"])
-                self._pfile << (p, t)
+                #self._pfile << (p, t)
+                self._pfile <<p
 
             if self.options["u_xml"]:
                 file = File(self.options["u_xml"].format(t), "compressed")
@@ -161,4 +163,5 @@ def check_divergence(u, Q):
     bc.apply(pdivu.vector())
 
     # Compute "weak" L2 norm of divergence
-    print "||div u||_w  =", sqrt(abs(assemble(pdivu * div(u) * dx, mesh=Q.mesh())))
+    #print "||div u||_w  =", sqrt(abs(assemble(pdivu * div(u) * dx, mesh=Q.mesh())))
+    print "||div u||_w  =", sqrt(abs(assemble(pdivu * div(u) * dx)))

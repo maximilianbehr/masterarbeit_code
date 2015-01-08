@@ -172,27 +172,35 @@ class LQR_Assembler():
             os.makedirs(os.path.dirname(self.options["M_mtx"]))
 
         with open(self.options["M_mtx"], "w") as handle:
+            self.npsc["M"].eliminate_zeros()
             mmwrite(handle, self.npsc["M"])
 
         with open(self.options["S_mtx"], "w") as handle:
+            self.npsc["S"].eliminate_zeros()
             mmwrite(handle, self.npsc["S"])
 
         with open(self.options["Mlower_mtx"], "w") as handle:
+            self.npsc["Mlower"].eliminate_zeros()
             mmwrite(handle, self.npsc["Mlower"])
 
         with open(self.options["Mupper_mtx"], "w") as handle:
+            self.npsc["Mupper"].eliminate_zeros()
             mmwrite(handle, self.npsc["Mupper"])
 
         with open(self.options["K_mtx"], "w") as handle:
+            self.npsc["K"].eliminate_zeros()
             mmwrite(handle, self.npsc["K"])
 
         with open(self.options["R_mtx"], "w") as handle:
+            self.npsc["R"].eliminate_zeros()
             mmwrite(handle, self.npsc["R"])
 
         with open(self.options["G_mtx"], "w") as handle:
+            self.npsc["G"].eliminate_zeros()
             mmwrite(handle, self.npsc["G"])
 
         with open(self.options["Gt_mtx"], "w") as handle:
+            self.npsc["Gt"].eliminate_zeros()
             mmwrite(handle, self.npsc["Gt"])
 
         with open(self.options["Blower_mtx"], "w") as handle:

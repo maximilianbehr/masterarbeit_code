@@ -3,7 +3,7 @@ from dolfin.cpp.common import begin
 from dolfin.cpp.common import end
 from dolfin.cpp.common import info
 from problems.problem_mesh.karman import MeshBuilder
-from outputhandler import KarmanOutputHandler
+from src.outputhandler.karmanoutputhandler import KarmanOutputHandler
 
 # set dof reordering off
 parameters["reorder_dofs_serial"] = False
@@ -14,6 +14,7 @@ parameters["form_compiler"].add("eliminate_zeros", True)
 refalgs = ["recursive_bisection"]
 
 refs = range(1, 7)
+#refs = range(1,4)
 
 if __name__ == "__main__":
 

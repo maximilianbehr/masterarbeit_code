@@ -1,8 +1,8 @@
 import os
 import traceback
 from call_solver import call
-from outputhandler import KarmanOutputHandler
-from outputhandler import ProblemSolverOutputHandler
+from src.outputhandler.karmanoutputhandler import KarmanOutputHandler
+from src.outputhandler.problemsolveroutputhandler import ProblemSolverOutputHandler
 from src.aux import gettime
 from src.aux import TeeHandler
 from src.aux import deletedir
@@ -21,7 +21,7 @@ OPTIONS = {"mesh": None,
            "p_xml": None,
            "options_json": None,
            "logfile": None,
-           "debug": False,
+           "debug": True,
            "krylov_solver_absolute_tolerance": 1e-25,
            "krylov_solver_relative_tolerance": 1e-14,
            "krylov_solver_monitor_convergence": False,
@@ -35,14 +35,12 @@ OPTIONS = {"mesh": None,
 
 # karman
 instant_clean = False
-REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200, 300, 400, 500, 600, 700, 750]
-refinements = [1, 2, 3, 4]
-#refinements = [5,6]
-
-
+REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200, 300, 400, 500]
+refinements = [1, 2, 3]
 
 problem = "karman"
 solver = "stat_newton"
+
 for refinement in refinements:
     for RE in REs:
 

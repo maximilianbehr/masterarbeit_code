@@ -123,6 +123,7 @@ class ProblemBase:
         print 'Size of timestep:', dt
         print " "
 
+
         return dt, t_range[0], t_range
 
         # FIXME: Remove this and merge with boundary_condition()

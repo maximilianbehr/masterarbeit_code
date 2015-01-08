@@ -1,10 +1,11 @@
-from src.outputhandler import LQRAssemblerOutputHandler
-from src.lqr.lqr_solver import LQR_Solver
+from src.outputhandler.lqrassembleroutputhandler import LQRAssemblerOutputHandler
+from src.outputhandler.eigenoutputhandler import EigenOutputHandler
 from src.aux import gettime
 from src.aux import TeeHandler
 from src.aux import deletedir
 import os
 from dolfin import parameters
+from src.lqr.eigen import Eigen
 
 # set dof reordering off
 parameters["reorder_dofs_serial"] = False
@@ -23,37 +24,27 @@ OPTIONS = {
     "B_mtx": None,
     "C_mtx": None,
     "Z_mtx": None,
-    "Kinf_mtx": None,
     "Feed0_mtx": None,
     "dae2_delta": -0.02,
-    "adi.output": 1,
-    "nm.output": 1,
-    "nm.res2_tol": 1e-9,
-    "nm.rel_change_tol": 1e-13,
-    "nm.maxit": 20,
-    "adi.res2_tol": 5e-15,
-    "adi.maxit": 500,
-    "adi.shifts.arp_p": 60,
-    "adi.shifts.arp_m": 50,
-    "adi.shifts.l0": 40,
-    "res2_txt": None,
     "options_json": None,
-    "logfile": None
+    "logfile": None,
+    "eig_eps": None,
+    "eig_nopenalty_eps": None,
+    "eig_bernoulli_eps": None,
+    "eig_mtx": None,
+    "eig_nopenalty_mtx": None,
+    "eig_bernoulli_mtx": None
 }
 
-#REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200]
-#REs = [1, 2, 3, 4, 5, 10, 20, 50]
-#REs = [50]
-REs = [1, 2, 3, 4, 5, 10, 20, 50]
-
-
-#refinements = [1, 2, 3, 4, 5]
+REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200]
 refinements = [1]
 
 for refinement in refinements:
     for RE in REs:
 
         lqrohandler = LQRAssemblerOutputHandler(refinement, RE)
+        eighandler = EigenOutputHandler(refinement,RE)
+
         OPTIONS["ref"] = refinement
         OPTIONS["RE"] = RE
         OPTIONS["M_mtx"] = lqrohandler.M_mtx()
@@ -66,38 +57,38 @@ for refinement in refinements:
         OPTIONS["Gt_mtx"] = lqrohandler.Gt_mtx()
         OPTIONS["B_mtx"] = lqrohandler.B_mtx()
         OPTIONS["C_mtx"] = lqrohandler.C_mtx()
-        OPTIONS["Z_mtx"] = lqrohandler.Z_mtx()
-        OPTIONS["Kinf_mtx"] = lqrohandler.Kinf_mtx()
 
         #take bernoulli feedback
         if os.path.isfile(lqrohandler.Feed0_mtx()):
             OPTIONS["Feed0_mtx"] = lqrohandler.Feed0_mtx()
 
-        OPTIONS["options_json"] = lqrohandler.options_json_solver()
-        OPTIONS["res2_txt"] = lqrohandler.res2_txt()
-        OPTIONS["logfile"] = lqrohandler.log_solver()
-
+        OPTIONS["options_json"] = eighandler.options_json()
+        OPTIONS["logfile"] = eighandler.log()
+        OPTIONS["eig_eps"] = eighandler.eig_eps()
+        OPTIONS["eig_nopenalty_eps"] = eighandler.eig_nopenalty_eps()
+        OPTIONS["eig_bernoulli_eps"] = eighandler.eig_bernoulli_eps()
+        OPTIONS["eig_mtx"] = eighandler.eig_mtx()
+        OPTIONS["eig_nopenalty_mtx"] = eighandler.eig_nopenalty_mtx()
+        OPTIONS["eig_bernoulli_mtx"] = eighandler.eig_bernoulli_mtx()
 
         th = TeeHandler(OPTIONS["logfile"])
         th.start()
 
         try:
-            print "{0:s}: Setup pycmess equation".format(gettime())
-            lqrsolver = LQR_Solver(OPTIONS)
 
-            print "{0:s}: Setup pycmess options".format(gettime())
-            lqrsolver.setup_nm_adi_options()
+            eigensolver = Eigen(OPTIONS)
 
-            print "{0:s}: Solve".format(gettime())
-            lqrsolver.solve()
+            print "{0:s}: Compute Eigenvalues".format(gettime())
+            eigensolver.eigenvals()
 
-            print "{0:s}: Save Results".format(gettime())
-            lqrsolver.save()
+            print "{0:s}: Compute Eigenvalues no penalty".format(gettime())
+            eigensolver.eigenvals_nopenalty()
 
+            if OPTIONS["Feed0_mtx"]:
+                print "{0:s}: Compute Eigenvalues with Bernoulli Stabilization".format(gettime())
+                eigensolver.eigenvals_bernoulli()
             th.stop()
-
         except Exception, e:
             print e
-            print "Solver Failed"
             th.stop()
 

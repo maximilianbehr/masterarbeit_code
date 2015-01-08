@@ -1,8 +1,8 @@
 import os
 import traceback
 
-from outputhandler import KarmanOutputHandler
-from outputhandler import ProblemSolverOutputHandler
+from src.outputhandler.karmanoutputhandler import KarmanOutputHandler
+from src.outputhandler.problemsolveroutputhandler import ProblemSolverOutputHandler
 from call_solver import call
 from src.aux import gettime
 from src.aux import TeeHandler
@@ -26,7 +26,7 @@ OPTIONS = {"mesh": None,
            "save_solution_at_t=T": True,
            "options_json": None,
            "log": None,
-           "save_frequency": 10,
+           "save_frequency": 3,
            "check_mem_usage": True,
            "check_frequency": 10,
            "compute_divergence": True,
@@ -44,12 +44,18 @@ OPTIONS = {"mesh": None,
 
 # karman
 instant_clean = False
-REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200, 300, 400, 500, 600, 700, 750]
-refinements = [1, 2, 3, 4]
+#REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200, 300, 400, 500, 600, 700, 750]
+#refinements = [1, 2, 3, 4]
+#REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200, 300]
+#refinements = [1, 2]
+REs = [1, 5, 10, 20, 50, 75, 100, 200, 300]
+#refinements = [1, 2]
+refinements = [1, 2]
 
 problem = "karman"
 
-solvers = ["ipcs", "chorin", "instat_newton"]
+solvers = ["chorin","ipcs"]
+#solvers = ["chorin"]
 
 
 for refinement in refinements:
@@ -57,7 +63,7 @@ for refinement in refinements:
         for RE in REs:
             kohandler = KarmanOutputHandler()
             psohandler = ProblemSolverOutputHandler(problem, solver, refinement, RE)
-
+            #OPTIONS["dt"] = 0.01
             OPTIONS["mesh"] = kohandler.karman_mesh_xml(refinement)
             OPTIONS["RE"] = RE
             OPTIONS["T"] = 12.0
