@@ -1,4 +1,4 @@
-from src.outputhandler import LQRAssemblerOutputHandler
+from src.outputhandler.lqrassembleroutputhandler import LQRAssemblerOutputHandler
 from src.lqr.lqr_solver import LQR_Solver
 from src.aux import gettime
 from src.aux import TeeHandler
@@ -33,9 +33,9 @@ OPTIONS = {
     "nm.maxit": 20,
     "adi.res2_tol": 5e-15,
     "adi.maxit": 500,
-    "adi.shifts.arp_p": 60,
-    "adi.shifts.arp_m": 50,
-    "adi.shifts.l0": 40,
+    "adi.shifts.arp_p": 50,
+    "adi.shifts.arp_m": 25,
+    "adi.shifts.l0": 25,
     "res2_txt": None,
     "options_json": None,
     "logfile": None
@@ -68,21 +68,20 @@ for refinement in refinements:
         OPTIONS["C_mtx"] = lqrohandler.C_mtx()
         OPTIONS["Z_mtx"] = lqrohandler.Z_mtx()
         OPTIONS["Kinf_mtx"] = lqrohandler.Kinf_mtx()
-
-        #take bernoulli feedback
-        if os.path.isfile(lqrohandler.Feed0_mtx()):
-            OPTIONS["Feed0_mtx"] = lqrohandler.Feed0_mtx()
-
         OPTIONS["options_json"] = lqrohandler.options_json_solver()
         OPTIONS["res2_txt"] = lqrohandler.res2_txt()
         OPTIONS["logfile"] = lqrohandler.log_solver()
 
-
         th = TeeHandler(OPTIONS["logfile"])
         th.start()
 
+        #take bernoulli feedback
+        if os.path.isfile(lqrohandler.Feed0_mtx()):
+            print "Use initial Feedback"
+            OPTIONS["Feed0_mtx"] = lqrohandler.Feed0_mtx()
+
         try:
-            print "{0:s}: Setup pycmess equation".format(gettime())
+            print "{0:s}: Setup pycmess equation ref = {1:d} RE = {2:d}".format(gettime(),refinement,RE)
             lqrsolver = LQR_Solver(OPTIONS)
 
             print "{0:s}: Setup pycmess options".format(gettime())

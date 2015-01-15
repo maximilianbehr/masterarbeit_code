@@ -21,13 +21,13 @@ else:
 
 
 "constants for rectangular domain"""
-rect = {"x0": 0, "x1": 2.0, "y0": 0, "y1": 1}
+rect = {"x0": 0, "x1": 5.0, "y0": 0, "y1": 1.0}
 
 "constants for circular domain"
-circle = {"x0": 0.75, "y0": 0.5, "r": 0.15, "fragments": 8}
+circle = {"x0": 0.5, "y0": 0.5, "r": 0.15, "fragments": 8}
 
 "the resolution of the macro master problem_mesh"
-initialresolution = 15
+initialresolution = 12
 
 
 class GammaLeft(SubDomain):

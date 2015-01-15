@@ -2,17 +2,15 @@ from src.solvers.solverbase import *
 
 
 class Solver(SolverBase):
-    "Newton Method for solving stationary navier stokes"
+    """Newton Method for solving stationary navier stokes"""
 
     def __init__(self, options):
         SolverBase.__init__(self, options)
-
 
     def solve(self, problem):
 
         # Get problem parameters
         mesh = problem.mesh
-
 
         # Define function spaces (P2-P1)
         self.V = VectorFunctionSpace(mesh, "CG", 2)
@@ -53,7 +51,6 @@ class Solver(SolverBase):
         solver.parameters["newton_solver"]["maximum_iterations"] = self.options["newton_solver_max_iterations"]
         solver.parameters["newton_solver"]["absolute_tolerance"] = self.options["newton_solver_absolute_tolerance"]
         solver.parameters["newton_solver"]["relative_tolerance"] = self.options["newton_solver_relative_tolerance"]
-
         solver.solve()
 
         # split w
@@ -76,7 +73,6 @@ class Solver(SolverBase):
     def save(self, u, p):
         interu = interpolate(u, self.V)
         interp = interpolate(p, self.Q)
-
 
         if self.options["u_pvd"]:
             File(self.options["u_pvd"]) << interu

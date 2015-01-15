@@ -1,7 +1,10 @@
-from src.outputhandler import LQRAssemblerOutputHandler
-from src.outputhandler import KarmanOutputHandler
-from src.outputhandler import ProblemSolverOutputHandler
-from src.outputhandler import Linearized_NSE_SIM_OutputHandler
+
+
+from src.outputhandler.lqrassembleroutputhandler import LQRAssemblerOutputHandler
+from src.outputhandler.karmanoutputhandler import KarmanOutputHandler
+from src.outputhandler.problemsolveroutputhandler import ProblemSolverOutputHandler
+from src.outputhandler.linearizedsimoutputhandler import Linearized_NSE_SIM_OutputHandler
+
 
 from src.lqr.linearized_nse import Linearized_NSE_SIM
 from src.aux import gettime
@@ -12,7 +15,6 @@ from dolfin import parameters
 # set dof reordering off
 parameters["reorder_dofs_serial"] = False
 parameters["form_compiler"]["optimize"] = True
-parameters["form_compiler"].add("eliminate_zeros", True)
 
 OPTIONS = {
     "ref": None,
@@ -29,18 +31,19 @@ OPTIONS = {
     "B_mtx": None,
     "options_json": None,
     "logfile": None,
-    "dt": 0.1,
+    "dt": 0.005,
     "T": 12,
     "u_pvd": None,
     "u_t_xml": None,
-    "save_frequency": 10,
-    "pertubation_eps": 0.001,
+    "save_frequency": 5,
+    "save_solution_at_t=T": 1,
+    "pertubation_eps": 5,
     "u_stat": None
 
 }
 
-REs = [1]
-refinements = [2]
+REs = [1, 10, 50, 100, 200, 300, 400, 500, 600, 700]
+refinements = [1,2]
 
 for refinement in refinements:
     for RE in REs:
@@ -67,6 +70,7 @@ for refinement in refinements:
         OPTIONS["logfile"] = lqrohandler.log_solver()
         OPTIONS["u_pvd"] = lnsesimhandler.u_pvd()
         OPTIONS["u_t_xml"] = lnsesimhandler.u_t_xml()
+        OPTIONS["u_stat"] = psohandler.u_xml()
 
 
         th = TeeHandler(OPTIONS["logfile"])

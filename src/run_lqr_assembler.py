@@ -36,16 +36,16 @@ OPTIONS = {
     "mat": None,
     "options_json": None,
     "logfile": None,
-    "observer_point1_x": 1.75,
+    "observer_point1_x": 3.5,
     "observer_point1_y": 0.25,
-    "observer_point2_x": 1.75,
+    "observer_point2_x": 3.5,
     "observer_point2_y": 0.75
 }
 
 
 # karman
-REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200]
-refinements = [1, 2, 3]
+REs = [1, 10, 50, 100, 200, 300, 400, 500, 600, 700]
+refinements = [1,2]
 for refinement in refinements:
     for RE in REs:
 

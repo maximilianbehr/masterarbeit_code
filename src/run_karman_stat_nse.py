@@ -11,8 +11,12 @@ from dolfin import parameters
 # set dof reordering off
 parameters["reorder_dofs_serial"] = False
 parameters["form_compiler"]["optimize"] = True
-parameters["form_compiler"].add("eliminate_zeros", True)
 
+# problemname and solvername
+problem = "karman"
+solver = "stat_newton"
+
+# setup options structure
 OPTIONS = {"mesh": None,
            "RE": None,
            "u_pvd": None,
@@ -33,13 +37,9 @@ OPTIONS = {"mesh": None,
            "compute_divergence": True
 }
 
-# karman
-instant_clean = False
-REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200, 300, 400, 500]
-refinements = [1, 2, 3]
-
-problem = "karman"
-solver = "stat_newton"
+# set Reynoldsnumbers and refinements
+REs = [1, 10, 50, 100, 200, 300, 400, 500, 600, 700]
+refinements = [1, 2]
 
 for refinement in refinements:
     for RE in REs:
@@ -61,9 +61,6 @@ for refinement in refinements:
 
         print "{0:s}: Karman Stationary ref = {1:d} RE = {2:d}".format(gettime(), refinement, RE)
         try:
-            if instant_clean:
-                os.system("instant-clean")
-
             call(problem, solver, OPTIONS)
             th.stop()
             print "--------------------------------------------------------------"
@@ -72,6 +69,7 @@ for refinement in refinements:
             th.stop()
             print "Solver Failed: Remove files and Directory"
             deletedir(psohandler.outputdir)
+
             # Reynoldsnumber to large increment refinement level
             break
 

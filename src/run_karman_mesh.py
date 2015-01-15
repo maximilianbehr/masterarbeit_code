@@ -8,13 +8,12 @@ from src.outputhandler.karmanoutputhandler import KarmanOutputHandler
 # set dof reordering off
 parameters["reorder_dofs_serial"] = False
 parameters["form_compiler"]["optimize"] = True
-parameters["form_compiler"].add("eliminate_zeros", True)
 
 # refalgs = ["bisection", "iterative_bisection", "recursive_bisection", "regular_cut"]
 refalgs = ["recursive_bisection"]
 
-refs = range(1, 7)
-#refs = range(1,4)
+# refs = range(1, 7)
+refs = range(1, 4)
 
 if __name__ == "__main__":
 
@@ -23,6 +22,7 @@ if __name__ == "__main__":
 
     for refalg in refalgs:
 
+        # set refinement algorithm
         parameters["refinement_algorithm"] = refalg
 
         # build macro mesh
@@ -39,10 +39,10 @@ if __name__ == "__main__":
             # refine mesh
             meshbuilder.refine()
 
-            #save mesh
+            # save mesh
             kohandler.karman_save_mesh(meshbuilder)
 
-            #save boundaryfunction
+            # save boundaryfunction
             kohandler.karman_save_boundaryfunction(meshbuilder)
 
         end()

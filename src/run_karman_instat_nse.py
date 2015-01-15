@@ -48,9 +48,9 @@ instant_clean = False
 #refinements = [1, 2, 3, 4]
 #REs = [1, 2, 3, 4, 5, 10, 20, 50, 75, 100, 200, 300]
 #refinements = [1, 2]
-REs = [1, 5, 10, 20, 50, 75, 100, 200, 300]
+REs = [1, 5, 10, 20, 50, 75, 100]
 #refinements = [1, 2]
-refinements = [1, 2]
+refinements = [1]
 
 problem = "karman"
 
@@ -66,7 +66,7 @@ for refinement in refinements:
             #OPTIONS["dt"] = 0.01
             OPTIONS["mesh"] = kohandler.karman_mesh_xml(refinement)
             OPTIONS["RE"] = RE
-            OPTIONS["T"] = 12.0
+            OPTIONS["T"] = 6.0
             OPTIONS["u_pvd"] = psohandler.u_pvd()
             OPTIONS["p_pvd"] = psohandler.p_pvd()
             OPTIONS["u_xml"] = psohandler.u_xml()

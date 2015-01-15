@@ -29,9 +29,6 @@ class ProblemBase:
         self.p = None
         self.U = 1.0
 
-        # FIXME: Temporary while testing
-        self.bcpsi = []
-
     def output_location(self, solver):
         """output dir"""
         pass
@@ -126,7 +123,5 @@ class ProblemBase:
 
         return dt, t_range[0], t_range
 
-        # FIXME: Remove this and merge with boundary_condition()
-        # def pressure_bc(self, Q):
-        # return Constant(0)
+
 
