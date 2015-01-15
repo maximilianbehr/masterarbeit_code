@@ -31,18 +31,18 @@ OPTIONS = {
     "B_mtx": None,
     "options_json": None,
     "logfile": None,
-    "dt": 0.005,
-    "T": 12,
+    "dt": 0.002,
+    "T": 20,
     "u_pvd": None,
     "u_t_xml": None,
     "save_frequency": 5,
     "save_solution_at_t=T": 1,
-    "pertubation_eps": 5,
+    "pertubation_eps": 1,
     "u_stat": None
 
 }
 
-REs = [1, 10, 50, 100, 200, 300, 400, 500, 600, 700]
+REs = [100, 200, 300, 400, 500, 600, 700]
 refinements = [1,2]
 
 for refinement in refinements:
