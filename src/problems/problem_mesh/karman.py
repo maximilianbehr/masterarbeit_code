@@ -21,7 +21,7 @@ else:
 
 
 "constants for rectangular domain"""
-rect = {"x0": 0, "x1": 5.0, "y0": 0, "y1": 1.0}
+rect = {"x0": 0, "x1": 3.0, "y0": 0, "y1": 1.0}
 
 "constants for circular domain"
 circle = {"x0": 0.5, "y0": 0.5, "r": 0.15, "fragments": 8}
@@ -61,25 +61,21 @@ class GammaUpper(SubDomain):
     def inside(self, x, on_boundary):
         return on_boundary and near(x[1], rect["y1"])
 
-
-class GammaBall(SubDomain):
-    """Ball"""
-    index = 5
-    threshold = 1.5  # slightly larger use on boundary argument to ensure we get only the boundary of the Ball
-
-    def inside(self, x, on_boundary):
-        r = sqrt((x[0] - circle["x0"]) ** 2 + (x[1] - circle["y0"]) ** 2)
-        return on_boundary and self.threshold * circle["r"] > r
-
-
 class GammaBallCtrlUpper(SubDomain):
     """Ball Upper"""
     index = 6
     uppery = circle["y0"] + 6.0 / 8.0 * circle["r"]
     lowery = circle["y0"] + 1.0 / 8.0 * circle["r"]
 
+    threshold = 1.5  # slightly larger use on boundary argument to ensure we get only the boundary of the Ball
+
     def inside(self, x, on_boundary):
-        return GammaBall().inside(x, on_boundary) and between(x[1], (self.lowery, self.uppery)) and circle["x0"] < x[0]
+        r = sqrt((x[0] - circle["x0"]) ** 2 + (x[1] - circle["y0"]) ** 2)
+
+        return on_boundary and \
+               self.threshold*circle["r"]> r and \
+               between(x[1], (self.lowery, self.uppery)) and \
+               circle["x0"] < x[0]
 
 
 class GammaBallCtrlLower(SubDomain):
@@ -88,8 +84,32 @@ class GammaBallCtrlLower(SubDomain):
     uppery = circle["y0"] - 1.0 / 8.0 * circle["r"]
     lowery = circle["y0"] - 6.0 / 8.0 * circle["r"]
 
+    threshold = 1.5  # slightly larger use on boundary argument to ensure we get only the boundary of the Ball
+
     def inside(self, x, on_boundary):
-        return GammaBall().inside(x, on_boundary) and between(x[1], (self.lowery, self.uppery)) and circle["x0"] < x[0]
+        r = sqrt((x[0] - circle["x0"]) ** 2 + (x[1] - circle["y0"]) ** 2)
+        return on_boundary and \
+               self.threshold*circle["r"]> r and \
+               between(x[1], (self.lowery, self.uppery)) and \
+               circle["x0"] < x[0]
+
+
+
+class GammaBall(SubDomain):
+    """Ball"""
+    index = 5
+    threshold = 1.5  # slightly larger use on boundary argument to ensure we get only the boundary of the Ball
+
+    gammaballctrllower = GammaBallCtrlLower()
+    gammaballctrlupper = GammaBallCtrlUpper()
+
+    def inside(self, x, on_boundary):
+        r = sqrt((x[0] - circle["x0"]) ** 2 + (x[1] - circle["y0"]) ** 2)
+        return on_boundary and \
+               self.threshold * circle["r"] > r
+
+
+
 
 
 class BallProjection(SubDomain):

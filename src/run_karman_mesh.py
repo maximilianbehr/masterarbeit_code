@@ -13,7 +13,7 @@ parameters["form_compiler"]["optimize"] = True
 refalgs = ["recursive_bisection"]
 
 # refs = range(1, 7)
-refs = range(1, 4)
+refs = range(1, 5)
 
 if __name__ == "__main__":
 

@@ -20,22 +20,23 @@ class LQR_Assembler():
         self.boundaryfunction = MeshFunction("size_t", self.mesh, self.options["boundaryfunction"])
 
         #upper control term
-        phi1upper = np.pi / 2.0 - np.arccos(1.0 / 8.0)
-        phi2upper = np.pi / 2.0 - np.arccos(6.0 / 8.0)
-        self.gupper = Expression(
-            ("1.0/pow(phi2/2.0-phi1/2.0, 2.0) * (x[0]-x0)* (atan((x[0]-x0)/(x[1]-y0))-phi1) * (phi2-atan((x[0]-x0)/(x[1]-y0)))",
-             "1.0/pow(phi2/2.0-phi1/2.0, 2.0) * (x[1]-y0)* (atan((x[0]-x0)/(x[1]-y0))-phi1) * (phi2-atan((x[0]-x0)/(x[1]-y0)))"),phi1=phi1upper,phi2=phi2upper,x0=circle["x0"],y0=circle["y0"])
+        #phi1upper = np.pi / 2.0 - np.arccos(1.0 / 8.0)
+        #phi2upper = np.pi / 2.0 - np.arccos(6.0 / 8.0)
+        #self.gupper = Expression(
+        #    ("1.0/pow(phi2/2.0-phi1/2.0, 2.0) * (x[0]-x0)* (atan((x[0]-x0)/(x[1]-y0))-phi1) * (phi2-atan((x[0]-x0)/(x[1]-y0)))",
+        #     "1.0/pow(phi2/2.0-phi1/2.0, 2.0) * (x[1]-y0)* (atan((x[0]-x0)/(x[1]-y0))-phi1) * (phi2-atan((x[0]-x0)/(x[1]-y0)))"),phi1=phi1upper,phi2=phi2upper,x0=circle["x0"],y0=circle["y0"])
 
 
         #lower control term
-        phi1lower = -np.pi / 2.0 + np.arccos(1.0 / 8.0)
-        phi2lower = -np.pi / 2.0 + np.arccos(6.0 / 8.0)
-        self.glower = Expression(
-            ("1.0/pow(phi2/2.0-phi1/2.0, 2.0) * (x[0]-x0)* (atan((x[0]-x0)/(x[1]-y0))-phi1) * (phi2-atan((x[0]-x0)/(x[1]-y0)))",
-             "1.0/pow(phi2/2.0-phi1/2.0, 2.0) * (x[1]-y0)* (atan((x[0]-x0)/(x[1]-y0))-phi1) * (phi2-atan((x[0]-x0)/(x[1]-y0)))"),phi1=phi1lower,phi2=phi2lower,x0=circle["x0"],y0=circle["y0"])
+        #phi1lower = -np.pi / 2.0 + np.arccos(1.0 / 8.0)
+        #phi2lower = -np.pi / 2.0 + np.arccos(6.0 / 8.0)
+        #self.glower = Expression(
+        #    ("1.0/pow(phi2/2.0-phi1/2.0, 2.0) * (x[0]-x0)* (atan((x[0]-x0)/(x[1]-y0))-phi1) * (phi2-atan((x[0]-x0)/(x[1]-y0)))",
+        #     "1.0/pow(phi2/2.0-phi1/2.0, 2.0) * (x[1]-y0)* (atan((x[0]-x0)/(x[1]-y0))-phi1) * (phi2-atan((x[0]-x0)/(x[1]-y0)))"),phi1=phi1lower,phi2=phi2lower,x0=circle["x0"],y0=circle["y0"])
 
 
-        #self.g = Expression(("1/r * (x[0]-x0)", "1/r * (x[1]-y0)"), r=circle["r"], x0=circle["x0"], y0=circle["y0"])
+        self.glower = Expression(("1/r * (x[0]-x0)", "1/r * (x[1]-y0)"), r=circle["r"], x0=circle["x0"], y0=circle["y0"])
+        self.gupper = Expression(("1/r * (x[0]-x0)", "1/r * (x[1]-y0)"), r=circle["r"], x0=circle["x0"], y0=circle["y0"])
 
         self.V = VectorFunctionSpace(self.mesh, "CG", 2)
         self.Q = FunctionSpace(self.mesh, "CG", 1)

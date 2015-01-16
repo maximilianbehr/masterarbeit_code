@@ -38,7 +38,7 @@ OPTIONS = {"mesh": None,
 }
 
 # set Reynoldsnumbers and refinements
-REs = [1, 10, 50, 100, 200, 300, 400, 500, 600, 700]
+REs = [500, 1000, 1500, 1750, 2000, 2200, 2300, 2500]
 refinements = [1, 2]
 
 for refinement in refinements:

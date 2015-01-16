@@ -39,11 +39,20 @@ class Linearized_NSE_SIM():
         bcs_ctrlupper = DirichletBC(self.V, noslip, GammaBallCtrlUpper())
         self.bcu = [bcs_left, bcs_upper, bcs_lower, bcs_ball, bcs_ctrllower, bcs_ctrlupper]
 
+
         # collect indices of outer nodes
         self.v_outer_nodes = []
         for bc in self.bcu:
             self.v_outer_nodes += bc.get_boundary_values().keys()
         self.v_outer_nodes = list(set(self.v_outer_nodes))
+
+        # turn control on set node on the control as an inner node
+        self.v_outer_nodes = list(set(self.v_outer_nodes)-set(bcs_ctrllower.get_boundary_values().keys()))
+        self.v_outer_nodes = list(set(self.v_outer_nodes)-set(bcs_ctrlupper.get_boundary_values().keys()))
+
+        #import ipdb
+        #ipdb.set_trace()
+
 
         # collect indices of inner nodes
         self.v_inner_nodes = list(set(range(0, self.V.dim()))-set(self.v_outer_nodes))
@@ -56,6 +65,12 @@ class Linearized_NSE_SIM():
         G = mmread(self.options["G_mtx"]).tocoo()
         Gt = mmread(self.options["Gt_mtx"]).tocoo()
 
+        # turn control on
+        B = mmread(self.options["B_mtx"])
+        Mlower = mmread(self.options["Mlower_mtx"]).tocoo()
+        Mupper = mmread(self.options["Mupper_mtx"]).tocoo()
+
+
         # set parameters
         self.dt = self.options["dt"]
         self.T = self.options["T"]
@@ -64,10 +79,21 @@ class Linearized_NSE_SIM():
 
         # compress system
         self.Mcompress = M.tocsr()[self.v_inner_nodes,:].tocsc()[:,self.v_inner_nodes].tocsc()
-        self.Acompress = (-S - R - K).tocsr()[self.v_inner_nodes,:].tocsc()[:,self.v_inner_nodes].tocsc()
+
+        #self.Acompress = (-S - R - K).tocsr()[self.v_inner_nodes,:].tocsc()[:,self.v_inner_nodes].tocsc()
+        # turn control on
+        self.Acompress = (-S-R-K-Mlower-Mupper).tocsr()[self.v_inner_nodes,:].tocsc()[:,self.v_inner_nodes].tocsc()
         self.Gcompress = G.tocsr()[self.v_inner_nodes,:].tocsc()
+
         self.nv = self.Mcompress.shape[0]
         self.np = self.Gcompress.shape[1]
+
+        # turon control on
+        Bcompress = B[self.v_inner_nodes,:]
+        self.Bcompress = numpy.vstack((Bcompress, numpy.zeros((self.np,2))))
+
+        #import ipdb
+        #ipdb.set_trace()
 
         # build block matrices
         upperblock = hstack([self.Mcompress - self.dt*self.Acompress, self.dt*(-self.Gcompress)])
@@ -92,7 +118,6 @@ class Linearized_NSE_SIM():
     def assemble_N(self):
 
         # Function and TestFunction
-        u_dolfin = Function(self.V)
         w_test = TestFunction(self.V)
 
         # inser values at inner nodes
@@ -115,8 +140,10 @@ class Linearized_NSE_SIM():
 
         # compute new rhs
         self.assemble_N()
-        Muk = self.Mcompress_lift * self.u_k_compress
-        Rhs = Muk - self.dt*self.Nukuk
+        Rhs = self.Mcompress_lift * self.u_k_compress - self.dt*self.Nukuk
+
+        #turn control on
+        Rhs -= (self.Bcompress[:,0]*0.01*sin(self.t)+ self.Bcompress[:,1]*0.02*cos(self.t))
 
         # solve for the next step
         u_k_next = self.Mcompress_solver.solve(Rhs)
@@ -131,9 +158,10 @@ class Linearized_NSE_SIM():
 
         # add boundary conditions all zero
         u_k = numpy.zeros((self.V.dim(),))
-        for bc in self.bcu:
-            bcd = bc.get_boundary_values()
-            u_k[bcd.keys()]=bcd.values()
+        u_k [self.v_outer_nodes] = 0.0
+        #for bc in self.bcu:
+        #    bcd = bc.get_boundary_values()
+        #    u_k[bcd.keys()]=bcd.values()
 
         u_k[self.v_inner_nodes] = self.u_k_compress
 
