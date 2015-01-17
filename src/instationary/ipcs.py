@@ -1,24 +1,21 @@
-# -*- coding: utf-8 -*-
 
-from src.solvers.solverbase import *
+
+raise NotImplementedError("Code not ready adapted")
+
 
 
 class Solver(SolverBase):
-    "Original pressure-correction scheme by Chorin and Temam."
+    "Incremental pressure-correction scheme."
 
     def __init__(self, options):
         SolverBase.__init__(self, options)
 
     def solve(self, problem):
 
+
         # Get problem parameters
         mesh = problem.mesh
         dt, t, t_range = problem.timestep(problem)
-
-        if str(problem) == "Aneurysm":
-            pc = "jacobi"
-        else:
-            pc = "ilu"
 
         # Define function spaces
         V = VectorFunctionSpace(mesh, "CG", 2)
@@ -28,34 +25,44 @@ class Solver(SolverBase):
         u0, p0 = problem.initial_conditions(V, Q)
         bcu, bcp = problem.boundary_conditions(V, Q, t)
 
-        # Define test and trial functions
+        # Remove boundary stress term is problem is periodic
+        if is_periodic(bcp):
+            beta = Constant(0)
+        else:
+            beta = Constant(1)
+
+        # Test and trial functions
         v = TestFunction(V)
         q = TestFunction(Q)
         u = TrialFunction(V)
         p = TrialFunction(Q)
 
-        # Define functions
-        us = Function(V)
+        # Functions
         u0 = interpolate(u0, V)
-        u1 = interpolate(u0, V)
+        u1 = Function(V)
+        p0 = interpolate(p0, Q)
         p1 = interpolate(p0, Q)
         nu = Constant(problem.nu)
         k = Constant(dt)
         f = problem.f
+        n = FacetNormal(mesh)
 
         # Tentative velocity step
-        F1 = (1.0 / k) * inner(v, u - u0) * dx + inner(v, grad(u0) * u0) * dx \
-             + nu * inner(grad(v), grad(u)) * dx - inner(v, f) * dx
+        U = 0.5 * (u0 + u)
+        F1 = (1 / k) * inner(v, u - u0) * dx + inner(v, grad(u0) * u0) * dx \
+             + inner(epsilon(v), sigma(U, p0, nu)) * dx \
+             + inner(v, p0 * n) * ds - beta * nu * inner(grad(U).T * n, v) * ds \
+             - inner(v, f) * dx
         a1 = lhs(F1)
         L1 = rhs(F1)
 
-        # Poisson problem for the pressure
+        # Pressure correction
         a2 = inner(grad(q), grad(p)) * dx
-        L2 = -(1 / k) * q * div(us) * dx
+        L2 = inner(grad(q), grad(p0)) * dx - (1 / k) * q * div(u1) * dx
 
-        # Velocity update
+        # Velocity correction
         a3 = inner(v, u) * dx
-        L3 = inner(v, us) * dx - k * inner(v, grad(p1)) * dx
+        L3 = inner(v, u1) * dx - k * inner(v, grad(p1 - p0)) * dx
 
         # Assemble matrices
         A1 = assemble(a1)
@@ -64,35 +71,40 @@ class Solver(SolverBase):
 
         # Time loop
         prec = "amg" if has_krylov_solver_preconditioner("amg") else "default"
+
         self.start_timing()
         for t in t_range:
 
-            # Compute tentative velocity
+            # Get boundary conditions
             bcu, bcp = problem.boundary_conditions(V, Q, t)
+
+            # Compute tentative velocity step
             b = assemble(L1)
             [bc.apply(A1, b) for bc in bcu]
-            solve(A1, us.vector(), b, 'gmres', 'ilu')
+            solve(A1, u1.vector(), b, "gmres", "ilu")
 
-            # Compute p1
+            # Pressure correction
             b = assemble(L2)
             if len(bcp) == 0 or is_periodic(bcp): normalize(b)
             [bc.apply(A2, b) for bc in bcp]
             if is_periodic(bcp):
                 solve(A2, p1.vector(), b)
             else:
-                solve(A2, p1.vector(), b, 'cg', prec)
+                # solve(A2, p1.vector(), b, 'gmres', prec)
+                solve(A2, p1.vector(), b, 'gmres', prec)
             if len(bcp) == 0 or is_periodic(bcp): normalize(p1.vector())
 
-            # Compute u1
+            # Velocity correction
             b = assemble(L3)
             [bc.apply(A3, b) for bc in bcu]
-            solve(A3, u1.vector(), b, 'gmres', pc)
+            solve(A3, u1.vector(), b, "gmres", prec)
 
             # Update
             self.update(problem, t, u1, p1)
             u0.assign(u1)
+            p0.assign(p1)
 
         return u1, p1
 
     def __str__(self):
-        return "Chorin"
+        return "IPCS"

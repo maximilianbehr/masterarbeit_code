@@ -146,7 +146,7 @@ class Linearized_NSE_SIM():
         Rhs -= (self.Bcompress[:,0]*0.01*sin(self.t)+ self.Bcompress[:,1]*0.02*cos(self.t))
 
         # solve for the next step
-        u_k_next = self.Mcompress_solver.solve(Rhs)
+        u_k_next = self.Mcompress_solver.solve
 
         # lift down vector
         self.u_k_compress = u_k_next[0:self.nv]
