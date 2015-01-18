@@ -19,8 +19,8 @@ C = mmread(Cmtx);
 
 
 [nv,np] = size(G);
-%fullA = [-S-R-K-Mlower-Mupper,G;G',zeros(np,np)];
-fullA = [-S-R-K,G;G',zeros(np,np)];
+fullA = [-S-R-K-Mlower-Mupper,G;G',zeros(np,np)];
+%fullA = [-S-R-K,G;G',zeros(np,np)];
 fullM = [M,zeros(nv,np);zeros(np,nv),zeros(np,np)];
 %fullM = [M,-0.02*G;-0.02*G',zeros(np,np)];
 

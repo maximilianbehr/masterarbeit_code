@@ -84,7 +84,7 @@ class Newton():
         solver.parameters["newton_solver"]["maximum_iterations"] = const.STATIONARY_NEWTON_STEPS
         solver.parameters["newton_solver"]["absolute_tolerance"] = const.STATIONARY_NEWTON_ABS_TOL
         solver.parameters["newton_solver"]["relative_tolerance"] = const.STATIONARY_NEWTON_REL_TOL
-        solver.solve
+        solver.solve()
 
         # split w
         (u, p) = w.split(deepcopy=True)

@@ -1,7 +1,6 @@
 from src.instationary.chorin import Chorin
 from dolfin import *
 
-set_log_active(False)
 
 
 REs = [200]
