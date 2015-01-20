@@ -54,7 +54,7 @@ class GammaUpper(SubDomain):
 
 class GammaBallCtrlUpper(SubDomain):
     """Ball Upper Control Part"""
-    index = const.GAMMA_BALL_CTRLUPPER
+    index = const.GAMMA_BALL_CTRLUPPER_INDICES
     upper = const.GAMMA_BALL_CTRLUPPER_UPPER_X1
     lower = const.GAMMA_BALL_CTRLUPPER_LOWER_X1
     thresh = const.GAMMA_BALL_CTRLUPPER_THRESHOLD
@@ -68,7 +68,7 @@ class GammaBallCtrlUpper(SubDomain):
 
 class GammaBallCtrlLower(SubDomain):
     """Ball Lower Lower Control Part"""
-    index = const.GAMMA_BALL_CTRLLOWER
+    index = const.GAMMA_BALL_CTRLLOWER_INDICES
     upper = const.GAMMA_BALL_CTRLLOWER_UPPER_X1
     lower = const.GAMMA_BALL_CTRLLOWER_LOWER_X1
     thresh = const.GAMMA_BALL_CTRLLOWER_THRESHOLD

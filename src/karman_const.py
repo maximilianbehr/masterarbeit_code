@@ -62,8 +62,8 @@ GAMMA_LOWER_INDICES = 2
 GAMMA_RIGHT_INDICES = 3
 GAMMA_UPPER_INDICES = 4
 GAMMA_BALL_INDICES = 5
-GAMMA_BALL_CTRLLOWER = 6
-GAMMA_BALL_CTRLUPPER = 7
+GAMMA_BALL_CTRLLOWER_INDICES = 6
+GAMMA_BALL_CTRLUPPER_INDICES = 7
 
 
 """Threshold for projection of the boundary of the obstacle"""
@@ -227,6 +227,9 @@ def LQR_K_MTX(ref, RE):
 def LQR_R_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), "lqr", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "R.mtx")
 
+def LQR_S_MTX(ref, RE):
+    return os.path.join(OUTPUTDIR(), "lqr", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "S.mtx")
+
 def LQR_G_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), "lqr", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "G.mtx")
 
@@ -248,14 +251,16 @@ def LQR_C_MTX(ref, RE):
 def LQR_MAT(ref, RE):
     return os.path.join(OUTPUTDIR(), "lqr", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "lqr.mtx")
 
+"""constant for simulation of linearized navier stokes"""
+LINEARIZED_V = "CG"
+LINEARIZED_V_DIM = 2
+LINEARIZED_Q = "CG"
+LINEARIZED_Q_DIM = 1
+LINEARIZED_SAVE_FREQ = 5
 
 
-
-
-
-
-
-
+def LINEARIZED_U_PVD(ref, RE):
+    return os.path.join(OUTPUTDIR(), "linearized", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u.pvd")
 
 
 

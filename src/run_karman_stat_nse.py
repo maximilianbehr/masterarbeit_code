@@ -4,7 +4,7 @@ import traceback
 
 # set Reynoldsnumbers and refinements
 REs = range(100, 5000, 100)
-refs = [1, 2, 3, 4]
+refs = [1, 2, 3]
 
 
 
