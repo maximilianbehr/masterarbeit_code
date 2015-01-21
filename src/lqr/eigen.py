@@ -1,48 +1,20 @@
-from numpy import savetxt
-import os
-import json
-from scipy.io import mmwrite
-from scipy.io import mmread
-from scipy.sparse import hstack
-from scipy.sparse import vstack
-from scipy.sparse import csr_matrix
-from scipy.linalg import eigvals
-import numpy
-import matplotlib.pyplot as plt
-import pprint
-
+from linearized_sim import Linearized
 
 class Eigen():
-    def __init__(self, argoptions):
+    def __init__(self, ref, RE):
 
-        #store and print options
-        self.options = argoptions.copy()
-        print pprint.pprint(self.options)
-        fname = self.options["options_json"]
+        #set parameters
+        self.ref = ref
+        self.RE = RE
 
-        if not os.path.exists(os.path.dirname(fname)):
-            os.makedirs(os.path.dirname(fname))
-        with open(fname, "w") as handle:
-            json.dump(self.options, handle)
+        #generate compressed matrices via linearized
+        self.linearized = Linearized(ref, RE, None, None, None)
 
-
-        #read and set matrices
-        self.M = mmread(self.options["M_mtx"])
-        self.S = mmread(self.options["S_mtx"])
-        self.Mlower = mmread(self.options["Mlower_mtx"])
-        self.Mupper = mmread(self.options["Mupper_mtx"])
-        self.K = mmread(self.options["K_mtx"])
-        self.R = mmread(self.options["R_mtx"])
-        self.G = mmread(self.options["G_mtx"])
-        self.Gt = mmread(self.options["Gt_mtx"])
-        self.B = mmread(self.options["B_mtx"])
-        self.C = mmread(self.options["C_mtx"])
-        self.A = - self.S - self.Mlower - self.Mupper - self.K - self.R
-        self.delta = self.options["dae2_delta"]
-
-
+        #get some parameters
+        self.np
 
     def eigenvals(self):
+
         #build block matrices
         np = self.G.shape[1]
         upperblockM = hstack([self.M, self.delta*self.G])
