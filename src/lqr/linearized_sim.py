@@ -61,7 +61,9 @@ class LinearizedSim():
 
         # attributes for post init part
         self.u_dolfin = None
+        self.udelta_dolfin = None
         self.u_file = None
+        self.udelta_file = None
         self.uk_sys = None
         self.Asys = None
         self.Msys_ode = None
@@ -74,6 +76,8 @@ class LinearizedSim():
         # visualisation
         self.u_dolfin = Function(self.V)
         self.u_file = File(const.LINEARIZED_SIM_U_PVD(self.ref, self.RE))
+        self.udelta_dolfin = Function(self.V)
+        self.udelta_file = File(const.LINEARIZED_SIM_U_DELTA_PVD(self.ref, self.RE))
 
         # define state
         self.uk_sys = self.u_stat.vector().array().reshape(len(self.u_stat.vector().array()), )[self.inner_nodes]
@@ -88,10 +92,6 @@ class LinearizedSim():
 
         # build solver
         self.Msys_solver = scspli.spilu(self.Msys_ode)
-
-        #if control:
-        #    self.Asys = self.Asys -self.Mlowercps-self.Muppercps
-        #self.Bsys = np.vstack((self.Bcps, np.zeros((self.np, 2))))
 
 
     def save_compressed_matrices(self):
@@ -164,14 +164,15 @@ class LinearizedSim():
             # compute norm of u_delta
             print self.t, np.linalg.norm(self.uk_sys)
 
-            # uncompress and add stationary solution
+
+            # uncompress and save pvd for udelta
             uk_uncps = u_uncompress(self.V, self.uk_sys, self.inner_nodes)
+            self.udelta_dolfin.vector().set_local(uk_uncps)
+            self.udelta_file << self.udelta_dolfin
+
+            # add stationary and save pvd
             v = uk_uncps + self.u_stat.vector().array()
-
-            # set it to a fenics function
             self.u_dolfin.vector().set_local(v)
-
-            # save visualization
             self.u_file << self.u_dolfin
 
 

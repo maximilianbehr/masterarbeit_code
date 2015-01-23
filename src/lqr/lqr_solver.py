@@ -6,7 +6,7 @@ import scipy.io as scio
 
 
 class LQR_Solver():
-    def __init__(self, ref, RE, RE_initial):
+    def __init__(self, ref, RE):
 
         # set parameters
         self.ref = ref
@@ -38,8 +38,8 @@ class LQR_Solver():
         self.opt.nm.maxit = const.LINEARIZED_CTRL_NM_MAXIT
 
 
-        if RE_initial:
-            self.opt.nm.nm_K0 = scio.mmread(const.LINEARIZED_CTRL_KINF_CPS_MTX(ref, RE_initial))
+        if RE >= 300:
+            self.opt.nm.nm_K0 = scio.mmread(const.LINEARIZED_CTRL_FEED0_CPS_MTX(ref, RE))
 
         self.opt.adi.output = const.LINEARIZED_CTRL_ADI_OUTPUT
         self.opt.adi.res2_tol = const.LINEARIZED_CTRL_ADI_RES2
@@ -67,7 +67,7 @@ class LQR_Solver():
     def save(self):
 
         #safe system
-        self.linearized.save_compressed_matrices()
+        #self.linearized.save_compressed_matrices()
 
         #with open(const.LINEARIZED_CTRL_Z_CPS_MTX(self.ref, self.RE), "w") as handle:
         #    scio.mmwrite(handle, self.Z)

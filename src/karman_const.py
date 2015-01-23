@@ -256,12 +256,16 @@ LINEARIZED_SIM_V = "CG"
 LINEARIZED_SIM_V_DIM = 2
 LINEARIZED_SIM_Q = "CG"
 LINEARIZED_SIM_Q_DIM = 1
-LINEARIZED_SIM_SAVE_FREQ = 5
+LINEARIZED_SIM_SAVE_FREQ = 10
 
 
 def LINEARIZED_SIM_U_PVD(ref, RE):
     return os.path.join(OUTPUTDIR(), "linearized_sim", parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u.pvd")
+
+def LINEARIZED_SIM_U_DELTA_PVD(ref, RE):
+    return os.path.join(OUTPUTDIR(), "linearized_sim", parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u_delta.pvd")
 
 def LINEARIZED_SIM_M_CPS_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), "linearized_sim", parameters["refinement_algorithm"],
@@ -306,22 +310,27 @@ def LINEARIZED_SIM_OUTER_NODES(ref, RE):
 LINEARIZED_CTRL_DELTA = - 0.02
 LINEARIZED_CTRL_NM_OUTPUT = 1
 LINEARIZED_CTRL_NM_RES2_SAVE = 1e-5
-LINEARIZED_CTRL_NM_RES2 = 1e-12
-LINEARIZED_CTRL_NM_REL2_CHANGE = 1e-11
-LINEARIZED_CTRL_NM_REL_CHANGE = 1e-11
+LINEARIZED_CTRL_NM_RES2 = 5e-8
+LINEARIZED_CTRL_NM_REL2_CHANGE = 1e-10
+LINEARIZED_CTRL_NM_REL_CHANGE = 1e-10
 LINEARIZED_CTRL_NM_MAXIT = 30
-LINEARIZED_CTRL_ADI_OUTPUT = 0
-LINEARIZED_CTRL_ADI_RES2 = 1e-20
-LINEARIZED_CTRL_ADI_MAXIT = 4000
+LINEARIZED_CTRL_ADI_OUTPUT = 1
+LINEARIZED_CTRL_ADI_RES2 = 1e-15
+LINEARIZED_CTRL_ADI_MAXIT = 1000
 LINEARIZED_CTRL_V = "CG"
 LINEARIZED_CTRL_V_DIM = 2
 LINEARIZED_CTRL_Q = "CG"
 LINEARIZED_CTRL_Q_DIM = 1
 LINEARIZED_CTRL_SAVE_FREQ = 5
+LINEARIZED_CTRL_START_CONTROLLING = 6
 
 def LINEARIZED_CTRL_U_PVD(ref, RE):
     return os.path.join(OUTPUTDIR(), "linearized_ctrl", parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u.pvd")
+
+def LINEARIZED_CTRL_U_DELTA_PVD(ref, RE):
+    return os.path.join(OUTPUTDIR(), "linearized_ctrl", parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u_delta.pvd")
 
 def LINEARIZED_CTRL_M_CPS_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), "linearized_ctrl", parameters["refinement_algorithm"],
@@ -378,6 +387,14 @@ def LINEARIZED_CTRL_INNER_NODES(ref, RE):
 def LINEARIZED_CTRL_OUTER_NODES(ref, RE):
     return os.path.join(OUTPUTDIR(), "linearized_ctrl", parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "outer_nodes.dat")
+
+def LINEARIZED_CTRL_FEED0_CPS_MTX(ref, RE):
+    return os.path.join(OUTPUTDIR(), "linearized_ctrl", parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "Feed0cps.mtx")
+
+def LINEARIZED_CTRL_FEED1_CPS_MTX(ref, RE):
+    return os.path.join(OUTPUTDIR(), "linearized_ctrl", parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "Feed1cps.mtx")
 
 
 

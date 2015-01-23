@@ -3,11 +3,11 @@ from src.lqr.linearized_ctrl import LinearizedCtrl
 import traceback
 
 
-REs = range(100, 1000, 100)
-refs = [2]
-dt = 0.005
+REs = range(900, 1000, 100)
+refs = [3]
+dt = 0.01
 T = 30
-pertubationeps = 0.5
+pertubationeps = 0.25
 
 for ref in refs:
     for RE in REs:

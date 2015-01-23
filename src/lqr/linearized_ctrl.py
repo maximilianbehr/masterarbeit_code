@@ -70,7 +70,9 @@ class LinearizedCtrl():
 
         # set other attributes
         self.u_dolfin = None
+        self.udelta_dolfin = None
         self.u_file = None
+        self.udelta_file = None
         self.uk_sys = None
         self.Asys = None
         self.Msys_ode = None
@@ -132,6 +134,8 @@ class LinearizedCtrl():
         # visualisation
         self.u_dolfin = Function(self.V)
         self.u_file = File(const.LINEARIZED_CTRL_U_PVD(self.ref, self.RE))
+        self.udelta_dolfin = Function(self.V)
+        self.udelta_file = File(const.LINEARIZED_CTRL_U_DELTA_PVD(self.ref, self.RE))
 
         # define state
         self.uk_sys = self.u_stat.vector().array().reshape(len(self.u_stat.vector().array()), )[self.inner_nodes]
@@ -172,17 +176,21 @@ class LinearizedCtrl():
         self.assembleN()
         rhs = self.Msys_lift * self.uk_sys - self.dt*self.N_uk_uk
 
-        # perform sherman morrison woodbury
-        Minvrhs = self.Msys_solver.solve(rhs)
-        temp = np.dot(self.Kinfsys.T, Minvrhs)
+        if self.t < const.LINEARIZED_CTRL_START_CONTROLLING:
+            #print "no feed"
+            temp = self.Msys_solver.solve(rhs)
+        else:
+            # perform sherman morrison woodbury
+            Minvrhs = self.Msys_solver.solve(rhs)
+            temp = np.dot(self.Kinfsys.T, Minvrhs)
 
-        Minvb = self.Msys_solver.solve(self.Bsys)
-        temp2 = np.dot(self.Kinfsys.T, Minvb)
-        temp2 = np.eye(temp2.shape[0]) - temp2
-        temp  = np.linalg.solve(temp2, temp)
+            Minvb = self.Msys_solver.solve(self.Bsys)
+            temp2 = np.dot(self.Kinfsys.T, Minvb)
+            temp2 = np.eye(temp2.shape[0]) - temp2
+            temp  = np.linalg.solve(temp2, temp)
 
-        temp = np.dot(self.Bsys, temp)
-        temp = Minvrhs + self.Msys_solver.solve(temp)
+            temp = np.dot(self.Bsys, temp)
+            temp = Minvrhs + self.Msys_solver.solve(temp)
 
         # lift down vector
         self.uk_sys = temp[0:self.nv]
@@ -191,19 +199,19 @@ class LinearizedCtrl():
         self.t += self.dt
 
     def save(self):
-        if (self.k-1) % const.LINEARIZED_SIM_SAVE_FREQ == 0:
+        if (self.k-1) % const.LINEARIZED_CTRL_SAVE_FREQ == 0:
 
             # compute norm of u_delta
             print self.t, np.linalg.norm(self.uk_sys)
 
-            # uncompress and add stationary solution
+            # uncompress and save pvd for udelta
             uk_uncps = u_uncompress(self.V, self.uk_sys, self.inner_nodes)
+            self.udelta_dolfin.vector().set_local(uk_uncps)
+            self.udelta_file << self.udelta_dolfin
+
+            # add stationary and save pvd
             v = uk_uncps + self.u_stat.vector().array()
-
-            # set it to a fenics function
             self.u_dolfin.vector().set_local(v)
-
-            # save visualization
             self.u_file << self.u_dolfin
 
 
