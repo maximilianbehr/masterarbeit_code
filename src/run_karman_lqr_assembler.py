@@ -1,9 +1,10 @@
 from src.lqr.assembler import Assembler
+from src.lqr.compress_assembler import CompressAssembler
 import traceback
 
 # karman
-REs = range(100, 5000, 100)
-refs = [1, 2, 3]
+REs = range(100, 2000, 100)
+refs = [1, 2, 3, 4]
 
 for ref in refs:
     for RE in REs:
@@ -14,9 +15,19 @@ for ref in refs:
             assembler.lns_variational()
             assembler.lns_ublas()
             assembler.lns_npsc()
-            print "save mtx"
+
+            print "save lqr mtx"
             assembler.save_lns_mtx()
             assembler.save_lns_mat()
+
+            print "save compress sim mtx"
+            simassembler = CompressAssembler(ref, RE, "sim")
+            simassembler.save()
+
+            print "save compress ctrl mtx"
+            ctrlassembler = CompressAssembler(ref, RE, "ctrl")
+            ctrlassembler.save()
+
         except Exception, e:
             traceback.print_exc()
 

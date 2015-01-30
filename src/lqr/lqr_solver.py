@@ -1,4 +1,4 @@
-from linearized_ctrl import LinearizedCtrl
+import os
 import src.karman_const as const
 from pycmess import equation_dae2, options, lrnm, PYCMESS_OP_TRANSPOSE
 import numpy as np
@@ -12,21 +12,18 @@ class LQR_Solver():
         self.ref = ref
         self.RE = RE
 
-        # get linearized matrices set arbitray values for dt, T, pertubationeps
-        self.linearized = LinearizedCtrl(ref, RE, 1, 1, 1)
-
         # setup dae2 equation
         self.eqn = equation_dae2()
-        self.eqn.M = self.linearized.Mcps
-        self.eqn.A = - self.linearized.Scps \
-                     - self.linearized.Kcps \
-                     - self.linearized.Rcps \
-                     - self.linearized.Mlowercps \
-                     - self.linearized.Muppercps \
+        self.eqn.M = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_M_MTX(self.ref, self.RE))
+        self.eqn.A = - scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_S_MTX(self.ref, self.RE)) \
+                     - scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_K_MTX(self.ref, self.RE)) \
+                     - scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_R_MTX(self.ref, self.RE)) \
+                     - scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_MLOWER_MTX(self.ref, self.RE)) \
+                     - scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_MUPPER_MTX(self.ref, self.RE))
 
-        self.eqn.G = self.linearized.Gcps
-        self.eqn.B = self.linearized.Bcps
-        self.eqn.C = self.linearized.Ccps
+        self.eqn.G = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_G_MTX(self.ref, self.RE))
+        self.eqn.B = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_B_MTX(self.ref, self.RE))
+        self.eqn.C = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_C_MTX(self.ref, self.RE))
         self.eqn.delta = const.LINEARIZED_CTRL_DELTA
 
         # setup options
@@ -38,8 +35,8 @@ class LQR_Solver():
         self.opt.nm.maxit = const.LINEARIZED_CTRL_NM_MAXIT
 
 
-        if RE >= 300:
-            self.opt.nm.nm_K0 = scio.mmread(const.LINEARIZED_CTRL_FEED0_CPS_MTX(ref, RE))
+        if RE >= 400:
+            self.opt.nm.nm_K0 = scio.mmread(const.BERNOULLI_FEED0_CPS_MTX(ref, RE))
 
         self.opt.adi.output = const.LINEARIZED_CTRL_ADI_OUTPUT
         self.opt.adi.res2_tol = const.LINEARIZED_CTRL_ADI_RES2
@@ -66,11 +63,12 @@ class LQR_Solver():
 
     def save(self):
 
-        #safe system
-        #self.linearized.save_compressed_matrices()
-
         #with open(const.LINEARIZED_CTRL_Z_CPS_MTX(self.ref, self.RE), "w") as handle:
         #    scio.mmwrite(handle, self.Z)
 
-        with open(const.LINEARIZED_CTRL_KINF_CPS_MTX(self.ref, self.RE), "w") as handle:
+        file = const.LINEARIZED_CTRL_KINF_CPS_MTX(self.ref, self.RE)
+        if not os.path.exists(file):
+            os.makedirs(os.path.dirname(file))
+
+        with open(file, "w") as handle:
             scio.mmwrite(handle, self.Kinf)

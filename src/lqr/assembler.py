@@ -13,15 +13,15 @@ class Assembler():
         # set parameters
         self.ref = ref
         self.RE = RE
-        self.penalty_eps = const.LQR_PENALTY_EPS
+        self.penalty_eps = const.ASSEMBLER_PENALTY_EPS
 
         # mesh and function spaces
         self.mesh = Mesh(const.MESH_XML(ref))
-        self.V = VectorFunctionSpace(self.mesh, const.LQR_V, const.LQR_V_DIM)
-        self.Q = FunctionSpace(self.mesh, const.LQR_Q, const.LQR_Q_DIM)
+        self.V = VectorFunctionSpace(self.mesh, const.ASSEMBLER_V, const.ASSEMBLER_V_DIM)
+        self.Q = FunctionSpace(self.mesh, const.ASSEMBLER_Q, const.ASSEMBLER_Q_DIM)
         self.boundaryfunction = MeshFunction("size_t", self.mesh, const.BOUNDARY_XML(ref))
-        self.gupper = const.LQR_UPPER_CONTROL
-        self.glower = const.LQR_LOWER_CONTROL
+        self.gupper = const.ASSEMBLER_UPPER_CONTROL
+        self.glower = const.ASSEMBLER_LOWER_CONTROL
         self.u_stat = Function(self.V, const.STATIONARY_U_XML(ref, RE))
 
 
@@ -87,8 +87,8 @@ class Assembler():
 
     def buildC(self):
 
-        p1 = Point(const.LQR_OBSERVER_POINT1_X, const.LQR_OBSERVER_POINT1_Y)
-        p2 = Point(const.LQR_OBSERVER_POINT2_X, const.LQR_OBSERVER_POINT2_Y)
+        p1 = Point(const.ASSEMBLER_OBSERVER_POINT1_X, const.ASSEMBLER_OBSERVER_POINT1_Y)
+        p2 = Point(const.ASSEMBLER_OBSERVER_POINT2_X, const.ASSEMBLER_OBSERVER_POINT2_Y)
         points = [p1, p2]
         dists = {p1: float("inf"), p2: float("inf")}
         idxs = {p1: 0, p2: 0}
@@ -139,51 +139,51 @@ class Assembler():
         if not self.npsc:
             raise ValueError("Call unparameterized_lns_npsc to initialize attribute npsc.")
 
-        if not os.path.exists(os.path.dirname(const.LQR_M_MTX(self.ref, self.RE))):
-            os.makedirs(os.path.dirname(const.LQR_M_MTX(self.ref, self.RE)))
+        if not os.path.exists(os.path.dirname(const.ASSEMBLER_M_MTX(self.ref, self.RE))):
+            os.makedirs(os.path.dirname(const.ASSEMBLER_M_MTX(self.ref, self.RE)))
 
-        with open(const.LQR_M_MTX(self.ref, self.RE), "w") as handle:
+        with open(const.ASSEMBLER_M_MTX(self.ref, self.RE), "w") as handle:
             self.npsc["M"].eliminate_zeros()
             scio.mmwrite(handle, self.npsc["M"])
 
-        with open(const.LQR_S_MTX(self.ref, self.RE), "w") as handle:
+        with open(const.ASSEMBLER_S_MTX(self.ref, self.RE), "w") as handle:
             self.npsc["S"].eliminate_zeros()
             scio.mmwrite(handle, self.npsc["S"])
 
-        with open(const.LQR_MLOWER_MTX(self.ref, self.RE), "w") as handle:
+        with open(const.ASSEMBLER_MLOWER_MTX(self.ref, self.RE), "w") as handle:
             self.npsc["Mlower"].eliminate_zeros()
             scio.mmwrite(handle, self.npsc["Mlower"])
 
-        with open(const.LQR_MUPPER_MTX(self.ref, self.RE), "w") as handle:
+        with open(const.ASSEMBLER_MUPPER_MTX(self.ref, self.RE), "w") as handle:
             self.npsc["Mupper"].eliminate_zeros()
             scio.mmwrite(handle, self.npsc["Mupper"])
 
-        with open(const.LQR_K_MTX(self.ref, self.RE), "w") as handle:
+        with open(const.ASSEMBLER_K_MTX(self.ref, self.RE), "w") as handle:
             self.npsc["K"].eliminate_zeros()
             scio.mmwrite(handle, self.npsc["K"])
 
-        with open(const.LQR_R_MTX(self.ref, self.RE), "w") as handle:
+        with open(const.ASSEMBLER_R_MTX(self.ref, self.RE), "w") as handle:
             self.npsc["R"].eliminate_zeros()
             scio.mmwrite(handle, self.npsc["R"])
 
-        with open(const.LQR_G_MTX(self.ref, self.RE), "w") as handle:
+        with open(const.ASSEMBLER_G_MTX(self.ref, self.RE), "w") as handle:
             self.npsc["G"].eliminate_zeros()
             scio.mmwrite(handle, self.npsc["G"])
 
-        with open(const.LQR_GT_MTX(self.ref, self.RE), "w") as handle:
+        with open(const.ASSEMBLER_GT_MTX(self.ref, self.RE), "w") as handle:
             self.npsc["Gt"].eliminate_zeros()
             scio.mmwrite(handle, self.npsc["Gt"])
 
-        with open(const.LQR_BLOWER_MTX(self.ref, self.RE), "w") as handle:
+        with open(const.ASSEMBLER_BLOWER_MTX(self.ref, self.RE), "w") as handle:
             scio.mmwrite(handle, self.npsc["Blower"])
 
-        with open(const.LQR_BUPPER_MTX(self.ref, self.RE), "w") as handle:
+        with open(const.ASSEMBLER_BUPPER_MTX(self.ref, self.RE), "w") as handle:
             scio.mmwrite(handle, self.npsc["Bupper"])
 
-        with open(const.LQR_B_MTX(self.ref, self.RE), "w") as handle:
+        with open(const.ASSEMBLER_B_MTX(self.ref, self.RE), "w") as handle:
             scio.mmwrite(handle, self.npsc["B"])
 
-        with open(const.LQR_C_MTX(self.ref, self.RE), "w") as handle:
+        with open(const.ASSEMBLER_C_MTX(self.ref, self.RE), "w") as handle:
             scio.mmwrite(handle, self.npsc["C"])
 
 
@@ -192,7 +192,7 @@ class Assembler():
         if not self.npsc:
             raise ValueError("Call unparameterized_lns_npsc to initialize attribute npsc.")
 
-        with open(const.LQR_MAT(self.ref, self.RE), "w") as handle:
+        with open(const.ASSEMBLER_MAT(self.ref, self.RE), "w") as handle:
             scio.savemat(handle, self.npsc, do_compression=True)
 
 

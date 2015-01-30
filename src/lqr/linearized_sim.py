@@ -1,9 +1,6 @@
 import src.karman_const as const
-from linearized_aux import compress_mat
-from linearized_aux import inner_outer_nodes
 from linearized_aux import u_uncompress
 from linearized_aux import u_compress
-from src.mesh.karman import GammaRight
 import scipy.io as scio
 import scipy.sparse as scsp
 import scipy.sparse.linalg as scspli
@@ -26,7 +23,10 @@ class LinearizedSim():
         self.dt = dt
         self.T = T
         self.t = 0
-        self.k = 1
+        self.k = 0
+
+        # log
+        self.logv = np.zeros((np.ceil(self.T/self.dt), 2))
 
         # mesh and function spaces
         self.mesh = Mesh(const.MESH_XML(ref))
@@ -34,46 +34,25 @@ class LinearizedSim():
         self.Q = FunctionSpace(self.mesh, const.LINEARIZED_SIM_Q, const.LINEARIZED_SIM_Q_DIM)
         self.u_stat = Function(self.V, const.STATIONARY_U_XML(ref, RE))
 
-        # define attributes v_inner_nodes and v_outer_nodes
-        # GammaRight Boundary Part is added to the inner nodes
-        self.inner_nodes, self.outer_nodes = inner_outer_nodes(self.V, [GammaRight()])
-
-        # read matrices
-        M = scio.mmread(const.LQR_M_MTX(ref, RE))
-        S = scio.mmread(const.LQR_S_MTX(ref, RE))
-        R = scio.mmread(const.LQR_R_MTX(ref, RE))
-        K = scio.mmread(const.LQR_K_MTX(ref, RE))
-        G = scio.mmread(const.LQR_G_MTX(ref, RE))
-        GT = scio.mmread(const.LQR_GT_MTX(ref, RE))
-
-        # compress system
-        self.Mcps = compress_mat(M, self.inner_nodes)
-        self.Scps = compress_mat(S, self.inner_nodes)
-        self.Rcps = compress_mat(R, self.inner_nodes)
-        self.Kcps = compress_mat(K, self.inner_nodes)
-        self.Gcps = compress_mat(G, self.inner_nodes)
-        self.GTcps = compress_mat(GT, self.inner_nodes)
+        # read compress system
+        self.Mcps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_M_MTX(ref, RE))
+        self.Mlowercps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_MLOWER_MTX(ref, RE))
+        self.Muppercps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_MUPPER_MTX(ref, RE))
+        self.Scps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_S_MTX(ref, RE))
+        self.Rcps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_R_MTX(ref, RE))
+        self.Kcps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_K_MTX(ref, RE))
+        self.Scps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_S_MTX(ref, RE))
+        self.Gcps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_G_MTX(ref, RE))
+        self.GTcps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_GT_MTX(ref, RE))
+        self.Bcps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_B_MTX(ref, RE))
+        self.Ccps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_C_MTX(ref, RE))
+        self.inner_nodes = np.loadtxt(const.ASSEMBLER_COMPRESS_SIM_INNER_NODES(ref, RE), dtype=np.int64)
 
         # system sizes
         self.nv = self.Mcps.shape[0]
         self.np = self.Gcps.shape[1]
 
-
-        # attributes for post init part
-        self.u_dolfin = None
-        self.udelta_dolfin = None
-        self.u_file = None
-        self.udelta_file = None
-        self.uk_sys = None
-        self.Asys = None
-        self.Msys_ode = None
-        self.Msys_lift = None
-        self.Msys_solver = None
-        self.N_uk_uk = None
-
-    def postinit(self):
-
-        # visualisation
+        # visualization
         self.u_dolfin = Function(self.V)
         self.u_file = File(const.LINEARIZED_SIM_U_PVD(self.ref, self.RE))
         self.udelta_dolfin = Function(self.V)
@@ -93,35 +72,6 @@ class LinearizedSim():
         # build solver
         self.Msys_solver = scspli.spilu(self.Msys_ode)
 
-
-    def save_compressed_matrices(self):
-        """save compress system matrices"""
-
-        matrices = [self.Mcps,
-                    self.Scps,
-                    self.Rcps,
-                    self.Kcps,
-                    self.Gcps,
-                    self.GTcps]
-
-        files = [const.LINEARIZED_SIM_M_CPS_MTX,
-                 const.LINEARIZED_SIM_S_CPS_MTX,
-                 const.LINEARIZED_SIM_R_CPS_MTX,
-                 const.LINEARIZED_SIM_K_CPS_MTX,
-                 const.LINEARIZED_SIM_G_CPS_MTX,
-                 const.LINEARIZED_SIM_GT_CPS_MTX]
-
-        for idx in range(len(matrices)):
-            with open(files[idx](self.ref, self.RE), "w") as handle:
-                scio.mmwrite(handle, matrices[idx])
-
-        with open(const.LINEARIZED_SIM_INNER_NODES(self.ref, self.RE), "w") as handle:
-            np.save(handle, self.inner_nodes)
-
-        with open(const.LINEARIZED_SIM_OUTER_NODES(self.ref, self.RE), "w") as handle:
-            np.save(handle, self.outer_nodes)
-
-
     def assembleN(self):
 
         # Function and TestFunction
@@ -139,31 +89,22 @@ class LinearizedSim():
         # lift
         self.N_uk_uk = np.append(self.N_uk_uk, np.zeros((self.np,)))
 
-
     def uk_next(self):
 
         # compute new rhs
         self.assembleN()
         rhs = self.Msys_lift * self.uk_sys - self.dt*self.N_uk_uk
 
-        #turn control on
-        #Rhs -= (self.Bcompress[:,0]*0.01*sin(self.t)+ self.Bcompress[:,1]*0.02*cos(self.t))
-
-        # solve for the next step
-        temp = self.Msys_solver.solve(rhs)
-
-        # lift down vector
-        self.uk_sys = temp[0:self.nv]
-
+        self.uk_sys = self.Msys_solver.solve(rhs)[0:self.nv]
         self.k += 1
         self.t += self.dt
 
+    def log(self):
+        self.logv[self.k, 0] = self.t
+        self.logv[self.k, 1] = np.linalg.norm(self.uk_sys)
+
     def save(self):
         if (self.k-1) % const.LINEARIZED_SIM_SAVE_FREQ == 0:
-
-            # compute norm of u_delta
-            print self.t, np.linalg.norm(self.uk_sys)
-
 
             # uncompress and save pvd for udelta
             uk_uncps = u_uncompress(self.V, self.uk_sys, self.inner_nodes)
@@ -175,9 +116,21 @@ class LinearizedSim():
             self.u_dolfin.vector().set_local(v)
             self.u_file << self.u_dolfin
 
-
     def solve_ode(self):
         while self.t < (self.T + DOLFIN_EPS):
+            self.log()
+
+            # print info
+            if self.k % int(const.LINEARIZED_SIM_INFO*(self.T/self.dt)) == 0:
+                print "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.logv[self.k, 0], self.logv[self.k, 1])
+
             self.save()
             self.uk_next()
+
+
+    def save_log(self):
+        np.savetxt(const.LINEARIZED_SIM_LOG(self.ref, self.RE), self.logv)
+
+
+
 
