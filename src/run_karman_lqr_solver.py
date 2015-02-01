@@ -1,7 +1,7 @@
 from src.lqr.lqr_solver import LQR_Solver
 import traceback
 
-REs = range(300, 700, 100)
+REs = range(100, 700, 100)
 refs = [3]
 
 for ref in refs:
@@ -15,4 +15,4 @@ for ref in refs:
         except Exception, e:
             print traceback.print_exc()
             # reynoldsnumber to high break
-            break
+            #break

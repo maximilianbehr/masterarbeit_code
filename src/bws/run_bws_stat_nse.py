@@ -1,10 +1,10 @@
-import src.karman_const as const
+import src.bws.bws_const as const
 from src.stationary.newton import Newton
 import traceback
 
 
 # set Reynoldsnumbers and refinements
-REs = range(100, 1000, 100)
+REs = range(100, 1100, 100)
 refs = [3]
 
 

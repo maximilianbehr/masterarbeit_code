@@ -1,6 +1,4 @@
 from src.instationary.chorin import Chorin
-from dolfin import *
-
 
 
 REs = [200]

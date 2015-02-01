@@ -3,7 +3,7 @@ import src.karman_const as const
 from pycmess import equation_dae2, options, lrnm, PYCMESS_OP_TRANSPOSE
 import numpy as np
 import scipy.io as scio
-
+import warnings
 
 class LQR_Solver():
     def __init__(self, ref, RE):
@@ -35,8 +35,10 @@ class LQR_Solver():
         self.opt.nm.maxit = const.LINEARIZED_CTRL_NM_MAXIT
 
 
-        if RE >= 400:
+        if os.path.isfile(const.BERNOULLI_FEED0_CPS_MTX(ref, RE)):
             self.opt.nm.nm_K0 = scio.mmread(const.BERNOULLI_FEED0_CPS_MTX(ref, RE))
+        elif RE >= 400:
+            warnings.warn("large reynoldsnumber and no initial feedback")
 
         self.opt.adi.output = const.LINEARIZED_CTRL_ADI_OUTPUT
         self.opt.adi.res2_tol = const.LINEARIZED_CTRL_ADI_RES2

@@ -61,6 +61,7 @@ class Bernoulli():
         self.ref = ref
         self.RE = RE
 
+
         # read matrices
         M = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_M_MTX(self.ref, self.RE))
         S = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_S_MTX(self.ref, self.RE))

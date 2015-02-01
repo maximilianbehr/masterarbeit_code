@@ -22,9 +22,9 @@ class LinearizedCtrl():
         self.dt = dt
         self.T = T
         self.t = 0
-        self.k = 1
+        self.k = 0
 
-        self.logv = np.zeros((np.ceil(self.T/self.dt), 4))
+        self.logv = np.zeros((np.ceil(self.T/self.dt)+1, 4))
 
         # mesh and function spaces
         self.mesh = Mesh(const.MESH_XML(ref))
@@ -43,7 +43,7 @@ class LinearizedCtrl():
         self.GTcps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_GT_MTX(self.ref, self.RE))
         self.Bcps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_B_MTX(self.ref, self.RE))
         self.Ccps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_C_MTX(self.ref, self.RE))
-        self.inner_nodes = np.loadtxt(const.ASSEMBLER_COMPRESS_SIM_INNER_NODES(self.ref, self.RE), dtype=np.int64)
+        self.inner_nodes = np.loadtxt(const.ASSEMBLER_COMPRESS_CTRL_INNER_NODES(self.ref, self.RE), dtype=np.int64)
 
         # system sizes
         self.nv, self.np = self.Gcps.shape
@@ -126,7 +126,7 @@ class LinearizedCtrl():
     def log(self):
         self.logv[self.k, 0] = self.t
         self.logv[self.k, 1] = np.linalg.norm(self.uk_sys)
-        uc = self.Kinfsys.T*self.uk_sys
+        uc = self.Kinfcps.T*self.uk_sys
         self.logv[self.k, 2] = uc[0, 0]
         self.logv[self.k, 3] = uc[0, 1]
 
@@ -148,7 +148,7 @@ class LinearizedCtrl():
             self.log()
 
             # print info
-            if self.k % int(const.LINEARIZED_SIM_INFO*(self.T/self.dt)) == 0:
+            if self.k % int(const.LINEARIZED_CTRL_INFO*(self.T/self.dt)) == 0:
                 print "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.logv[self.k, 0], self.logv[self.k, 1])
 
             self._save()

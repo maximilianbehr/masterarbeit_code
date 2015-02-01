@@ -3,8 +3,8 @@ from src.lqr.compress_assembler import CompressAssembler
 import traceback
 
 # karman
-REs = range(100, 2000, 100)
-refs = [1, 2, 3, 4]
+REs = range(100, 1000, 100)
+refs = [3]
 
 for ref in refs:
     for RE in REs:

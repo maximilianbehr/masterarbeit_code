@@ -26,7 +26,7 @@ class LinearizedSim():
         self.k = 0
 
         # log
-        self.logv = np.zeros((np.ceil(self.T/self.dt), 2))
+        self.logv = np.zeros((np.ceil(self.T/self.dt)+1, 2))
 
         # mesh and function spaces
         self.mesh = Mesh(const.MESH_XML(ref))
@@ -129,6 +129,7 @@ class LinearizedSim():
 
 
     def save_log(self):
+        self.logv = self.logv[0:self.k, :]
         np.savetxt(const.LINEARIZED_SIM_LOG(self.ref, self.RE), self.logv)
 
 

@@ -4,6 +4,7 @@ import scipy.io as scio
 from dolfin import *
 import numpy as np
 import os
+from src.aux import createdir
 
 
 class Assembler():
@@ -24,6 +25,11 @@ class Assembler():
         self.glower = const.ASSEMBLER_LOWER_CONTROL
         self.u_stat = Function(self.V, const.STATIONARY_U_XML(ref, RE))
 
+        # build variational and matrices
+        self._lns_variational()
+        self._lns_ublas()
+        self._buildC()
+        self._lns_npsc()
 
     def _get_sparsedata(self, m):
         """Function returns a scipy CSR Matrix for given Matrix (dolfin) M"""
@@ -35,8 +41,7 @@ class Assembler():
         except:
             raise ValueError(u"Implement _get_sparsedata for Matrix Datatype {0:s}".format(type(m)))
 
-
-    def lns_variational(self):
+    def _lns_variational(self):
         # trial functions
         dudt = TrialFunction(self.V)
         u = TrialFunction(self.V)
@@ -69,7 +74,7 @@ class Assembler():
         self.var["G"] = p * div(w_test) * dx
         self.var["Gt"] = div(u) * p_test * dx
 
-    def lns_ublas(self):
+    def _lns_ublas(self):
         if not self.var:
             raise ValueError("Call unparameterized_lns_variational to initialize attribute var.")
 
@@ -85,8 +90,8 @@ class Assembler():
         # restore backend
         parameters["linear_algebra_backend"] = la_backend
 
-    def buildC(self):
-
+    def _buildC(self):
+        print "P1({0:%.2e}, {1:%.2e})\t P1({2:%.2e}, {3:%.2e})".format(const.ASSEMBLER_OBSERVER_POINT1_X, const.ASSEMBLER_OBSERVER_POINT1_Y, const.ASSEMBLER_OBSERVER_POINT2_X, const.ASSEMBLER_OBSERVER_POINT2_Y)
         p1 = Point(const.ASSEMBLER_OBSERVER_POINT1_X, const.ASSEMBLER_OBSERVER_POINT1_Y)
         p2 = Point(const.ASSEMBLER_OBSERVER_POINT2_X, const.ASSEMBLER_OBSERVER_POINT2_Y)
         points = [p1, p2]
@@ -118,7 +123,7 @@ class Assembler():
 
         return C.todense()
 
-    def lns_npsc(self):
+    def _lns_npsc(self):
         if not self.ublas:
             raise ValueError("Call unparameterized_lns_ublas( to initialize attribute ublas.")
 
@@ -131,16 +136,14 @@ class Assembler():
 
         self.npsc["B"] = np.concatenate((self.npsc["Bupper"], self.npsc["Blower"]), axis=1)
 
-        self.npsc["C"] = self.buildC()
+        self.npsc["C"] = self._buildC()
 
-
-    def save_lns_mtx(self):
+    def save_mtx(self):
 
         if not self.npsc:
             raise ValueError("Call unparameterized_lns_npsc to initialize attribute npsc.")
 
-        if not os.path.exists(os.path.dirname(const.ASSEMBLER_M_MTX(self.ref, self.RE))):
-            os.makedirs(os.path.dirname(const.ASSEMBLER_M_MTX(self.ref, self.RE)))
+        createdir(os.path.dirname(const.ASSEMBLER_M_MTX(self.ref, self.RE)))
 
         with open(const.ASSEMBLER_M_MTX(self.ref, self.RE), "w") as handle:
             self.npsc["M"].eliminate_zeros()
@@ -186,11 +189,12 @@ class Assembler():
         with open(const.ASSEMBLER_C_MTX(self.ref, self.RE), "w") as handle:
             scio.mmwrite(handle, self.npsc["C"])
 
-
-    def save_lns_mat(self):
+    def save_mat(self):
 
         if not self.npsc:
             raise ValueError("Call unparameterized_lns_npsc to initialize attribute npsc.")
+
+        createdir(const.ASSEMBLER_MAT(self.ref, self.RE))
 
         with open(const.ASSEMBLER_MAT(self.ref, self.RE), "w") as handle:
             scio.savemat(handle, self.npsc, do_compression=True)

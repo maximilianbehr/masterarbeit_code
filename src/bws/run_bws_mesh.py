@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from src.mesh.karman import MeshBuilder
+from src.bws.mesh.bws import MeshBuilder
 
 
 if __name__ == "__main__":

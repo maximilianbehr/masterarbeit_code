@@ -2,7 +2,7 @@ from src.lqr.linearized_sim import LinearizedSim
 import traceback
 
 
-REs = range(100, 800, 100)
+REs = range(100, 1000, 100)
 refs = [3]
 dt = 0.01
 T = 30

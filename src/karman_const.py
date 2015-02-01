@@ -3,6 +3,7 @@ import dolfin
 from dolfin import parameters
 from dolfin import Expression
 from dolfin import Constant
+from dolfin import DirichletBC
 import os
 import socket
 import numpy as np
@@ -67,18 +68,19 @@ GAMMA_BALL_PROJECTION_THRESHOLD = 1.1
 assert GAMMA_BALL_PROJECTION_THRESHOLD > 1, "Constant must be slightly larger than 1"
 
 """Output directory"""
+OUTPUTDIR_NAME = "results"
+
 def OUTPUTDIR():
-    dirname = os.path.join("results", DOLFIN_VERSION)
+    dirname = os.path.join(OUTPUTDIR_NAME, DOLFIN_VERSION)
     host = socket.gethostname()
     if host in ["pc747", "pc633", "pc800"]:
-            return os.path.abspath(os.path.join("/scratch/behr/master/", dirname))
-
+        return os.path.abspath(os.path.join("/scratch/behr/master/", dirname))
     elif host == "jack":
         return os.path.abspath(os.path.join("/home/daniels/PycharmProjects/master", dirname))
-
     elif host == "editha":
         return os.path.abspath(os.path.join("/scratch/vol1/behr/", dirname))
-
+    elif host == "heinrich.mpi-magdeburg.mpg.de":
+        return os.path.abspath(os.path.join("/scratch/behr/", dirname))
     else:
         raise NotImplementedError("Outputpath for {0:s} is not implemented".format(host))
 
@@ -115,11 +117,35 @@ STATIONARY_V_DIM = 2
 STATIONARY_Q = "CG"
 STATIONARY_Q_DIM = 1
 STATIONARY_U0 = Constant((0.0, 0.0))
-STATIONARY_P0 = Constant(0.0)
 STATIONARY_UIN = Expression(("4*(1-x[1])*x[1]", "0.0"))
 STATIONARY_NEWTON_STEPS = 40
 STATIONARY_NEWTON_ABS_TOL = 1e-12
 STATIONARY_NEWTON_REL_TOL = 1e-14
+
+
+def STATIONARY_BOUNDARY_CONDITIONS(W):
+    from src.mesh.karman import GammaLeft
+    from src.mesh.karman import GammaLower
+    from src.mesh.karman import GammaUpper
+    from src.mesh.karman import GammaBall
+    from src.mesh.karman import GammaBallCtrlLower
+    from src.mesh.karman import GammaBallCtrlUpper
+
+    # inflow profile
+    uin = STATIONARY_UIN
+
+    # noslip at boundary parts
+    noslip = Constant((0.0, 0.0))
+
+    # define and collect boundary conditions
+    bcu = [DirichletBC(W.sub(0), uin, GammaLeft()),
+           DirichletBC(W.sub(0), noslip, GammaLower()),
+           DirichletBC(W.sub(0), noslip, GammaUpper()),
+           DirichletBC(W.sub(0), noslip, GammaBall()),
+           DirichletBC(W.sub(0), noslip, GammaBallCtrlLower()),
+           DirichletBC(W.sub(0), noslip, GammaBallCtrlUpper())]
+    return bcu
+
 
 def STATIONARY_NU(RE):
     """return nu for given RE"""
@@ -389,17 +415,18 @@ LINEARIZED_SIM_Q = "CG"
 LINEARIZED_SIM_Q_DIM = 1
 LINEARIZED_SIM_SAVE_FREQ = 10
 LINEARIZED_SIM_INFO = 0.05
+LINEARIZED_SIM_DIR = "lqr_sim"
 
 def LINEARIZED_SIM_U_PVD(ref, RE):
-    return os.path.join(OUTPUTDIR(), "lqr_sim", parameters["refinement_algorithm"],
+    return os.path.join(OUTPUTDIR(), LINEARIZED_SIM_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u.pvd")
 
 def LINEARIZED_SIM_U_DELTA_PVD(ref, RE):
-    return os.path.join(OUTPUTDIR(), "lqr_sim", parameters["refinement_algorithm"],
+    return os.path.join(OUTPUTDIR(), LINEARIZED_SIM_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u_delta.pvd")
 
 def LINEARIZED_SIM_LOG(ref, RE):
-    return os.path.join(OUTPUTDIR(), "lqr_sim", parameters["refinement_algorithm"],
+    return os.path.join(OUTPUTDIR(), LINEARIZED_SIM_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "log.txt")
 
 
@@ -411,7 +438,7 @@ LINEARIZED_CTRL_NM_RES2 = 5e-8
 LINEARIZED_CTRL_NM_REL2_CHANGE = 1e-10
 LINEARIZED_CTRL_NM_REL_CHANGE = 1e-10
 LINEARIZED_CTRL_NM_MAXIT = 30
-LINEARIZED_CTRL_ADI_OUTPUT = 1
+LINEARIZED_CTRL_ADI_OUTPUT = 0
 LINEARIZED_CTRL_ADI_RES2 = 1e-15
 LINEARIZED_CTRL_ADI_MAXIT = 1000
 LINEARIZED_CTRL_V = "CG"
@@ -421,25 +448,26 @@ LINEARIZED_CTRL_Q_DIM = 1
 LINEARIZED_CTRL_SAVE_FREQ = 5
 LINEARIZED_CTRL_START_CONTROLLING = 0
 LINEARIZED_CTRL_INFO = 0.05
+LINEARIZED_CTRL_DIR = "lqr_ctrl"
 
 def LINEARIZED_CTRL_U_PVD(ref, RE):
-    return os.path.join(OUTPUTDIR(), "linearized_ctrl", parameters["refinement_algorithm"],
+    return os.path.join(OUTPUTDIR(), LINEARIZED_CTRL_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u.pvd")
 
 def LINEARIZED_CTRL_U_DELTA_PVD(ref, RE):
-    return os.path.join(OUTPUTDIR(), "linearized_ctrl", parameters["refinement_algorithm"],
+    return os.path.join(OUTPUTDIR(), LINEARIZED_CTRL_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u_delta.pvd")
 
 def LINEARIZED_CTRL_Z_CPS_MTX(ref, RE):
-    return os.path.join(OUTPUTDIR(), "linearized_ctrl", parameters["refinement_algorithm"],
+    return os.path.join(OUTPUTDIR(), LINEARIZED_CTRL_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "Zcps.mtx")
 
 def LINEARIZED_CTRL_KINF_CPS_MTX(ref, RE):
-    return os.path.join(OUTPUTDIR(), "linearized_ctrl", parameters["refinement_algorithm"],
+    return os.path.join(OUTPUTDIR(), LINEARIZED_CTRL_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "Kinfcps.mtx")
 
 def LINEARIZED_CTRL_LOG(ref, RE):
-    return os.path.join(OUTPUTDIR(), "linearized_ctrl", parameters["refinement_algorithm"],
+    return os.path.join(OUTPUTDIR(), LINEARIZED_CTRL_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "ctrl.log")
 
 
@@ -453,19 +481,21 @@ def BERNOULLI_FEED0_CPS_MTX(ref, RE):
 
 
 """constant for plotter"""
-
-def PLOTTER_LINEARIZED_SIM_LOG_EPS(ref):
+def PLOTTER_LINEARIZED_SIM_LOG1(ref, ending):
     return os.path.join(OUTPUTDIR(), "lqr_sim_plotter", parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "sim.eps")
+                        "ref_{0:d}".format(ref), "sim1."+ending)
 
-def PLOTTER_LINEARIZED_SIM_LOG_PNG(ref):
-    return os.path.join(OUTPUTDIR(), "lqr_sim_plotter", parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "sim.png")
+def PLOTTER_LINEARIZED_CTRL_LOG1(ref, ending):
+    return os.path.join(OUTPUTDIR(), "lqr_ctrl_plotter", parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "ctrl1."+ending)
 
-def PLOTTER_LINEARIZED_SIM_LOG_JPEG(ref):
-    return os.path.join(OUTPUTDIR(), "lqr_sim_plotter", parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "sim.jpeg")
+def PLOTTER_LINEARIZED_CTRL_LOG2(ref, ending):
+    return os.path.join(OUTPUTDIR(), "lqr_ctrl_plotter", parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "ctrl2."+ending)
 
+def PLOTTER_LINEARIZED_CTRL_LOG3(ref, ending):
+    return os.path.join(OUTPUTDIR(), "lqr_ctrl_plotter", parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "ctrl3."+ending)
 
 
 
