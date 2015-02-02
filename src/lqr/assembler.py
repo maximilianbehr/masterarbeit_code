@@ -91,7 +91,7 @@ class Assembler():
         parameters["linear_algebra_backend"] = la_backend
 
     def _buildC(self):
-        print "P1({0:%.2e}, {1:%.2e})\t P1({2:%.2e}, {3:%.2e})".format(const.ASSEMBLER_OBSERVER_POINT1_X, const.ASSEMBLER_OBSERVER_POINT1_Y, const.ASSEMBLER_OBSERVER_POINT2_X, const.ASSEMBLER_OBSERVER_POINT2_Y)
+        print "P1({0:.2f}, {1:.2f})\t P1({2:.2f}, {3:.2f})".format(const.ASSEMBLER_OBSERVER_POINT1_X, const.ASSEMBLER_OBSERVER_POINT1_Y, const.ASSEMBLER_OBSERVER_POINT2_X, const.ASSEMBLER_OBSERVER_POINT2_Y)
         p1 = Point(const.ASSEMBLER_OBSERVER_POINT1_X, const.ASSEMBLER_OBSERVER_POINT1_Y)
         p2 = Point(const.ASSEMBLER_OBSERVER_POINT2_X, const.ASSEMBLER_OBSERVER_POINT2_Y)
         points = [p1, p2]

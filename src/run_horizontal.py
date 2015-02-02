@@ -1,10 +1,4 @@
 import src.karman_const as const
-const.OUTPUTDIR_NAME = "results_default"
-const.ASSEMBLER_OBSERVER_POINT1_X = 2.5
-const.ASSEMBLER_OBSERVER_POINT1_Y = 0.5
-const.ASSEMBLER_OBSERVER_POINT2_X = 3.0
-const.ASSEMBLER_OBSERVER_POINT2_Y = 0.5
-
 from src.mesh.karman import MeshBuilder
 from src.stationary.newton import Newton
 from src.lqr.assembler import Assembler
@@ -13,6 +7,7 @@ from src.lqr.bernoulli import Bernoulli
 from src.lqr.lqr_solver import LQR_Solver
 from src.lqr.linearized_sim import LinearizedSim
 from src.lqr.linearized_ctrl import LinearizedCtrl
+from src.lqr.plotter import Plotter
 
 
 def build_mesh(ref):
@@ -23,11 +18,11 @@ def build_mesh(ref):
     meshbuilder.save()
 
 
-def solve_newton(ref, REs):
+def solve_newton(const, ref, REs):
     print "solve newton"
     REinitial = None
     for RE in REs:
-        newton = Newton(ref, RE, REinitial)
+        newton = Newton(const, ref, RE, REinitial)
         newton.solve()
         newton.save()
         REinitial = RE
@@ -72,15 +67,30 @@ def sim_and_control(ref, REs, pertubationeps, dt, T):
         linearized.save_log()
 
 if __name__ == "__main__":
-    ref = 3
-    REs = range(100, 700, 100)
-    dt = 0.005
-    T = 30
+
+    ref = 4
+    REs = range(100, 1500, 100)
+    dt = 0.001
+    T = 60
     pertubationeps = 0.25
 
-    build_mesh(ref)
-    solve_newton(ref, REs)
-    lqr_assembler(ref, REs)
-    bernoulli(ref, REs)
-    lqr_solver(ref, REs)
-    sim_and_control(ref, REs, pertubationeps, dt, T)
+    const.ASSEMBLER_OBSERVER_POINT1_X = 2.5
+    const.ASSEMBLER_OBSERVER_POINT1_Y = 0.5
+    const.ASSEMBLER_OBSERVER_POINT2_X = 2.75
+    const.ASSEMBLER_OBSERVER_POINT2_Y = 0.5
+
+    for pre in [0, 1, 2, 3, 4, 5]:
+        const.OUTPUTDIR_NAME = "results_vertical_pre_{0:d}s".format(pre)
+        const.LINEARIZED_CTRL_START_CONTROLLING = pre
+
+        build_mesh(ref)
+        solve_newton(const, ref, REs)
+        lqr_assembler(ref, REs)
+        bernoulli(ref, REs)
+        lqr_solver(ref, REs)
+        sim_and_control(ref, REs, pertubationeps, dt, T)
+        plotter = Plotter(ref, REs)
+        plotter.plot_linearized_sim1()
+        plotter.plot_linearized_ctrl1()
+        plotter.plot_linearized_ctrl2()
+        plotter.plot_linearized_ctrl3()
