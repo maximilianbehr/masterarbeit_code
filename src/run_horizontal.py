@@ -80,7 +80,7 @@ if __name__ == "__main__":
     const.ASSEMBLER_OBSERVER_POINT2_Y = 0.5
 
     for pre in [0, 1, 2, 3, 4, 5]:
-        const.OUTPUTDIR_NAME = "results_vertical_pre_{0:d}s".format(pre)
+        const.OUTPUTDIR_NAME = "results_horizontal_pre_{0:d}s".format(pre)
         const.LINEARIZED_CTRL_START_CONTROLLING = pre
 
         build_mesh(ref)

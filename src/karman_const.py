@@ -15,7 +15,8 @@ DOLFIN_VERSION = dolfin.__version__
 parameters["reorder_dofs_serial"] = False
 
 """set refinement algorithm"""
-parameters["refinement_algorithm"] = "recursive_bisection"
+#parameters["refinement_algorithm"] = "recursive_bisection"
+parameters["refinement_algorithm"] = "regular_cut"
 
 """Optimzation parameters"""
 parameters["form_compiler"]["optimize"] = True
