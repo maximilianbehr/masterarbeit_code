@@ -24,7 +24,7 @@ class LinearizedCtrl():
         self.t = 0
         self.k = 0
 
-        self.logv = np.zeros((np.ceil(self.T/self.dt)+1, 4))
+        self.logv = np.zeros((np.ceil(self.T/self.dt)+1, 6))
 
         # mesh and function spaces
         self.mesh = Mesh(const.MESH_XML(ref))
@@ -124,11 +124,20 @@ class LinearizedCtrl():
         self.t += self.dt
 
     def log(self):
+        # log time and u delta
         self.logv[self.k, 0] = self.t
         self.logv[self.k, 1] = np.linalg.norm(self.uk_sys)
+
+        # log control
         uc = self.Kinfcps.T*self.uk_sys
         self.logv[self.k, 2] = uc[0, 0]
         self.logv[self.k, 3] = uc[0, 1]
+
+        # log output
+        uout = self.Ccps*self.uk_sys
+        self.logv[self.k, 4] = uout[0, 0]
+        self.logv[self.k, 5] = uout[0, 1]
+
 
     def _save(self):
 

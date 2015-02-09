@@ -1,20 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from distutils.version import LooseVersion
-from dolfin.cpp.mesh import SubDomain, Mesh, MeshFunction, refine
+from dolfin.cpp.mesh import SubDomain, Mesh, MeshFunction, refine, cells
 from dolfin.cpp.function import near, between
 from dolfin.cpp.io import File
 from dolfin import parameters
-
 import src.bws.bws_const as const
-
-
-if LooseVersion(const.DOLFIN_VERSION) < LooseVersion("1.4.0"):
-    from dolfin.cpp.mesh import Rectangle
-else:
-    from mshr import Rectangle
-    from mshr import generate_mesh
-    from dolfin import Point
+from mshr import Rectangle
+from mshr import generate_mesh
+from mshr import CSGRotation
+from dolfin import Point
+import numpy as np
 
 
 class Gamma1(SubDomain):
@@ -79,25 +74,22 @@ class MeshBuilder():
         self.boundaryfunction = None
         self.refinelevel = 0
 
-    if LooseVersion(const.DOLFIN_VERSION) < LooseVersion("1.4.0"):
-        def _buildmesh(self):
-            """use Constants related to the geometry for building CSG"""
-            rectlower = Rectangle(const.RECTLOWER["x0_0"], const.RECTLOWER["x0_1"], const.RECTLOWER["x1_0"], const.RECTLOWER["x1_1"])
-            rectupper = Rectangle(const.RECTUPPER["x0_0"], const.RECTUPPER["x0_1"], const.RECTUPPER["x1_0"], const.RECTUPPER["x1_1"])
-            domain = rectlower + rectupper
-            self.mesh = Mesh(domain, const.INITIALRESOLUTION)
-    else:
-        def _buildmesh(self):
-            """use Constants related to the geometry for building CSG"""
+    def _buildmesh(self):
+        """use Constants related to the geometry for building CSG"""
 
-            p1 = Point(const.RECTLOWER["x0_0"], const.RECTLOWER["x0_1"])
-            p2 = Point(const.RECTLOWER["x1_0"], const.RECTLOWER["x1_1"])
-            p3 = Point(const.RECTUPPER["x0_0"], const.RECTUPPER["x0_1"])
-            p4 = Point(const.RECTUPPER["x1_0"], const.RECTUPPER["x1_1"])
-            rectlower = Rectangle(p1, p2)
-            rectupper = Rectangle(p3, p4)
-            domain = rectlower + rectupper
-            self.mesh = generate_mesh(domain, const.INITIALRESOLUTION)
+        p1 = Point(const.RECTLOWER["x0_0"], const.RECTLOWER["x0_1"])
+        p2 = Point(const.RECTLOWER["x1_0"], const.RECTLOWER["x1_1"])
+        p3 = Point(const.RECTUPPER["x0_0"], const.RECTUPPER["x0_1"])
+        p4 = Point(const.RECTUPPER["x1_0"], const.RECTUPPER["x1_1"])
+        p5 = Point(-np.sqrt(1.0/2.0*const.RECTROTATE["diag"]), -np.sqrt(1.0/2.0*const.RECTROTATE["diag"]))
+        p6 = Point(+np.sqrt(1.0/2.0*const.RECTROTATE["diag"]), +np.sqrt(1.0/2.0*const.RECTROTATE["diag"]))
+        rot = Point(const.RECTLOWER["x0_0"], const.RECTLOWER["x1_1"])
+        rectlower = Rectangle(p1, p2)
+        rectupper = Rectangle(p3, p4)
+        # first rotate by 45 degree and the move to edge of step
+        rectrotate = CSGRotation(Rectangle(p5, p6), const.RECTROTATE["angle"]) + rot
+        domain = rectlower + rectupper + rectrotate
+        self.mesh = generate_mesh(domain, const.INITIALRESOLUTION)
 
     def _buildboundaryfunction(self):
         """Mark boundary parts"""
@@ -119,6 +111,17 @@ class MeshBuilder():
         if self.refinelevel == 0:
             self._buildmesh()
             self._buildboundaryfunction()
+
+            # local refinement
+            for i in range(const.LOCALREFINEMENTS):
+                cellmarkers = MeshFunction("bool", self.mesh, 2)
+                cellmarkers.set_all(False)
+                for c in cells(self.mesh):
+                    p = c.midpoint()
+                    if const.LOCALREFINE(p):
+                        cellmarkers[c] = True
+                self.mesh = refine(self.mesh, cellmarkers)
+
         else:
             # refine
             self.mesh = refine(self.mesh)

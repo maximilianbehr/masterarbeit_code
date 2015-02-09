@@ -5,18 +5,29 @@ from dolfin import Constant
 from dolfin import DirichletBC
 from dolfin import Expression
 import socket
+import numpy as np
 
 DOLFIN_VERSION = dolfin.__version__
 
 
 """rectangular domain"""
-RECTUPPER = {"x0_0": 0.00, "x1_0": 8.00, "x0_1": 0.30, "x1_1": 1.00}
-RECTLOWER = {"x0_0": 2.0, "x1_0": 8.00, "x0_1": 0.00, "x1_1": 0.30}
+# parameter for adapting size of backward facing step
+MODELHEIGHT = 1
+RECTLOWER = {"x0_0": 5*MODELHEIGHT, "x0_1": 0.00, "x1_0": 25*MODELHEIGHT, "x1_1": MODELHEIGHT}
+RECTUPPER = {"x0_0": 0.00, "x0_1": MODELHEIGHT, "x1_0": 25*MODELHEIGHT, "x1_1": 3*MODELHEIGHT}
+RECTROTATE = {"diag": 0.25*MODELHEIGHT, "angle": np.pi/4}
 
 assert RECTUPPER["x0_0"] < RECTLOWER["x0_0"] < RECTUPPER["x1_0"]
 assert RECTLOWER["x0_1"] < RECTUPPER["x0_1"] < RECTUPPER["x1_1"]
 assert RECTLOWER["x1_0"] == RECTUPPER["x1_0"]
 assert RECTLOWER["x1_1"] == RECTUPPER["x0_1"]
+
+"""define local refinementzone"""
+LOCALREFINEMENTS = 2
+def LOCALREFINE(p):
+    if 3*MODELHEIGHT < p.x() < 15*MODELHEIGHT and p.y() < 1.5*MODELHEIGHT:
+        return True
+    return False
 
 """resolution of the macro mesh"""
 INITIALRESOLUTION = 12
