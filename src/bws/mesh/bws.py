@@ -17,31 +17,45 @@ class Gamma1(SubDomain):
     index = const.GAMMA1_INDICES
 
     def inside(self, x, on_boundary):
-        return on_boundary and near(x[0], const.RECTUPPER["x0_0"])
-
+        return on_boundary and \
+               between(x[1], (const.RECTUPPER["x0_1"], const.RECTUPPER["x1_1"])) and \
+               near(x[0], const.RECTUPPER["x0_0"])
 
 class Gamma2(SubDomain):
     """lower boundary upper rectangle"""
     index = const.GAMMA2_INDICES
+    diag = const.RECTROTATE["diag"]
 
     def inside(self, x, on_boundary):
-        return on_boundary and near(x[1], const.RECTUPPER["x0_1"])
+        return on_boundary and \
+               between(x[0], (const.RECTUPPER["x0_0"], const.RECTLOWER["x0_0"])) and \
+               between(x[1], (const.RECTUPPER["x0_1"]-self.diag/2.0, const.RECTUPPER["x0_1"]))
 
 
 class Gamma3(SubDomain):
     """left boundary lower rectangle"""
     index = const.GAMMA3_INDICES
+    r = const.GAMMA3_RADIUS
+    l = const.RECTROTATE["diag"]/np.sqrt(2)
+    x_edge = const.RECTLOWER["x0_0"]
+    y_edge = const.RECTUPPER["x0_1"]
+    x_m = x_edge - l*np.cos(const.RECTROTATE["angle"])
+    y_m = y_edge - l*np.sin(const.RECTROTATE["angle"])
 
     def inside(self, x, on_boundary):
-        return on_boundary and near(x[0], const.RECTLOWER["x0_0"])
+        return on_boundary and \
+               np.sqrt(np.power(x[0]-self.x_m, 2) + np.power(x[1]-self.y_m, 2)) <= self.r
 
 
 class Gamma4(SubDomain):
     """lower boundary lower rectangle"""
     index = const.GAMMA4_INDICES
+    diag = const.RECTROTATE["diag"]
 
     def inside(self, x, on_boundary):
-        return on_boundary and near(x[1], const.RECTLOWER["x0_1"])
+        return on_boundary and \
+        between(x[0], (const.RECTLOWER["x0_0"]-self.diag/2.0, const.RECTLOWER["x0_0"])) and \
+        between(x[1], (0.0, const.RECTUPPER["x0_1"]-self.diag/2.0))
 
 
 class Gamma5(SubDomain):
@@ -49,15 +63,56 @@ class Gamma5(SubDomain):
     index = const.GAMMA5_INDICES
 
     def inside(self, x, on_boundary):
-        return on_boundary and near(x[0], const.RECTLOWER["x1_0"])
-
+        return on_boundary and \
+               between(x[0], (const.RECTLOWER["x0_0"], const.RECTLOWER["x1_0"])) and \
+               near(x[1], const.RECTUPPER["x0_0"])
 
 class Gamma6(SubDomain):
     """upper boundary upper rectangle"""
     index = const.GAMMA6_INDICES
 
     def inside(self, x, on_boundary):
-        return on_boundary and near(x[1], const.RECTUPPER["x1_1"])
+        return on_boundary and \
+        between(x[1], (const.RECTUPPER["x0_0"], const.RECTUPPER["x1_1"])) and \
+        near(x[0], const.RECTUPPER["x1_0"])
+
+
+class Gamma7(SubDomain):
+    """upper boundary upper rectangle"""
+    index = const.GAMMA7_INDICES
+
+    def inside(self, x, on_boundary):
+        return on_boundary and \
+        between(x[0], (const.RECTUPPER["x0_0"], const.RECTUPPER["x1_0"])) and \
+        near(x[1], const.RECTUPPER["x1_1"])
+
+class GammaShear1(SubDomain):
+    """shear layer lower boundary lower rectangle"""
+    index = const.GAMMASHEAR1_INDICES
+
+    def inside(self, x, on_boundary):
+        return on_boundary and \
+               between(x[0], (15*const.MODELHEIGHT, 20*const.MODELHEIGHT)) and \
+               near(x[1], 0.0)
+
+
+class GammaShear2(SubDomain):
+    """shear layer lower boundary lower rectangle"""
+    index = const.GAMMASHEAR2_INDICES
+
+    def inside(self, x, on_boundary):
+        return on_boundary and \
+               between(x[0], (10*const.MODELHEIGHT, 20*const.MODELHEIGHT)) and \
+               near(x[1], 0.0)
+
+class GammaShear3(SubDomain):
+    """shear layer lower boundary lower rectangle"""
+    index = const.GAMMASHEAR3_INDICES
+
+    def inside(self, x, on_boundary):
+        return on_boundary and \
+               between(x[0], (6.5*const.MODELHEIGHT, 20*const.MODELHEIGHT)) and \
+               near(x[1], 0.0)
 
 
 class GammaInner(SubDomain):
@@ -95,17 +150,32 @@ class MeshBuilder():
         """Mark boundary parts"""
 
         self.boundaryfunction = MeshFunction("size_t", self.mesh, self.mesh.topology().dim() - 1)
+        self.shear1function = MeshFunction("size_t", self.mesh, self.mesh.topology().dim() - 1)
+        self.shear2function = MeshFunction("size_t", self.mesh, self.mesh.topology().dim() - 1)
+        self.shear3function = MeshFunction("size_t", self.mesh, self.mesh.topology().dim() - 1)
 
         # init all edges with zero
         self.boundaryfunction.set_all(GammaInner().index)
+        self.shear1function.set_all(GammaInner().index)
+        self.shear2function.set_all(GammaInner().index)
+        self.shear3function.set_all(GammaInner().index)
 
-        # mark edges
+
+        # mark edges for boundary function
         Gamma1().mark(self.boundaryfunction, Gamma1().index)
         Gamma2().mark(self.boundaryfunction, Gamma2().index)
-        Gamma3().mark(self.boundaryfunction, Gamma3().index)
         Gamma4().mark(self.boundaryfunction, Gamma4().index)
+        Gamma3().mark(self.boundaryfunction, Gamma3().index)
         Gamma5().mark(self.boundaryfunction, Gamma5().index)
         Gamma6().mark(self.boundaryfunction, Gamma6().index)
+        Gamma7().mark(self.boundaryfunction, Gamma7().index)
+
+        # mark edges for shear function
+        GammaShear1().mark(self.shear1function,GammaShear1().index)
+        GammaShear2().mark(self.shear2function,GammaShear2().index)
+        GammaShear3().mark(self.shear3function,GammaShear3().index)
+
+
 
     def refine(self):
         if self.refinelevel == 0:
@@ -139,5 +209,18 @@ class MeshBuilder():
         File(const.BOUNDARY_XML(self.refinelevel), "compressed") << self.boundaryfunction
         File(const.BOUNDARY_PVD(self.refinelevel), "compressed") << self.boundaryfunction
         File(const.BOUNDARY_XDMF(self.refinelevel), "compressed") << self.boundaryfunction
+
+        # save shear mesh functions
+        File(const.SHEAR_XML(self.refinelevel, 1), "compressed") << self.shear1function
+        File(const.SHEAR_PVD(self.refinelevel, 1), "compressed") << self.shear1function
+        File(const.SHEAR_XDMF(self.refinelevel, 1), "compressed") << self.shear1function
+
+        File(const.SHEAR_XML(self.refinelevel, 2), "compressed") << self.shear2function
+        File(const.SHEAR_PVD(self.refinelevel, 2), "compressed") << self.shear2function
+        File(const.SHEAR_XDMF(self.refinelevel, 2), "compressed") << self.shear2function
+
+        File(const.SHEAR_XML(self.refinelevel, 3), "compressed") << self.shear3function
+        File(const.SHEAR_PVD(self.refinelevel, 3), "compressed") << self.shear3function
+        File(const.SHEAR_XDMF(self.refinelevel, 3), "compressed") << self.shear3function
 
 

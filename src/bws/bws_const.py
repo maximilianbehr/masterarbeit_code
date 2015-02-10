@@ -33,6 +33,7 @@ def LOCALREFINE(p):
 INITIALRESOLUTION = 12
 
 """indices for the boundary parts"""
+GAMMA3_RADIUS = 0.25*MODELHEIGHT
 GAMMA_INNER_INDICES = 0
 GAMMA1_INDICES = 1
 GAMMA2_INDICES = 2
@@ -40,6 +41,11 @@ GAMMA3_INDICES = 3
 GAMMA4_INDICES = 4
 GAMMA5_INDICES = 5
 GAMMA6_INDICES = 6
+GAMMA7_INDICES = 7
+GAMMASHEAR1_INDICES = 8
+GAMMASHEAR2_INDICES = 9
+GAMMASHEAR3_INDICES = 10
+
 
 
 """Output directory"""
@@ -84,6 +90,17 @@ def MESH_XDMF(ref):
 def MESH_XML(ref):
     return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "mesh.xml.gz")
 
+
+def SHEAR_PVD(ref, num):
+    return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "shear{0:d}.pvd".format(num))
+
+
+def SHEAR_XDMF(ref, num):
+    return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "shear{0:d}.xdmf".format(num))
+
+
+def SHEAR_XML(ref, num):
+    return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "shear{0:d}.xml.gz".format(num))
 
 
 """constants for stationary solver"""
