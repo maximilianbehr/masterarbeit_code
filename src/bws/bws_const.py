@@ -25,7 +25,7 @@ assert RECTLOWER["x1_1"] == RECTUPPER["x0_1"]
 """define local refinementzone"""
 LOCALREFINEMENTS = 2
 def LOCALREFINE(p):
-    if 3*MODELHEIGHT < p.x() < 15*MODELHEIGHT and p.y() < 1.5*MODELHEIGHT:
+    if 3*MODELHEIGHT < p.x() < 20*MODELHEIGHT and p.y() < 1.5*MODELHEIGHT:
         return True
     return False
 
@@ -112,9 +112,13 @@ STATIONARY_Q_DIM = 1
 STATIONARY_U0 = Constant((0.0, 0.0))
 STATIONARY_UIN = Expression(("1.0/( ((-x0)/2+(x1)/2)*((x1)/2-(x0)/2) )*(x[1]-x0)*(x1-x[1])", "0.0"),
                             x0=RECTUPPER["x0_1"], x1=RECTUPPER["x1_1"])
-STATIONARY_NEWTON_STEPS = 40
+STATIONARY_NEWTON_STEPS = 15
 STATIONARY_NEWTON_ABS_TOL = 1e-12
 STATIONARY_NEWTON_REL_TOL = 1e-14
+STATIONARY_ADAPTIVE_TOL = 1e-2
+STATIONARY_ADAPTIVE_STEPS = 20
+
+
 
 
 def STATIONARY_BOUNDARY_CONDITIONS(W):
@@ -124,6 +128,8 @@ def STATIONARY_BOUNDARY_CONDITIONS(W):
     from src.bws.mesh.bws import Gamma4
     from src.bws.mesh.bws import Gamma5
     from src.bws.mesh.bws import Gamma6
+    from src.bws.mesh.bws import Gamma7
+
 
 
     # inflow profile
@@ -137,7 +143,8 @@ def STATIONARY_BOUNDARY_CONDITIONS(W):
            DirichletBC(W.sub(0), noslip, Gamma2()),
            DirichletBC(W.sub(0), noslip, Gamma3()),
            DirichletBC(W.sub(0), noslip, Gamma4()),
-           DirichletBC(W.sub(0), noslip, Gamma6())]
+           DirichletBC(W.sub(0), noslip, Gamma5()),
+           DirichletBC(W.sub(0), noslip, Gamma7())]
     return bcu
 
 
