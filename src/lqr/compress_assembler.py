@@ -1,11 +1,7 @@
 import src.karman_const as const
 from linearized_aux import compress_mat
 from linearized_aux import inner_outer_nodes
-from src.mesh.karman import GammaRight
-from src.mesh.karman import GammaBallCtrlLower
-from src.mesh.karman import GammaBallCtrlUpper
 import scipy.io as scio
-import numpy as np
 import os
 from dolfin import *
 
@@ -21,14 +17,18 @@ class CompressAssembler():
         self.mesh = Mesh(const.MESH_XML(ref))
         self.V = VectorFunctionSpace(self.mesh, const.LINEARIZED_SIM_V, const.LINEARIZED_SIM_V_DIM)
         self.Q = FunctionSpace(self.mesh, const.LINEARIZED_SIM_Q, const.LINEARIZED_SIM_Q_DIM)
+        self.boundaryfunction = MeshFunction("size_t", self.mesh, const.BOUNDARY_XML(self.ref))
 
         # define attributes v_inner_nodes and v_outer_nodes
         if self.flag == 'sim':
             # GammaRight Boundary Part is added to the inner nodes
-            self.inner_nodes, self.outer_nodes = inner_outer_nodes(self.V, [GammaRight()])
+            self.inner_nodes, self.outer_nodes = inner_outer_nodes(self.V, self.boundaryfunction, [const.GAMMA_RIGHT_INDICES])
         elif self.flag == 'ctrl':
             # GammaRight Boundary Part is added to the inner nodes
-            self.inner_nodes, self.outer_nodes = inner_outer_nodes(self.V, [GammaRight(), GammaBallCtrlLower(), GammaBallCtrlUpper()])
+            self.inner_nodes, self.outer_nodes = inner_outer_nodes(self.V, self.boundaryfunction, \
+                                                                   [const.GAMMA_RIGHT_INDICES,
+                                                                    const.GAMMA_BALL_CTRLLOWER_INDICES,
+                                                                    const.GAMMA_BALL_CTRLUPPER_INDICES])
         else:
             raise ValueError('unknown flag {s}'.format(self.flag))
 

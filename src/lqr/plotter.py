@@ -119,3 +119,27 @@ class Plotter():
         plt.savefig(const.PLOTTER_LINEARIZED_CTRL_LOG3(self.ref, "jpeg"))
         plt.savefig(const.PLOTTER_LINEARIZED_CTRL_LOG3(self.ref, "eps"))
         plt.close()
+
+"""
+        #split set of eigenvalues in stable, unstable and zeros (hopefully no)
+        stable_eigs = eigs[eigs.real<0]
+        unstable_eigs = eigs[eigs.real>0]
+        zero_eigs = eigs[eigs.real==0]
+
+        #plot eigenvalues
+        fig, ax = plt.subplots()
+        ax.plot(stable_eigs.real, stable_eigs.imag, "rx")
+        ax.plot(unstable_eigs.real,unstable_eigs.imag, "bx")
+        ax.plot(zero_eigs.real,zero_eigs.imag,"gx")
+        plt.axvline(x=1.0/self.delta, linewidth=1, color="g",ls="dashed")
+        xlimit = numpy.max(numpy.ceil(numpy.absolute(eigs.real)))
+        ylimit = numpy.max(numpy.ceil(numpy.absolute(eigs.imag)))
+        plt.xlim((-xlimit, xlimit))
+        plt.ylim((-ylimit, ylimit))
+        plt.xscale("symlog")
+        plt.xlabel("Real")
+        plt.ylabel("Imaginary")
+        #plt.show()
+        plt.savefig(self.options["eig_eps"])
+        plt.close("all")
+"""

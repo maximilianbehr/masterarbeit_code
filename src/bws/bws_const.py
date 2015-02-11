@@ -12,9 +12,9 @@ DOLFIN_VERSION = dolfin.__version__
 
 """rectangular domain"""
 # parameter for adapting size of backward facing step
-MODELHEIGHT = 1
+MODELHEIGHT = 1.0
 RECTLOWER = {"x0_0": 5*MODELHEIGHT, "x0_1": 0.00, "x1_0": 25*MODELHEIGHT, "x1_1": MODELHEIGHT}
-RECTUPPER = {"x0_0": 0.00, "x0_1": MODELHEIGHT, "x1_0": 25*MODELHEIGHT, "x1_1": 3*MODELHEIGHT}
+RECTUPPER = {"x0_0": 0.00, "x0_1": MODELHEIGHT, "x1_0": 25*MODELHEIGHT, "x1_1": 5*MODELHEIGHT}
 RECTROTATE = {"diag": 0.25*MODELHEIGHT, "angle": np.pi/4}
 
 assert RECTUPPER["x0_0"] < RECTLOWER["x0_0"] < RECTUPPER["x1_0"]
@@ -33,7 +33,7 @@ def LOCALREFINE(p):
 INITIALRESOLUTION = 12
 
 """indices for the boundary parts"""
-GAMMA3_RADIUS = 0.25*MODELHEIGHT
+CONTROLRADIUS = 0.25*MODELHEIGHT
 GAMMA_INNER_INDICES = 0
 GAMMA1_INDICES = 1
 GAMMA2_INDICES = 2
@@ -42,10 +42,10 @@ GAMMA4_INDICES = 4
 GAMMA5_INDICES = 5
 GAMMA6_INDICES = 6
 GAMMA7_INDICES = 7
-GAMMASHEAR1_INDICES = 8
-GAMMASHEAR2_INDICES = 9
-GAMMASHEAR3_INDICES = 10
-
+GAMMA8_INDICES = 8
+GAMMASHEAR1_INDICES = 9
+GAMMASHEAR2_INDICES = 10
+GAMMASHEAR3_INDICES = 11
 
 
 """Output directory"""
@@ -110,18 +110,38 @@ STATIONARY_V_DIM = 2
 STATIONARY_Q = "CG"
 STATIONARY_Q_DIM = 1
 STATIONARY_U0 = Constant((0.0, 0.0))
-STATIONARY_UIN = Expression(("1.0/( ((-x0)/2+(x1)/2)*((x1)/2-(x0)/2) )*(x[1]-x0)*(x1-x[1])", "0.0"),
+STATIONARY_UIN = Expression(("1.0/pow((x1)/2.0-(x0)/2.0,2) *(x[1]-x0)*(x1-x[1])", "0.0"),
                             x0=RECTUPPER["x0_1"], x1=RECTUPPER["x1_1"])
 STATIONARY_NEWTON_STEPS = 15
 STATIONARY_NEWTON_ABS_TOL = 1e-12
 STATIONARY_NEWTON_REL_TOL = 1e-14
-STATIONARY_ADAPTIVE_TOL = 1e-2
-STATIONARY_ADAPTIVE_STEPS = 20
+
+l = RECTROTATE["diag"]/np.sqrt(2)
+# middlepoint of schraege
+x_m = RECTLOWER["x0_0"] - l*np.cos(RECTROTATE["angle"])
+y_m = RECTUPPER["x0_1"] - l*np.sin(RECTROTATE["angle"])
+# anfangspoints of schraege
+x_a = x_m - CONTROLRADIUS/2.0*(np.sin(RECTROTATE["angle"]))
+y_a = y_m + CONTROLRADIUS/2.0*(np.cos(RECTROTATE["angle"]))
+# endpoint of schraege
+x_e = x_m + CONTROLRADIUS/2.0*(np.sin(RECTROTATE["angle"]))
+y_e = y_m - CONTROLRADIUS/2.0*(np.cos(RECTROTATE["angle"]))
+
+STATIONARY_CONTROL_LAMBDA = 0.2
+# print "pm=[{0:e},{1:e}];".format(x_m, y_m)
+# print "pa=[{0:e},{1:e}];".format(x_a, y_a)
+# print "pe=[{0:e},{1:e}];".format(x_e, y_e)
+
+STATIONARY_CONTROL_UPPER = Expression(("lam*sqrt(pow(x[0]-xa,2)+pow(x[1]-ya,2))*sqrt(pow(x[0]-xe,2)+pow(x[1]-ye,2))/pow(r/2.0,2.0)*cos(phi)", \
+                                       "lam*sqrt(pow(x[0]-xa,2)+pow(x[1]-ya,2))*sqrt(pow(x[0]-xe,2)+pow(x[1]-ye,2))/pow(r/2.0,2.0)*sin(phi)"), \
+                                       r=CONTROLRADIUS, phi=RECTROTATE["angle"], xa=x_a, ya=y_a, xe=x_e, ye=y_e, \
+                                       lam=STATIONARY_CONTROL_LAMBDA)
+
+#STATIONARY_CONTROL_LOWER = Expression(("lam*(-1.0)*(x[1]*(r-x[1]))/pow(r/2.0,2.0)", "0.0"), r=CONTROLRADIUS, lam=STATIONARY_CONTROL_LAMBDA)
+STATIONARY_CONTROL_LOWER = Expression(("-2*(-1.0)*(x[1]*(r-x[1]))/pow(r/2.0,2.0)", "0.0"), r=CONTROLRADIUS, lam=STATIONARY_CONTROL_LAMBDA)
 
 
-
-
-def STATIONARY_BOUNDARY_CONDITIONS(W):
+def STATIONARY_BOUNDARY_CONDITIONS(W, boundaryfunction):
     from src.bws.mesh.bws import Gamma1
     from src.bws.mesh.bws import Gamma2
     from src.bws.mesh.bws import Gamma3
@@ -129,22 +149,36 @@ def STATIONARY_BOUNDARY_CONDITIONS(W):
     from src.bws.mesh.bws import Gamma5
     from src.bws.mesh.bws import Gamma6
     from src.bws.mesh.bws import Gamma7
-
+    from src.bws.mesh.bws import Gamma8
 
 
     # inflow profile
     uin = STATIONARY_UIN
 
+    # control upper in
+    ctrl_upper = STATIONARY_CONTROL_UPPER
+
+    # control lower in
+    ctrl_lower = STATIONARY_CONTROL_LOWER
+
+
     # noslip at boundary parts
     noslip = Constant((0.0, 0.0))
 
     # define and collect boundary conditions
-    bcu = [DirichletBC(W.sub(0), uin, Gamma1()),
-           DirichletBC(W.sub(0), noslip, Gamma2()),
-           DirichletBC(W.sub(0), noslip, Gamma3()),
-           DirichletBC(W.sub(0), noslip, Gamma4()),
-           DirichletBC(W.sub(0), noslip, Gamma5()),
-           DirichletBC(W.sub(0), noslip, Gamma7())]
+    bcu = [DirichletBC(W.sub(0), uin, boundaryfunction, Gamma1().index),
+           DirichletBC(W.sub(0), noslip, boundaryfunction, Gamma2().index),
+
+           DirichletBC(W.sub(0), ctrl_upper, boundaryfunction, Gamma3().index),
+           # DirichletBC(W.sub(0), noslip, boundaryfunction, Gamma3().index),
+
+           DirichletBC(W.sub(0), noslip, boundaryfunction, Gamma4().index),
+
+           DirichletBC(W.sub(0), ctrl_lower, boundaryfunction, Gamma5().index),
+           #DirichletBC(W.sub(0), uin, boundaryfunction, Gamma5().index),
+
+           DirichletBC(W.sub(0), noslip, boundaryfunction, Gamma6().index),
+           DirichletBC(W.sub(0), noslip, boundaryfunction, Gamma8().index)]
     return bcu
 
 

@@ -124,7 +124,7 @@ STATIONARY_NEWTON_ABS_TOL = 1e-12
 STATIONARY_NEWTON_REL_TOL = 1e-14
 
 
-def STATIONARY_BOUNDARY_CONDITIONS(W):
+def STATIONARY_BOUNDARY_CONDITIONS(W, boundaryfunction):
     from src.mesh.karman import GammaLeft
     from src.mesh.karman import GammaLower
     from src.mesh.karman import GammaUpper
@@ -139,12 +139,12 @@ def STATIONARY_BOUNDARY_CONDITIONS(W):
     noslip = Constant((0.0, 0.0))
 
     # define and collect boundary conditions
-    bcu = [DirichletBC(W.sub(0), uin, GammaLeft()),
-           DirichletBC(W.sub(0), noslip, GammaLower()),
-           DirichletBC(W.sub(0), noslip, GammaUpper()),
-           DirichletBC(W.sub(0), noslip, GammaBall()),
-           DirichletBC(W.sub(0), noslip, GammaBallCtrlLower()),
-           DirichletBC(W.sub(0), noslip, GammaBallCtrlUpper())]
+    bcu = [DirichletBC(W.sub(0), uin, boundaryfunction, GammaLeft().index),
+           DirichletBC(W.sub(0), noslip, boundaryfunction, GammaLower().index),
+           DirichletBC(W.sub(0), noslip, boundaryfunction, GammaUpper().index),
+           DirichletBC(W.sub(0), noslip, boundaryfunction, GammaBall().index),
+           DirichletBC(W.sub(0), noslip, boundaryfunction, GammaBallCtrlLower().index),
+           DirichletBC(W.sub(0), noslip, boundaryfunction, GammaBallCtrlUpper().index)]
     return bcu
 
 
@@ -479,6 +479,20 @@ BERNOULLI_MAXIT = 50
 def BERNOULLI_FEED0_CPS_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), "bernoulli", parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "Feed0cps.mtx")
+
+
+"""constant for eigenvalues"""
+def EIGEN_SYS_CPS_MTX(ref, RE):
+    return os.path.join(OUTPUTDIR(), "eigen", parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_sys.mtx")
+
+def EIGEN_RIC_CPS_MTX(ref, RE):
+    return os.path.join(OUTPUTDIR(), "eigen", parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_ric.mtx")
+
+def EIGEN_BER_CPS_MTX(ref, RE):
+    return os.path.join(OUTPUTDIR(), "eigen", parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_ber.mtx")
 
 
 """constant for plotter"""

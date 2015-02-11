@@ -57,16 +57,16 @@ class Assembler():
 
         self.var["M"] = inner(dudt, w_test) * dx
         self.var["S"] = 1.0 / self.RE * inner(grad(u), grad(w_test)) * dx
-        self.var["Bupper"] = 1.0 / self.RE * 1.0 / self.penalty_eps * inner(self.gupper, w_test) * ds(
+        self.var["Bupper"] = 1.0 / self.penalty_eps * inner(self.gupper, w_test) * ds(
             const.GAMMA_BALL_CTRLUPPER_INDICES)
 
-        self.var["Blower"] = 1.0 / self.RE * 1.0 / self.penalty_eps * inner(self.glower, w_test) * ds(
+        self.var["Blower"] = 1.0 / self.penalty_eps * inner(self.glower, w_test) * ds(
             const.GAMMA_BALL_CTRLLOWER_INDICES)
 
-        self.var["Mupper"] = 1.0 / self.RE * 1.0 / self.penalty_eps * inner(u, w_test) * ds(
+        self.var["Mupper"] = 1.0 / self.penalty_eps * inner(u, w_test) * ds(
             const.GAMMA_BALL_CTRLUPPER_INDICES)
 
-        self.var["Mlower"] = 1.0 / self.RE * 1.0 / self.penalty_eps * inner(u, w_test) * ds(
+        self.var["Mlower"] = 1.0 / self.penalty_eps * inner(u, w_test) * ds(
             const.GAMMA_BALL_CTRLLOWER_INDICES)
 
         self.var["K"] = inner(grad(self.u_stat) * u, w_test) * dx

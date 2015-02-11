@@ -1,138 +1,96 @@
-from linearized_sim import Linearized
+import scipy.io as scio
+import scipy.sparse as scsp
+import scipy.linalg as scla
+import numpy as np
+import os
+from src.aux import createdir
 
 class Eigen():
-    def __init__(self, ref, RE):
+    def __init__(self, const, ref, RE):
 
-        #set parameters
+        # set parameters
         self.ref = ref
         self.RE = RE
+        self.const = const
 
-        #generate compressed matrices via linearized
-        self.linearized = Linearized(ref, RE, None, None, None)
+        # load compress system
+        Mcps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_M_MTX(self.ref, self.RE))
+        Mlowercps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_MLOWER_MTX(self.ref, self.RE))
+        Muppercps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_MUPPER_MTX(self.ref, self.RE))
+        Scps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_S_MTX(self.ref, self.RE))
+        Rcps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_R_MTX(self.ref, self.RE))
+        Kcps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_K_MTX(self.ref, self.RE))
+        Gcps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_G_MTX(self.ref, self.RE))
+        GTcps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_GT_MTX(self.ref, self.RE))
+        Bcps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_B_MTX(self.ref, self.RE))
 
-        #get some parameters
-        self.np
+        # system sizes
+        self.nv, self.np = Gcps.shape
 
-    def eigenvals(self):
+        # build M
+        upperblockM = scsp.hstack([Mcps, const.LINEARIZED_CTRL_DELTA*Gcps])
+        lowerblockM = scsp.hstack([const.LINEARIZED_CTRL_DELTA*GTcps, scsp.csr_matrix((self.np, self.np))])
+        self.M = scsp.vstack([upperblockM, lowerblockM]).todense()
 
-        #build block matrices
-        np = self.G.shape[1]
-        upperblockM = hstack([self.M, self.delta*self.G])
-        lowerblockM = hstack([self.delta*self.G.T, csr_matrix((np, np))])
-        M = vstack([upperblockM, lowerblockM])
-        upperblockA = hstack([self.A, self.G])
-        lowerblockA = hstack([self.G.T, csr_matrix((np, np))])
-        A = vstack([upperblockA, lowerblockA])
+        # build A
+        upperblockA = scsp.hstack([-Scps-Rcps-Kcps-Muppercps-Mlowercps, Gcps])
+        lowerblockA = scsp.hstack([GTcps, scsp.csr_matrix((self.np, self.np))])
+        self.A = scsp.vstack([upperblockA, lowerblockA]).todense()
 
-        #compute and sort eigenvalues by absolute value
-        eigs = eigvals(A.todense(), M.todense(), overwrite_a=True, check_finite=False)
-        eigs = eigs[numpy.argsort(numpy.absolute(eigs))]
+        # lift input matrix and feedback
+        self.Bsys = np.vstack((Bcps, np.zeros((self.np, Bcps.shape[1]))))
 
-        #write eigenvalues to file
-        mmwrite(self.options["eig_mtx"], numpy.matrix(eigs))
+        # attributes for eigenvalues
+        self.eig_sys = None
+        self.eig_ric = None
+        self.eig_ber = None
 
-        #split set of eigenvalues in stable, unstable and zeros (hopefully no)
-        stable_eigs = eigs[eigs.real<0]
-        unstable_eigs = eigs[eigs.real>0]
-        zero_eigs = eigs[eigs.real==0]
+    def compute_eig_sys(self):
+        # compute and sort eigenvalues by absolute value
+        self.eig_sys = scla.eigvals(self.A, self.M, overwrite_a=True, check_finite=False)
+        self.eig_sys = self.eig_sys[np.argsort(np.absolute(self.eig_sys))]
 
-        #plot eigenvalues
-        fig, ax = plt.subplots()
-        ax.plot(stable_eigs.real, stable_eigs.imag, "rx")
-        ax.plot(unstable_eigs.real,unstable_eigs.imag, "bx")
-        ax.plot(zero_eigs.real,zero_eigs.imag,"gx")
-        plt.axvline(x=1.0/self.delta, linewidth=1, color="g",ls="dashed")
-        xlimit = numpy.max(numpy.ceil(numpy.absolute(eigs.real)))
-        ylimit = numpy.max(numpy.ceil(numpy.absolute(eigs.imag)))
-        plt.xlim((-xlimit, xlimit))
-        plt.ylim((-ylimit, ylimit))
-        plt.xscale("symlog")
-        plt.xlabel("Real")
-        plt.ylabel("Imaginary")
-        #plt.show()
-        plt.savefig(self.options["eig_eps"])
-        plt.close("all")
+    def compute_eig_ric(self):
+        # build A stable riccati feedback
+        Kinfcps = scio.mmread(self.const.LINEARIZED_CTRL_KINF_CPS_MTX(self.ref, self.RE))
+        Kinfsys = np.vstack((Kinfcps, np.zeros((self.nump, Kinfcps.shape[1]))))
+        A_ric = self.A - self.Bsys*Kinfsys.T
 
-    def eigenvals_nopenalty(self):
-        #build block matrices
-        np = self.G.shape[1]
-        upperblockM = hstack([self.M, self.delta*self.G])
-        lowerblockM = hstack([self.delta*self.G.T, csr_matrix((np, np))])
-        M = vstack([upperblockM, lowerblockM])
-        upperblockA = hstack([-self.S - self.K - self.R, self.G])
-        lowerblockA = hstack([self.G.T, csr_matrix((np, np))])
-        A = vstack([upperblockA, lowerblockA])
+        # compute and sort eigenvalues by absolute value
+        self.eig_ric = scla.eigvals(A_ric, self.M, overwrite_a=True, check_finite=False)
+        self.eig_ric = self.eig_ric[np.argsort(np.absolute(self.eig_ric))]
 
-        #compute and sort eigenvalues by absolute value
-        eigs = eigvals(A.todense(), M.todense(), overwrite_a=True, check_finite=False)
-        eigs = eigs[numpy.argsort(numpy.absolute(eigs))]
+    def compute_eig_ber(self):
+        if not os.path.isfile(self.const.BERNOULLI_FEED0_CPS_MTX(self.ref, self.RE)):
+            print "No initial Bernoulli Feedback found for ref = {0:d} and RE = {1:d}".format(self.ref, self.RE)
+            return
 
-        #write eigenvalues to file
-        mmwrite(self.options["eig_nopenalty_mtx"], numpy.matrix(eigs))
+        # build A bernoulli stable feedback
+        Kbernoulli = scio.mmread(self.const.BERNOULLI_FEED0_CPS_MTX(self.ref, self.RE))
+        Kbernoullisys = np.vstack((Kbernoulli, np.zeros((self.np,))))
+        A_ber = self.A - self.Bsys*Kbernoullisys.T
 
-        #split set of eigenvalues in stable, unstable and zeros (hopefully no)
-        stable_eigs = eigs[eigs.real<0]
-        unstable_eigs = eigs[eigs.real>0]
-        zero_eigs = eigs[eigs.real==0]
+        # compute and sort eigenvalues by absolute value
+        self.eig_ber = scla.eigvals(A_ber.todense(), self.M, overwrite_a=True, check_finite=False)
+        self.eig_ber = self.eig_ber[np.argsort(np.absolute(self.eig_ber))]
+        self.eig_ber = self.eig_ber[np.argsort(np.absolute(self.eig_ber))]
 
-        #plot eigenvalues
-        fig, ax = plt.subplots()
-        ax.plot(stable_eigs.real, stable_eigs.imag, "rx")
-        ax.plot(unstable_eigs.real,unstable_eigs.imag, "bx")
-        ax.plot(zero_eigs.real,zero_eigs.imag,"gx")
-        plt.axvline(x=1.0/self.delta, linewidth=1, color="g",ls="dashed")
-        xlimit = numpy.max(numpy.ceil(numpy.absolute(eigs.real)))
-        ylimit = numpy.max(numpy.ceil(numpy.absolute(eigs.imag)))
-        plt.xlim((-xlimit, xlimit))
-        plt.ylim((-ylimit, ylimit))
-        plt.xscale("symlog")
-        plt.xlabel("Real")
-        plt.ylabel("Imaginary")
-        #plt.show()
-        plt.savefig(self.options["eig_nopenalty_eps"])
-        plt.close("all")
 
-    def eigenvals_bernoulli(self):
+    def save(self):
 
-        if not self.options["Feed0_mtx"]:
-            raise ValueError('No Bernoulli FeedBack given in options')
-        else:
-            self.Feed0 = mmread(self.options["Feed0_mtx"])
+        if self.eig_sys:
+            file = self.const.EIGEN_SYS_CPS_MTX(self.ref, self.RE)
+            createdir(file)
+            scio.mmwrite(file, np.matrix(self.eig_sys))
 
-        #build block matrices
-        np = self.G.shape[1]
-        upperblockM = hstack([self.M, self.delta*self.G])
-        lowerblockM = hstack([self.delta*self.G.T, csr_matrix((np, np))])
-        M = vstack([upperblockM, lowerblockM])
-        upperblockA = hstack([self.A-self.B*self.Feed0.T, self.G])
-        lowerblockA = hstack([self.G.T, csr_matrix((np, np))])
-        A = vstack([upperblockA, lowerblockA])
+        if self.eig_ber:
+            file = self.const.EIGEN_BER_CPS_MTX(self.ref, self.RE)
+            createdir(file)
+            scio.mmwrite(file, np.matrix(self.eig_ber))
 
-        #compute and sort eigenvalues by absolute value
-        eigs = eigvals(A.todense(), M.todense(), overwrite_a=True, check_finite=False)
-        eigs = eigs[numpy.argsort(numpy.absolute(eigs))]
+        if self.eig_ric:
+            file = self.const.EIGEN_RIC_CPS_MTX(self.ref, self.RE)
+            createdir(file)
+            scio.mmwrite(file, np.matrix(self.eig_ric))
 
-        #write eigenvalues to file
-        mmwrite(self.options["eig_bernoulli_mtx"], numpy.matrix(eigs))
 
-        #split set of eigenvalues in stable, unstable and zeros (hopefully no)
-        stable_eigs = eigs[eigs.real<0]
-        unstable_eigs = eigs[eigs.real>0]
-        zero_eigs = eigs[eigs.real==0]
-
-        #plot eigenvalues
-        fig, ax = plt.subplots()
-        ax.plot(stable_eigs.real, stable_eigs.imag, "rx")
-        ax.plot(unstable_eigs.real,unstable_eigs.imag, "bx")
-        ax.plot(zero_eigs.real,zero_eigs.imag,"gx")
-        plt.axvline(x=1.0/self.delta, linewidth=1, color="g",ls="dashed")
-        xlimit = numpy.max(numpy.ceil(numpy.absolute(eigs.real)))
-        ylimit = numpy.max(numpy.ceil(numpy.absolute(eigs.imag)))
-        plt.xlim((-xlimit, xlimit))
-        plt.ylim((-ylimit, ylimit))
-        plt.xscale("symlog")
-        plt.xlabel("Real")
-        plt.ylabel("Imaginary")
-        #plt.show()
-        plt.savefig(self.options["eig_bernoulli_eps"])
-        plt.close("all")

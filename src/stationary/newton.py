@@ -18,6 +18,7 @@ class Newton():
         self.V = VectorFunctionSpace(self.mesh, self.const.STATIONARY_V, self.const.STATIONARY_V_DIM)
         self.Q = FunctionSpace(self.mesh, self.const.STATIONARY_Q, self.const.STATIONARY_Q_DIM)
         self.W = self.V*self.Q
+        self.boundaryfunction = MeshFunction("size_t", self.mesh, const.BOUNDARY_XML(ref))
 
         # right hand side (external force)
         self.rhs = self.const.STATIONARY_RHS
@@ -35,8 +36,7 @@ class Newton():
 
         (u, p) = (as_vector((w[0], w[1])), w[2])
 
-        # get boundary conditions
-        bc = self.const.STATIONARY_BOUNDARY_CONDITIONS(self.W)
+
 
         # build weak formulation
         a1 = inner(grad(u) * u, v) * dx
@@ -45,6 +45,9 @@ class Newton():
         cond = -1 * div(u) * q * dx
         rhs = inner(self.rhs, v) * dx
         F = a1 + a2 + a3 + cond + rhs
+
+        # get boundary conditions
+        bc = self.const.STATIONARY_BOUNDARY_CONDITIONS(self.W, self.boundaryfunction)
 
         # build derivative
         dw = TrialFunction(self.W)

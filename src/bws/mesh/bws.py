@@ -33,9 +33,9 @@ class Gamma2(SubDomain):
 
 
 class Gamma3(SubDomain):
-    """left boundary lower rectangle"""
+    """diagonal control boundary"""
     index = const.GAMMA3_INDICES
-    r = const.GAMMA3_RADIUS
+    r = const.CONTROLRADIUS
     l = const.RECTROTATE["diag"]/np.sqrt(2)
     x_edge = const.RECTLOWER["x0_0"]
     y_edge = const.RECTUPPER["x0_1"]
@@ -48,29 +48,39 @@ class Gamma3(SubDomain):
 
 
 class Gamma4(SubDomain):
-    """lower boundary lower rectangle"""
+    """left boundary lower rectangle"""
     index = const.GAMMA4_INDICES
     diag = const.RECTROTATE["diag"]
 
     def inside(self, x, on_boundary):
         return on_boundary and \
         between(x[0], (const.RECTLOWER["x0_0"]-self.diag/2.0, const.RECTLOWER["x0_0"])) and \
-        between(x[1], (0.0, const.RECTUPPER["x0_1"]-self.diag/2.0))
+        between(x[1], (const.RECTLOWER["x0_1"], const.RECTUPPER["x0_1"]-self.diag/2.0))
 
 
 class Gamma5(SubDomain):
-    """right boundary lower and upper rectangle"""
+    """left control boundary lower rectangle"""
     index = const.GAMMA5_INDICES
+    diag = const.RECTROTATE["diag"]
 
     def inside(self, x, on_boundary):
         return on_boundary and \
-               between(x[0], (const.RECTLOWER["x0_0"], const.RECTLOWER["x1_0"])) and \
+        between(x[0], (const.RECTLOWER["x0_0"]-self.diag/2.0, const.RECTLOWER["x0_0"])) and \
+        between(x[1], (const.RECTLOWER["x0_1"], const.RECTLOWER["x0_1"]+const.CONTROLRADIUS))
+
+class Gamma6(SubDomain):
+    """lower boundary lower rectangle"""
+    index = const.GAMMA6_INDICES
+
+    def inside(self, x, on_boundary):
+        return on_boundary and \
+               between(x[0], (const.RECTLOWER["x0_0"],const.RECTLOWER["x1_0"])) and \
                near(x[1], const.RECTUPPER["x0_0"])
 
 
-class Gamma6(SubDomain):
-    """upper boundary upper rectangle"""
-    index = const.GAMMA6_INDICES
+class Gamma7(SubDomain):
+    """right boundary both rectangle"""
+    index = const.GAMMA7_INDICES
 
     def inside(self, x, on_boundary):
         return on_boundary and \
@@ -78,9 +88,9 @@ class Gamma6(SubDomain):
         near(x[0], const.RECTUPPER["x1_0"])
 
 
-class Gamma7(SubDomain):
+class Gamma8(SubDomain):
     """upper boundary upper rectangle"""
-    index = const.GAMMA7_INDICES
+    index = const.GAMMA8_INDICES
 
     def inside(self, x, on_boundary):
         return on_boundary and \
@@ -184,6 +194,7 @@ class MeshBuilder():
         Gamma5().mark(self.boundaryfunction, Gamma5().index)
         Gamma6().mark(self.boundaryfunction, Gamma6().index)
         Gamma7().mark(self.boundaryfunction, Gamma7().index)
+        Gamma8().mark(self.boundaryfunction, Gamma8().index)
 
         # mark edges for shear function
         GammaShear1().mark(self.shear1function, GammaShear1().index)
