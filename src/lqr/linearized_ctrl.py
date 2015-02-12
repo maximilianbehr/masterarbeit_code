@@ -2,10 +2,9 @@ import scipy.io as scio
 import scipy.sparse as scsp
 import scipy.sparse.linalg as scspli
 from dolfin import *
-
-import src.benchmarks.karman.karman_const as const
 from linearized_aux import u_uncompress
 from linearized_aux import u_compress
+import numpy as np
 
 
 # set floating point error handling

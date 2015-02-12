@@ -13,6 +13,7 @@ class Assembler():
         # set parameters
         self.ref = ref
         self.RE = RE
+        self.nu = const.GET_NU(RE)
         self.penalty_eps = const.ASSEMBLER_PENALTY_EPS
         self.const = const
 
@@ -54,7 +55,7 @@ class Assembler():
         self.var = {}
 
         self.var["M"] = inner(dudt, w_test) * dx
-        self.var["S"] = 1.0 / self.RE * inner(grad(u), grad(w_test)) * dx
+        self.var["S"] = self.nu * inner(grad(u), grad(w_test)) * dx
         self.var["K"] = inner(grad(self.u_stat) * u, w_test) * dx
         self.var["R"] = inner(grad(u) * self.u_stat, w_test) * dx
         self.var["G"] = p * div(w_test) * dx
@@ -85,8 +86,8 @@ class Assembler():
 
     def _buildC(self):
 
-        for p in self.const.ASSEMBLER_OBSERVER_POINTS:
-            print "P1({0:.2f}, {1:.2f})".format(p[0], p[1])
+        # for p in self.const.ASSEMBLER_OBSERVER_POINTS:
+        #    print "P1({0:.2f}, {1:.2f})".format(p[0], p[1])
 
         points = [Point(*x) for x in self.const.ASSEMBLER_OBSERVER_POINTS]
         dists = dict([(p, float("inf")) for p in points])

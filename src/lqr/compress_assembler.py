@@ -41,7 +41,7 @@ class CompressAssembler():
             self.matcps[name] = compress_mat(self.mat[name], self.inner_nodes)
 
 
-    def save(self):
+    def save_mtx(self):
         """save compress system matrices"""
 
         for name, mat in self.matcps.iteritems():

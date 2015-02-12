@@ -13,15 +13,15 @@ np.seterr(all="raise", divide="raise", over="raise", under="raise", invalid="rai
 
 
 class LinearizedSim():
-    def __init__(self, const, ref, RE, pertubationeps, dt, T):
+    def __init__(self, const, ref, RE):
 
         # parameters
         self.ref = ref
         self.RE = RE
         self.const = const
-        self.pertubationeps = pertubationeps
-        self.dt = dt
-        self.T = T
+        self.pertubationeps = self.const.LINEARIZED_SIM_PERTUBATIONEPS
+        self.dt = self.const.LINEARIZED_SIM_DT
+        self.T = self.const.LINEARIZED_SIM_T
         self.t = 0
         self.k = 0
 
@@ -103,12 +103,12 @@ class LinearizedSim():
             # uncompress and save pvd for udelta
             uk_uncps = u_uncompress(self.V, self.uk_sys, self.inner_nodes)
             self.udelta_dolfin.vector().set_local(uk_uncps)
-            self.udelta_file << self.udelta_dolfin
+            self.udelta_file <<(self.udelta_dolfin, self.t)
 
             # add stationary and save pvd
             v = uk_uncps + self.u_stat.vector().array()
             self.u_dolfin.vector().set_local(v)
-            self.u_file << self.u_dolfin
+            self.u_file << (self.u_dolfin, self.t)
 
     def solve_ode(self):
         while self.t < (self.T + DOLFIN_EPS):

@@ -10,7 +10,7 @@ class Newton():
         self.const = const
         self.ref = ref
         self.RE = RE
-        self.nu = const.STATIONARY_NU(RE)
+        self.nu = const.GET_NU(RE)
         self.REinitial = REinitial
 
         # mesh and function spaces
@@ -35,8 +35,6 @@ class Newton():
             w = Function(self.W)
 
         (u, p) = (as_vector((w[0], w[1])), w[2])
-
-
 
         # build weak formulation
         a1 = inner(grad(u) * u, v) * dx
