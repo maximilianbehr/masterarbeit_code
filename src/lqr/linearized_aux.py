@@ -25,7 +25,7 @@ def compress_mat(M, inner_nodes):
     return ret
 
 
-def inner_outer_nodes(V, innerboundaries):
+def inner_outer_nodes(V, boundaryfunction, innerboundaries):
         """compute return indices of inner and outer nodes,
         function assumes homogenius dirichlet boundary conditions
         on boundary parts not specified by innerboundaries"""
@@ -38,9 +38,8 @@ def inner_outer_nodes(V, innerboundaries):
         # remove boundary parts which should belong to the inner
         for innerboundary in innerboundaries:
             # create abritray dirichlet bc for identifying the nodes
-            d = DirichletBC(V, noslip, innerboundary)
+            d = DirichletBC(V, noslip, boundaryfunction, innerboundary)
             outer_nodes = outer_nodes - set(d.get_boundary_values().keys())
-
 
         # inner nodes are all nodes which are no outer nodes
         inner_nodes = set(range(0, V.dim())) - outer_nodes

@@ -1,9 +1,10 @@
-import src.karman_const as const
 import numpy as np
-import matplotlib.pyplot as plt
-import os
-from src.aux import createdir
 from numpy.random import rand
+
+import matplotlib.pyplot as plt
+
+import src.benchmarks.karman.karman_const as const
+from src.aux import createdir
 
 
 class Plotter():

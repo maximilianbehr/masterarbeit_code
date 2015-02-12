@@ -1,4 +1,3 @@
-import src.karman_const as const
 from linearized_aux import u_uncompress
 from linearized_aux import u_compress
 import scipy.io as scio
@@ -14,11 +13,12 @@ np.seterr(all="raise", divide="raise", over="raise", under="raise", invalid="rai
 
 
 class LinearizedSim():
-    def __init__(self, ref, RE, pertubationeps, dt, T):
+    def __init__(self, const, ref, RE, pertubationeps, dt, T):
 
         # parameters
         self.ref = ref
         self.RE = RE
+        self.const = const
         self.pertubationeps = pertubationeps
         self.dt = dt
         self.T = T
@@ -30,27 +30,21 @@ class LinearizedSim():
 
         # mesh and function spaces
         self.mesh = Mesh(const.MESH_XML(ref))
-        self.V = VectorFunctionSpace(self.mesh, const.LINEARIZED_SIM_V, const.LINEARIZED_SIM_V_DIM)
-        self.Q = FunctionSpace(self.mesh, const.LINEARIZED_SIM_Q, const.LINEARIZED_SIM_Q_DIM)
+        self.V = VectorFunctionSpace(self.mesh, const.V, const.V_DIM)
+        self.Q = FunctionSpace(self.mesh, const.Q, const.Q_DIM)
         self.u_stat = Function(self.V, const.STATIONARY_U_XML(ref, RE))
 
-        # read compress system
-        self.Mcps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_M_MTX(ref, RE))
-        self.Mlowercps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_MLOWER_MTX(ref, RE))
-        self.Muppercps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_MUPPER_MTX(ref, RE))
-        self.Scps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_S_MTX(ref, RE))
-        self.Rcps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_R_MTX(ref, RE))
-        self.Kcps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_K_MTX(ref, RE))
-        self.Scps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_S_MTX(ref, RE))
-        self.Gcps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_G_MTX(ref, RE))
-        self.GTcps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_GT_MTX(ref, RE))
-        self.Bcps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_B_MTX(ref, RE))
-        self.Ccps = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_C_MTX(ref, RE))
-        self.inner_nodes = np.loadtxt(const.ASSEMBLER_COMPRESS_SIM_INNER_NODES(ref, RE), dtype=np.int64)
+        # read compress system for simuation
+        names = ["M", "M_BOUNDARY_CTRL", "S", "R", "K", "G", "GT", "B", "C"]
+        self.mat = {}
+        for name in names:
+            self.mat[name] = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_NAME_MTX(ref, name, RE))
+
+        self.inner_nodes = np.loadtxt(const.ASSEMBLER_COMPRESS_SIM_INNERNODES_DAT(ref, RE), dtype=np.int64)
 
         # system sizes
-        self.nv = self.Mcps.shape[0]
-        self.np = self.Gcps.shape[1]
+        self.nv = self.mat["M"].shape[0]
+        self.np = self.mat["G"].shape[1]
 
         # visualization
         self.u_dolfin = Function(self.V)
@@ -63,11 +57,11 @@ class LinearizedSim():
         self.uk_sys *= self.pertubationeps
 
         # build system matrices
-        self.Asys = -self.Scps-self.Rcps-self.Kcps
-        u = scsp.hstack([self.Mcps - self.dt*self.Asys, self.dt*(-self.Gcps)])
-        l = scsp.hstack([self.dt * (-self.GTcps), scsp.csr_matrix((self.np, self.np))])
+        self.Asys = -self.mat["S"]-self.mat["R"]-self.mat["K"]
+        u = scsp.hstack([self.mat["M"] - self.dt*self.Asys, self.dt*(-self.mat["G"])])
+        l = scsp.hstack([self.dt * (-self.mat["GT"]), scsp.csr_matrix((self.np, self.np))])
         self.Msys_ode = scsp.vstack([u, l]).tocsc()
-        self.Msys_lift = scsp.vstack([self.Mcps, scsp.csr_matrix((self.np, self.nv))])
+        self.Msys_lift = scsp.vstack([self.mat["M"], scsp.csr_matrix((self.np, self.nv))])
 
         # build solver
         self.Msys_solver = scspli.spilu(self.Msys_ode)
@@ -104,7 +98,7 @@ class LinearizedSim():
         self.logv[self.k, 1] = np.linalg.norm(self.uk_sys)
 
     def save(self):
-        if (self.k-1) % const.LINEARIZED_SIM_SAVE_FREQ == 0:
+        if (self.k-1) % self.const.LINEARIZED_SIM_SAVE_FREQ == 0:
 
             # uncompress and save pvd for udelta
             uk_uncps = u_uncompress(self.V, self.uk_sys, self.inner_nodes)
@@ -121,7 +115,7 @@ class LinearizedSim():
             self.log()
 
             # print info
-            if self.k % int(const.LINEARIZED_SIM_INFO*(self.T/self.dt)) == 0:
+            if self.k % int(self.const.LINEARIZED_SIM_INFO*(self.T/self.dt)) == 0:
                 print "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.logv[self.k, 0], self.logv[self.k, 1])
 
             self.save()
@@ -130,7 +124,7 @@ class LinearizedSim():
 
     def save_log(self):
         self.logv = self.logv[0:self.k, :]
-        np.savetxt(const.LINEARIZED_SIM_LOG(self.ref, self.RE), self.logv)
+        np.savetxt(self.const.LINEARIZED_SIM_LOG(self.ref, self.RE), self.logv)
 
 
 

@@ -1,11 +1,12 @@
 import numpy as np
-import scipy as sc
 import scipy.linalg as scla
 import scipy.io as scio
 import scipy.sparse as scsp
 import scipy.sparse.linalg as scspla
-import src.karman_const as const
+
+import src.benchmarks.karman.karman_const as const
 import os
+
 
 def abe_gsign(A, B, E):
 

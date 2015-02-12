@@ -1,12 +1,12 @@
-import src.karman_const as const
-from linearized_aux import u_uncompress
-from linearized_aux import u_compress
 import scipy.io as scio
 import scipy.sparse as scsp
 import scipy.sparse.linalg as scspli
-import numpy as np
-
 from dolfin import *
+
+import src.benchmarks.karman.karman_const as const
+from linearized_aux import u_uncompress
+from linearized_aux import u_compress
+
 
 # set floating point error handling
 np.seterr(all="raise", divide="raise", over="raise", under="raise", invalid="raise")

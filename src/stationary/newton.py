@@ -15,8 +15,8 @@ class Newton():
 
         # mesh and function spaces
         self.mesh = Mesh(self.const.MESH_XML(ref))
-        self.V = VectorFunctionSpace(self.mesh, self.const.STATIONARY_V, self.const.STATIONARY_V_DIM)
-        self.Q = FunctionSpace(self.mesh, self.const.STATIONARY_Q, self.const.STATIONARY_Q_DIM)
+        self.V = VectorFunctionSpace(self.mesh, self.const.V, self.const.V_DIM)
+        self.Q = FunctionSpace(self.mesh, self.const.Q, self.const.Q_DIM)
         self.W = self.V*self.Q
         self.boundaryfunction = MeshFunction("size_t", self.mesh, const.BOUNDARY_XML(ref))
 

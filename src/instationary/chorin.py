@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import src.karman_const as const
 from dolfin import *
+
+import src.benchmarks.karman.karman_const as const
 from aux import timestep
 from aux import boundary_conditions
 from aux import check_divergence

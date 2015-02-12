@@ -1,5 +1,5 @@
-import src.karman_const as const
-from src.mesh.karman import MeshBuilder
+import src.benchmarks.karman.karman_const as const
+from src.benchmarks.karman.mesh.karman import MeshBuilder
 from src.stationary.newton import Newton
 from src.lqr.assembler import Assembler
 from src.lqr.compress_assembler import CompressAssembler
@@ -74,13 +74,8 @@ if __name__ == "__main__":
     T = 60
     pertubationeps = 0.25
 
-    const.ASSEMBLER_OBSERVER_POINT1_X = 2.5
-    const.ASSEMBLER_OBSERVER_POINT1_Y = 0.5
-    const.ASSEMBLER_OBSERVER_POINT2_X = 2.75
-    const.ASSEMBLER_OBSERVER_POINT2_Y = 0.5
-
     for pre in [0, 1, 2, 3, 4, 5]:
-        const.OUTPUTDIR_NAME = "results_horizontal_pre_{0:d}s".format(pre)
+        const.OUTPUTDIR_NAME = "results_vertical_pre_{0:d}s".format(pre)
         const.LINEARIZED_CTRL_START_CONTROLLING = pre
 
         build_mesh(ref)

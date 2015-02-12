@@ -1,4 +1,3 @@
-import src.karman_const as const
 import scipy.sparse as scsp
 import scipy.io as scio
 from dolfin import *
@@ -9,27 +8,26 @@ from src.aux import createdir
 
 class Assembler():
 
-    def __init__(self, ref, RE):
+    def __init__(self, const, ref, RE):
 
         # set parameters
         self.ref = ref
         self.RE = RE
         self.penalty_eps = const.ASSEMBLER_PENALTY_EPS
+        self.const = const
 
         # mesh and function spaces
         self.mesh = Mesh(const.MESH_XML(ref))
-        self.V = VectorFunctionSpace(self.mesh, const.ASSEMBLER_V, const.ASSEMBLER_V_DIM)
-        self.Q = FunctionSpace(self.mesh, const.ASSEMBLER_Q, const.ASSEMBLER_Q_DIM)
+        self.V = VectorFunctionSpace(self.mesh, const.V, const.V_DIM)
+        self.Q = FunctionSpace(self.mesh, const.Q, const.Q_DIM)
         self.boundaryfunction = MeshFunction("size_t", self.mesh, const.BOUNDARY_XML(ref))
-        self.gupper = const.ASSEMBLER_UPPER_CONTROL
-        self.glower = const.ASSEMBLER_LOWER_CONTROL
         self.u_stat = Function(self.V, const.STATIONARY_U_XML(ref, RE))
 
         # build variational and matrices
         self._lns_variational()
         self._lns_ublas()
-        self._buildC()
         self._lns_npsc()
+
 
     def _get_sparsedata(self, m):
         """Function returns a scipy CSR Matrix for given Matrix (dolfin) M"""
@@ -39,7 +37,7 @@ class Assembler():
             cols = m.size(1)
             return scsp.csr_matrix((vals, colptr, rowptr), (rows, cols))
         except:
-            raise ValueError(u"Implement _get_sparsedata for Matrix Datatype {0:s}".format(type(m)))
+            raise ValueError("Implement _get_sparsedata for Matrix Datatype {0:s}".format(type(m)))
 
     def _lns_variational(self):
         # trial functions
@@ -57,22 +55,17 @@ class Assembler():
 
         self.var["M"] = inner(dudt, w_test) * dx
         self.var["S"] = 1.0 / self.RE * inner(grad(u), grad(w_test)) * dx
-        self.var["Bupper"] = 1.0 / self.penalty_eps * inner(self.gupper, w_test) * ds(
-            const.GAMMA_BALL_CTRLUPPER_INDICES)
-
-        self.var["Blower"] = 1.0 / self.penalty_eps * inner(self.glower, w_test) * ds(
-            const.GAMMA_BALL_CTRLLOWER_INDICES)
-
-        self.var["Mupper"] = 1.0 / self.penalty_eps * inner(u, w_test) * ds(
-            const.GAMMA_BALL_CTRLUPPER_INDICES)
-
-        self.var["Mlower"] = 1.0 / self.penalty_eps * inner(u, w_test) * ds(
-            const.GAMMA_BALL_CTRLLOWER_INDICES)
-
         self.var["K"] = inner(grad(self.u_stat) * u, w_test) * dx
         self.var["R"] = inner(grad(u) * self.u_stat, w_test) * dx
         self.var["G"] = p * div(w_test) * dx
-        self.var["Gt"] = div(u) * p_test * dx
+        self.var["GT"] = div(u) * p_test * dx
+
+        for (controlfunc, indices, name) in self.const.ASSEMBLER_BOUNDARY_CONTROLS:
+            self.var["B_{0:s}".format(name)] = \
+                1.0 / self.penalty_eps * inner(controlfunc, w_test) * ds(indices)
+
+            self.var["M_{0:s}".format(name)] = \
+                1.0 / self.penalty_eps * inner(u, w_test) * ds(indices)
 
     def _lns_ublas(self):
         if not self.var:
@@ -91,15 +84,13 @@ class Assembler():
         parameters["linear_algebra_backend"] = la_backend
 
     def _buildC(self):
-        print "P1({0:.2f}, {1:.2f})\t P1({2:.2f}, {3:.2f})".format(const.ASSEMBLER_OBSERVER_POINT1_X, const.ASSEMBLER_OBSERVER_POINT1_Y, const.ASSEMBLER_OBSERVER_POINT2_X, const.ASSEMBLER_OBSERVER_POINT2_Y)
-        p1 = Point(const.ASSEMBLER_OBSERVER_POINT1_X, const.ASSEMBLER_OBSERVER_POINT1_Y)
-        p2 = Point(const.ASSEMBLER_OBSERVER_POINT2_X, const.ASSEMBLER_OBSERVER_POINT2_Y)
-        points = [p1, p2]
-        dists = {p1: float("inf"), p2: float("inf")}
-        idxs = {p1: 0, p2: 0}
-        #points = [p1]
-        #dists = {p1: float("inf")}
-        #idxs = {p1: 0}
+
+        for p in self.const.ASSEMBLER_OBSERVER_POINTS:
+            print "P1({0:.2f}, {1:.2f})".format(p[0], p[1])
+
+        points = [Point(*x) for x in self.const.ASSEMBLER_OBSERVER_POINTS]
+        dists = dict([(p, float("inf")) for p in points])
+        idxs = dict([(p, 0) for p in points])
 
         # find cell indices with midpoint has minimal distance
         for c in cells(self.mesh):
@@ -114,7 +105,7 @@ class Assembler():
         for idx in idxs.values():
             verticaldofs = np.union1d(verticaldofs, self.V.sub(1).dofmap().cell_dofs(idx))
 
-        #buid matrix
+        # buid matrix
         C = scsp.lil_matrix((verticaldofs.size, self.V.dim()))
         j = 0
         for i in verticaldofs:
@@ -123,19 +114,33 @@ class Assembler():
 
         return C.todense()
 
+
+
     def _lns_npsc(self):
         if not self.ublas:
             raise ValueError("Call unparameterized_lns_ublas( to initialize attribute ublas.")
 
         self.npsc = {}
-        for key, val in self.ublas.iteritems():
-            if key == "Bupper" or key == "Blower":
-                self.npsc[key] = val.array().reshape(val.array().size, 1)
+        for name, form in self.ublas.iteritems():
+            if isinstance(form, dolfin.cpp.la.Vector):
+                self.npsc[name] = form.array().reshape(form.array().size, 1)
+            elif isinstance(form, dolfin.cpp.la.Matrix):
+                self.npsc[name] = self._get_sparsedata(form)
             else:
-                self.npsc[key] = self._get_sparsedata(val)
+                raise ValueError("Unknown type {0:s}".format(type(form)))
 
-        self.npsc["B"] = np.concatenate((self.npsc["Bupper"], self.npsc["Blower"]), axis=1)
+        # build input matrix B, concatenate or sum
+        if self.const.NAME == "karman":
+            self.npsc["B"] = np.concatenate([self.npsc[x] for x in self.npsc.keys() if x.startswith("B_")], axis=1)
+        elif self.const.NAME == "bws":
+            self.npsc["B"] = sum([self.npsc[x] for x in self.npsc.keys() if x.startswith("B_")])
+        else:
+            raise ValueError("unknown scneario name = {0:s}".format(self.const.NAME))
 
+        # build matrix M of Boundary Controls
+        self.npsc["M_BOUNDARY_CTRL"] = sum([self.npsc[x] for x in self.npsc.keys() if x.startswith("M_")])
+
+        # build C
         self.npsc["C"] = self._buildC()
 
     def save_mtx(self):
@@ -143,60 +148,23 @@ class Assembler():
         if not self.npsc:
             raise ValueError("Call unparameterized_lns_npsc to initialize attribute npsc.")
 
-        createdir(os.path.dirname(const.ASSEMBLER_M_MTX(self.ref, self.RE)))
+        for name, mat in self.npsc.iteritems():
+            filename = self.const.ASSEMBLER_NAME_MTX(self.ref, name, self.RE)
+            createdir(filename)
 
-        with open(const.ASSEMBLER_M_MTX(self.ref, self.RE), "w") as handle:
-            self.npsc["M"].eliminate_zeros()
-            scio.mmwrite(handle, self.npsc["M"])
-
-        with open(const.ASSEMBLER_S_MTX(self.ref, self.RE), "w") as handle:
-            self.npsc["S"].eliminate_zeros()
-            scio.mmwrite(handle, self.npsc["S"])
-
-        with open(const.ASSEMBLER_MLOWER_MTX(self.ref, self.RE), "w") as handle:
-            self.npsc["Mlower"].eliminate_zeros()
-            scio.mmwrite(handle, self.npsc["Mlower"])
-
-        with open(const.ASSEMBLER_MUPPER_MTX(self.ref, self.RE), "w") as handle:
-            self.npsc["Mupper"].eliminate_zeros()
-            scio.mmwrite(handle, self.npsc["Mupper"])
-
-        with open(const.ASSEMBLER_K_MTX(self.ref, self.RE), "w") as handle:
-            self.npsc["K"].eliminate_zeros()
-            scio.mmwrite(handle, self.npsc["K"])
-
-        with open(const.ASSEMBLER_R_MTX(self.ref, self.RE), "w") as handle:
-            self.npsc["R"].eliminate_zeros()
-            scio.mmwrite(handle, self.npsc["R"])
-
-        with open(const.ASSEMBLER_G_MTX(self.ref, self.RE), "w") as handle:
-            self.npsc["G"].eliminate_zeros()
-            scio.mmwrite(handle, self.npsc["G"])
-
-        with open(const.ASSEMBLER_GT_MTX(self.ref, self.RE), "w") as handle:
-            self.npsc["Gt"].eliminate_zeros()
-            scio.mmwrite(handle, self.npsc["Gt"])
-
-        with open(const.ASSEMBLER_BLOWER_MTX(self.ref, self.RE), "w") as handle:
-            scio.mmwrite(handle, self.npsc["Blower"])
-
-        with open(const.ASSEMBLER_BUPPER_MTX(self.ref, self.RE), "w") as handle:
-            scio.mmwrite(handle, self.npsc["Bupper"])
-
-        with open(const.ASSEMBLER_B_MTX(self.ref, self.RE), "w") as handle:
-            scio.mmwrite(handle, self.npsc["B"])
-
-        with open(const.ASSEMBLER_C_MTX(self.ref, self.RE), "w") as handle:
-            scio.mmwrite(handle, self.npsc["C"])
+            with open(filename, "w") as handle:
+                if hasattr(mat, "eliminate_zeros"):
+                    mat.eliminate_zeros()
+                scio.mmwrite(handle, mat, comment="{0:s},ref={1:d},RE={2:d}".format(name, self.ref, self.RE))
 
     def save_mat(self):
 
         if not self.npsc:
             raise ValueError("Call unparameterized_lns_npsc to initialize attribute npsc.")
+        filename = self.const.ASSEMBLER_MAT(self.ref, self.RE)
+        createdir(filename)
 
-        createdir(const.ASSEMBLER_MAT(self.ref, self.RE))
-
-        with open(const.ASSEMBLER_MAT(self.ref, self.RE), "w") as handle:
+        with open(filename, "w") as handle:
             scio.savemat(handle, self.npsc, do_compression=True)
 
 

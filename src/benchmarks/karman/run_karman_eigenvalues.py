@@ -1,6 +1,5 @@
-import src.karman_const as const
+import src.benchmarks.karman.karman_const as const
 from src.lqr.eigen import Eigen
-import traceback
 from src.aux import gettime
 
 # set Reynoldsnumbers and refinements

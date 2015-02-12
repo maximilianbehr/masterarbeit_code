@@ -1,9 +1,11 @@
-import os
-import src.karman_const as const
-from pycmess import equation_dae2, options, lrnm, PYCMESS_OP_TRANSPOSE
 import numpy as np
 import scipy.io as scio
+
+import os
+import src.benchmarks.karman.karman_const as const
+from pycmess import equation_dae2, options, lrnm, PYCMESS_OP_TRANSPOSE
 import warnings
+
 
 class LQR_Solver():
     def __init__(self, ref, RE):

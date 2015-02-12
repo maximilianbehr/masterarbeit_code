@@ -1,13 +1,13 @@
 from numpy import linspace
 from dolfin import *
-from src.mesh.karman import GammaLeft
-from src.mesh.karman import GammaLower
-from src.mesh.karman import GammaUpper
-from src.mesh.karman import GammaBall
-from src.mesh.karman import GammaBallCtrlLower
-from src.mesh.karman import GammaBallCtrlUpper
 
-import src.karman_const as const
+from src.benchmarks.karman.mesh.karman import GammaLeft
+from src.benchmarks.karman.mesh.karman import GammaLower
+from src.benchmarks.karman.mesh.karman import GammaUpper
+from src.benchmarks.karman.mesh.karman import GammaBall
+from src.benchmarks.karman.mesh.karman import GammaBallCtrlLower
+from src.benchmarks.karman.mesh.karman import GammaBallCtrlUpper
+import src.benchmarks.karman.karman_const as const
 
 
 def timestep(T, Umax, nu, mesh, dt=None):

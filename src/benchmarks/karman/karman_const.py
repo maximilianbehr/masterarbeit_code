@@ -4,9 +4,14 @@ from dolfin import parameters
 from dolfin import Expression
 from dolfin import Constant
 from dolfin import DirichletBC
-import os
 import socket
 import numpy as np
+
+import os
+
+
+"""name of scneario"""
+NAME = "karman"
 
 """dolfin version"""
 DOLFIN_VERSION = dolfin.__version__
@@ -125,12 +130,12 @@ STATIONARY_NEWTON_REL_TOL = 1e-14
 
 
 def STATIONARY_BOUNDARY_CONDITIONS(W, boundaryfunction):
-    from src.mesh.karman import GammaLeft
-    from src.mesh.karman import GammaLower
-    from src.mesh.karman import GammaUpper
-    from src.mesh.karman import GammaBall
-    from src.mesh.karman import GammaBallCtrlLower
-    from src.mesh.karman import GammaBallCtrlUpper
+    from src.benchmarks.karman.mesh.karman import GammaLeft
+    from src.benchmarks.karman.mesh.karman import GammaLower
+    from src.benchmarks.karman.mesh.karman import GammaUpper
+    from src.benchmarks.karman.mesh.karman import GammaBall
+    from src.benchmarks.karman.mesh.karman import GammaBallCtrlLower
+    from src.benchmarks.karman.mesh.karman import GammaBallCtrlUpper
 
     # inflow profile
     uin = STATIONARY_UIN

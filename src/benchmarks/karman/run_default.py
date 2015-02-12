@@ -1,5 +1,5 @@
-import src.karman_const as const
-from src.mesh.karman import MeshBuilder
+import src.benchmarks.karman.karman_const as const
+from src.benchmarks.karman.mesh.karman import MeshBuilder
 from src.stationary.newton import Newton
 from src.lqr.assembler import Assembler
 from src.lqr.compress_assembler import CompressAssembler
@@ -7,7 +7,6 @@ from src.lqr.bernoulli import Bernoulli
 from src.lqr.lqr_solver import LQR_Solver
 from src.lqr.linearized_sim import LinearizedSim
 from src.lqr.linearized_ctrl import LinearizedCtrl
-from src.lqr.plotter import Plotter
 
 
 def build_mesh(ref):
