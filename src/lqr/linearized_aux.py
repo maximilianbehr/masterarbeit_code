@@ -46,13 +46,6 @@ def inner_outer_nodes(V, boundaryfunction, innerboundaries):
 
         return np.array(list(inner_nodes)), np.array(list(outer_nodes))
 
-def u_uncompress(V, u, inner_nodes):
-    ret = np.zeros((V.dim(),))
-    ret[inner_nodes] = u
-    return ret
-
-def u_compress(u, inner_nodes):
-    return u[inner_nodes]
 
 
 

@@ -14,31 +14,27 @@ class Eigen():
         self.const = const
 
         # load compress system
-        Mcps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_M_MTX(self.ref, self.RE))
-        Mlowercps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_MLOWER_MTX(self.ref, self.RE))
-        Muppercps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_MUPPER_MTX(self.ref, self.RE))
-        Scps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_S_MTX(self.ref, self.RE))
-        Rcps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_R_MTX(self.ref, self.RE))
-        Kcps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_K_MTX(self.ref, self.RE))
-        Gcps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_G_MTX(self.ref, self.RE))
-        GTcps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_GT_MTX(self.ref, self.RE))
-        Bcps = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_B_MTX(self.ref, self.RE))
+        names = ["M", "M_BOUNDARY_CTRL", "S", "R", "K", "G", "GT", "B", "C", "Kinf"]
+        self.mat = {}
+        for name in names:
+            self.mat[name] = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_NAME_MTX(ref, name, RE))
 
         # system sizes
-        self.nv, self.np = Gcps.shape
+        self.nv, self.np = self.mat["G"].shape
 
         # build M
-        upperblockM = scsp.hstack([Mcps, const.LINEARIZED_CTRL_DELTA*Gcps])
-        lowerblockM = scsp.hstack([const.LINEARIZED_CTRL_DELTA*GTcps, scsp.csr_matrix((self.np, self.np))])
+        upperblockM = scsp.hstack([self.mat["M"], const.LQR_DELTA*self.mat["G"]])
+        lowerblockM = scsp.hstack([const.LQR_DELTA*self.mat["GT"], scsp.csr_matrix((self.np, self.np))])
         self.M = scsp.vstack([upperblockM, lowerblockM]).todense()
 
         # build A
-        upperblockA = scsp.hstack([-Scps-Rcps-Kcps-Muppercps-Mlowercps, Gcps])
-        lowerblockA = scsp.hstack([GTcps, scsp.csr_matrix((self.np, self.np))])
+        upperblockA = scsp.hstack([-self.mat["S"]-self.mat["R"]-self.mat["K"]-self.mat["M_BOUNDARY_CTRL"], self.mat["G"]])
+        lowerblockA = scsp.hstack([self.mat["GT"], scsp.csr_matrix((self.np, self.np))])
         self.A = scsp.vstack([upperblockA, lowerblockA]).todense()
 
         # lift input matrix and feedback
-        self.Bsys = np.vstack((Bcps, np.zeros((self.np, Bcps.shape[1]))))
+        self.Bsys = np.vstack((self.mat["B"], np.zeros((self.np, self.mat["B"].shape[1]))))
+        self.Kinfsys = np.vstack((self.mat["Kinf"], np.zeros((self.np, self.mat["Kinf"].shape[1]))))
 
         # attributes for eigenvalues
         self.eig_sys = None
@@ -47,14 +43,12 @@ class Eigen():
 
     def compute_eig_sys(self):
         # compute and sort eigenvalues by absolute value
-        self.eig_sys = scla.eigvals(self.A, self.M, overwrite_a=True, check_finite=False)
+        self.eig_sys = scla.eigvals(self.A, self.M, overwrite_a=False, check_finite=False)
         self.eig_sys = self.eig_sys[np.argsort(np.absolute(self.eig_sys))]
 
     def compute_eig_ric(self):
         # build A stable riccati feedback
-        Kinfcps = scio.mmread(self.const.LINEARIZED_CTRL_KINF_CPS_MTX(self.ref, self.RE))
-        Kinfsys = np.vstack((Kinfcps, np.zeros((self.nump, Kinfcps.shape[1]))))
-        A_ric = self.A - self.Bsys*Kinfsys.T
+        A_ric = self.A - np.dot(self.Bsys, self.Kinfsys.T)
 
         # compute and sort eigenvalues by absolute value
         self.eig_ric = scla.eigvals(A_ric, self.M, overwrite_a=True, check_finite=False)
@@ -68,13 +62,11 @@ class Eigen():
         # build A bernoulli stable feedback
         Kbernoulli = scio.mmread(self.const.BERNOULLI_FEED0_CPS_MTX(self.ref, self.RE))
         Kbernoullisys = np.vstack((Kbernoulli, np.zeros((self.np,))))
-        A_ber = self.A - self.Bsys*Kbernoullisys.T
+        A_ber = self.A - np.dot(self.Bsys,Kbernoullisys.T)
 
         # compute and sort eigenvalues by absolute value
-        self.eig_ber = scla.eigvals(A_ber.todense(), self.M, overwrite_a=True, check_finite=False)
+        self.eig_ber = scla.eigvals(A_ber, self.M, overwrite_a=True, check_finite=False)
         self.eig_ber = self.eig_ber[np.argsort(np.absolute(self.eig_ber))]
-        self.eig_ber = self.eig_ber[np.argsort(np.absolute(self.eig_ber))]
-
 
     def save(self):
 

@@ -36,10 +36,9 @@ parameters["krylov_solver"]["monitor_convergence"] = False
 
 """rectangular domain"""
 RECT = {"x0_0": 0, "x1_0": 5.0, "x0_1": 0, "x1_1": 1.0}
-assert RECT["x1_1"]-RECT["x0_1"] == 1  # changing this parameter requiers changes
 
 """circular obstacle domain"""
-CIRCLE = {"x0": 0.5, "x1": 0.5, "r": 0.09, "fragments": 8}
+CIRCLE = {"x0": 0.5, "x1": 0.5, "r": 0.10, "fragments": 8}
 
 """resolution of the macro mesh"""
 INITIALRESOLUTION = 12
@@ -77,6 +76,24 @@ GAMMA_BALL_CTRLUPPER_INDICES = 7
 GAMMA_BALL_PROJECTION_THRESHOLD = 1.1
 
 assert GAMMA_BALL_PROJECTION_THRESHOLD > 1, "Constant must be slightly larger than 1"
+
+
+"""define local refinementzone"""
+LOCALREFINEMENTS = 1
+def LOCALREFINE(p):
+    if CIRCLE["x0"] < p.x() < 0.8*(RECT["x1_0"]-RECT["x0_0"]) and \
+       0.2*(RECT["x1_1"]-RECT["x0_1"])< p.y() < 0.8*(RECT["x1_1"]-RECT["x0_1"]):
+        return True
+    return False
+
+
+
+def GET_NU(RE):
+    """return nu for given RE"""
+    # characteristic velocity is 1 (maximum of STATIONARY_UIN)
+    # characteristic lenght is 1 (height of the mesh)
+    # return float(1.0)/float(RE)
+    return float(CIRCLE["r"])/float(RE)
 
 """Output directory"""
 OUTPUTDIR_NAME = "results"
@@ -127,7 +144,8 @@ STATIONARY_RHS = Constant((0.0, 0.0))
 STATIONARY_NEWTON_STEPS = 15
 STATIONARY_NEWTON_ABS_TOL = 1e-12
 STATIONARY_NEWTON_REL_TOL = 1e-14
-STATIONARY_UIN = Expression(("4*(1-x[1])*x[1]", "0.0"))
+STATIONARY_UIN = Expression(("1.0/(pow(ye/2.0-ya/2.0,2.0))*(ye-x[1])*(x[1]-ya)", "0.0"), \
+                            ya=float(RECT["x0_0"]), ye=float(RECT["x1_1"]))
 
 
 def STATIONARY_BOUNDARY_CONDITIONS(W, boundaryfunction):
@@ -145,16 +163,8 @@ def STATIONARY_BOUNDARY_CONDITIONS(W, boundaryfunction):
     return bcu
 
 
-def GET_NU(RE):
-    """return nu for given RE"""
-    # characteristic velocity is 1 (maximum of STATIONARY_UIN)
-    # characteristic lenght is 1 (height of the mesh)
-    return float(1.0)/float(RE)
-
-
 def STATIONARY_U_PVD(ref, RE):
     return os.path.join(OUTPUTDIR(), STATIONARY_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u.pvd")
-
 
 def STATIONARY_U_XML(ref, RE):
     return os.path.join(OUTPUTDIR(), STATIONARY_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u.xml")
@@ -184,13 +194,6 @@ INSTATIONARY_SAVE_FREQ = 5
 
 def INSTATIONARY_UIN(V,Q,t):
     return Expression(("4*(1-x[1])*x[1]*(t/(1.0+t))", "0.0"), t=t)
-
-
-def INSTATIONARY_NU(RE):
-    """return nu for given RE"""
-    # characteristic velocity is 1 (maximum of STATIONARY_UIN)
-    # characteristic lenght is 1 (height of the mesh)
-    return Constant(1.0/RE)
 
 
 def INSTATIONARY_U_PVD(ref, RE, solver):
@@ -290,7 +293,7 @@ def LINEARIZED_SIM_LOG(ref, RE):
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "log.txt")
 
 """constants for bernoulli"""
-BERNOULLI_EIGENVALUES = 150
+BERNOULLI_EIGENVALUES = 200
 BERNOULLI_MAXIT = 50
 
 def BERNOULLI_FEED0_CPS_MTX(ref, RE):
@@ -298,22 +301,33 @@ def BERNOULLI_FEED0_CPS_MTX(ref, RE):
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "Feed0.mtx")
 
 
+"""constants for lqr solver of navier stokes"""
+LQR_DELTA = - 0.02
+LQR_NM_OUTPUT = 1
+LQR_NM_RES2_SAVE = 1e-5
+LQR_NM_RES2 = 5e-8
+LQR_NM_REL2_CHANGE = 1e-10
+LQR_NM_REL_CHANGE = 1e-10
+LQR_NM_MAXIT = 30
+LQR_ADI_OUTPUT = 0
+LQR_ADI_RES2 = 1e-15
+LQR_ADI_MAXIT = 1000
+LQR_SAVE_FREQ = 5
+LQR_START_CONTROLLING = 0
+LQR_INFO = 0.05
 
-"""constants for control of navier stokes"""
-LINEARIZED_CTRL_DELTA = - 0.02
-LINEARIZED_CTRL_NM_OUTPUT = 1
-LINEARIZED_CTRL_NM_RES2_SAVE = 1e-5
-LINEARIZED_CTRL_NM_RES2 = 5e-8
-LINEARIZED_CTRL_NM_REL2_CHANGE = 1e-10
-LINEARIZED_CTRL_NM_REL_CHANGE = 1e-10
-LINEARIZED_CTRL_NM_MAXIT = 30
-LINEARIZED_CTRL_ADI_OUTPUT = 0
-LINEARIZED_CTRL_ADI_RES2 = 1e-15
-LINEARIZED_CTRL_ADI_MAXIT = 1000
-LINEARIZED_CTRL_SAVE_FREQ = 5
-LINEARIZED_CTRL_START_CONTROLLING = 0
-LINEARIZED_CTRL_INFO = 0.05
+"""constants for linearized control of navier stokes"""
 LINEARIZED_CTRL_DIR = "lqr_ctrl"
+LINEARIZED_CTRL_SAVE_FREQ = 10
+LINEARIZED_CTRL_INFO = 0.05
+LINEARIZED_CTRL_PERTUBATIONEPS = 0.25
+LINEARIZED_CTRL_DT = 0.01
+LINEARIZED_CTRL_T = 60
+LINEARIZED_CTRL_PERTUBATIONEPS = 0.25
+LINEARIZED_CTRL_DT = 0.005
+LINEARIZED_CTRL_T = 20
+LINEARIZED_CTRL_START_CONTROLLING = 0.0
+
 
 def LINEARIZED_CTRL_U_PVD(ref, RE):
     return os.path.join(OUTPUTDIR(), LINEARIZED_CTRL_DIR, parameters["refinement_algorithm"],
@@ -323,30 +337,24 @@ def LINEARIZED_CTRL_U_DELTA_PVD(ref, RE):
     return os.path.join(OUTPUTDIR(), LINEARIZED_CTRL_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u_delta.pvd")
 
-def LINEARIZED_CTRL_Z_CPS_MTX(ref, RE):
-    return os.path.join(OUTPUTDIR(), LINEARIZED_CTRL_DIR, parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "Zcps.mtx")
-
-def LINEARIZED_CTRL_KINF_CPS_MTX(ref, RE):
-    return os.path.join(OUTPUTDIR(), LINEARIZED_CTRL_DIR, parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "Kinfcps.mtx")
-
 def LINEARIZED_CTRL_LOG(ref, RE):
-    return os.path.join(OUTPUTDIR(), LINEARIZED_CTRL_DIR, parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "ctrl.log")
+    return os.path.join(OUTPUTDIR(), LINEARIZED_SIM_DIR, parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "log.txt")
 
 
 """constant for eigenvalues"""
+EIGEN_DIR = "eigen"
+
 def EIGEN_SYS_CPS_MTX(ref, RE):
-    return os.path.join(OUTPUTDIR(), "eigen", parameters["refinement_algorithm"],
+    return os.path.join(OUTPUTDIR(), EIGEN_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_sys.mtx")
 
 def EIGEN_RIC_CPS_MTX(ref, RE):
-    return os.path.join(OUTPUTDIR(), "eigen", parameters["refinement_algorithm"],
+    return os.path.join(OUTPUTDIR(), EIGEN_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_ric.mtx")
 
 def EIGEN_BER_CPS_MTX(ref, RE):
-    return os.path.join(OUTPUTDIR(), "eigen", parameters["refinement_algorithm"],
+    return os.path.join(OUTPUTDIR(), EIGEN_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_ber.mtx")
 
 

@@ -1,50 +1,49 @@
 import numpy as np
 import scipy.io as scio
-
 import os
-import src.benchmarks.karman.karman_const as const
 from pycmess import equation_dae2, options, lrnm, PYCMESS_OP_TRANSPOSE
 import warnings
+from src.aux import createdir
 
 
 class LQR_Solver():
-    def __init__(self, ref, RE):
+    def __init__(self, const, ref, RE):
 
         # set parameters
         self.ref = ref
         self.RE = RE
+        self.const = const
+
+        # read compress system for simuation
+        names = ["M", "M_BOUNDARY_CTRL", "S", "R", "K", "G", "GT", "B", "C"]
+        self.mat = {}
+        for name in names:
+            self.mat[name] = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_NAME_MTX(ref, name, RE))
+
 
         # setup dae2 equation
         self.eqn = equation_dae2()
-        self.eqn.M = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_M_MTX(self.ref, self.RE))
-        self.eqn.A = - scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_S_MTX(self.ref, self.RE)) \
-                     - scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_K_MTX(self.ref, self.RE)) \
-                     - scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_R_MTX(self.ref, self.RE)) \
-                     - scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_MLOWER_MTX(self.ref, self.RE)) \
-                     - scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_MUPPER_MTX(self.ref, self.RE))
-
-        self.eqn.G = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_G_MTX(self.ref, self.RE))
-        self.eqn.B = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_B_MTX(self.ref, self.RE))
-        self.eqn.C = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_C_MTX(self.ref, self.RE))
-        self.eqn.delta = const.LINEARIZED_CTRL_DELTA
+        self.eqn.M = self.mat["M"]
+        self.eqn.A = - self.mat["S"] - self.mat["K"] - self.mat["R"] - self.mat["M_BOUNDARY_CTRL"]
+        self.eqn.G = self.mat["G"]
+        self.eqn.B = self.mat["B"]
+        self.eqn.C = self.mat["C"]
+        self.eqn.delta = const.LQR_DELTA
 
         # setup options
         self.opt = options()
-        self.opt.nm.output = const.LINEARIZED_CTRL_NM_OUTPUT
-        self.opt.nm.res2_tol = const.LINEARIZED_CTRL_NM_RES2
-        self.opt.nm.rel2_change_tol = const.LINEARIZED_CTRL_NM_REL2_CHANGE
-        self.opt.nm.rel_change_tol = const.LINEARIZED_CTRL_NM_REL_CHANGE
-        self.opt.nm.maxit = const.LINEARIZED_CTRL_NM_MAXIT
-
+        self.opt.nm.output = const.LQR_NM_OUTPUT
+        self.opt.nm.res2_tol = const.LQR_NM_RES2
+        self.opt.nm.rel2_change_tol = const.LQR_NM_REL2_CHANGE
+        self.opt.nm.rel_change_tol = const.LQR_NM_REL_CHANGE
+        self.opt.nm.maxit = const.LQR_NM_MAXIT
 
         if os.path.isfile(const.BERNOULLI_FEED0_CPS_MTX(ref, RE)):
             self.opt.nm.nm_K0 = scio.mmread(const.BERNOULLI_FEED0_CPS_MTX(ref, RE))
-        elif RE >= 400:
-            warnings.warn("large reynoldsnumber and no initial feedback")
 
-        self.opt.adi.output = const.LINEARIZED_CTRL_ADI_OUTPUT
-        self.opt.adi.res2_tol = const.LINEARIZED_CTRL_ADI_RES2
-        self.opt.adi.maxit = const.LINEARIZED_CTRL_ADI_MAXIT
+        self.opt.adi.output = const.LQR_ADI_OUTPUT
+        self.opt.adi.res2_tol = const.LQR_ADI_RES2
+        self.opt.adi.maxit = const.LQR_ADI_MAXIT
         self.opt.adi.type = PYCMESS_OP_TRANSPOSE
 
         # setup empty fields for solve
@@ -58,7 +57,7 @@ class LQR_Solver():
         self.Z = result[0]
         self.res2 = result[1]
         # self.iter = result[2]
-        if self.res2[-1] > const.LINEARIZED_CTRL_NM_RES2_SAVE:
+        if self.res2[-1] > self.const.LQR_NM_RES2_SAVE:
             raise ValueError("No convergence")
 
         ZTM = self.eqn.M.T.dot(self.Z).T
@@ -70,9 +69,8 @@ class LQR_Solver():
         #with open(const.LINEARIZED_CTRL_Z_CPS_MTX(self.ref, self.RE), "w") as handle:
         #    scio.mmwrite(handle, self.Z)
 
-        file = const.LINEARIZED_CTRL_KINF_CPS_MTX(self.ref, self.RE)
-        if not os.path.exists(file):
-            os.makedirs(os.path.dirname(file))
+        file = self.const.ASSEMBLER_COMPRESS_CTRL_NAME_MTX(self.ref, "Kinf", self.RE)
+        createdir(file)
 
         with open(file, "w") as handle:
             scio.mmwrite(handle, self.Kinf)

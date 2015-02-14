@@ -39,34 +39,44 @@ class Bernoulli():
         # set Feed0 a
         self.Feed0 = None
 
-    def solve(self):
+    def _instable_subspace(self, size):
 
         # compute right eigenvectors
         print "Compute right eigenvectors"
-        dr, vr = scspla.eigs(self.fullA.tocsc(), self.const.BERNOULLI_EIGENVALUES, self.fullE.tocsc(),  sigma=0)
-        Ir = dr.real > 0
-        nIr = Ir.sum()
+        self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=0.25, which="LM")
+        self.Ir = self.dr.real > 0
+        self.nIr = self.Ir.sum()
 
         # compute left eigenvectors
         print "Compute left eigenvectors"
-        dl, vl = scspla.eigs(self.fullA.T.tocsc(), self.const.BERNOULLI_EIGENVALUES, self.fullE.T.tocsc(),  sigma=0)
-        Il = dl.real > 0
-        nIl = Il.sum()
+        self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(), sigma=1.0, which="LM")
+        self.Il = self.dl.real > 0
+        self.nIl = self.Il.sum()
 
-        print "Found {0:d}, {0:d} instable eigenvalues".format(nIr, nIl)
+    def solve(self):
 
-        if nIl == 0 and nIr == 0:
+        self._instable_subspace(self.const.BERNOULLI_EIGENVALUES)
+
+        if self.nIl != self.nIr:
+            print "Number of left eigenvalues is not the number of right eigenvalues, increase search space"
+            self._instable_subspace(2*self.const.BERNOULLI_EIGENVALUES)
+            if self.nIl != self.nIr:
+                raise ValueError("Could not properly compute instable subspace")
+
+        print "Found {0:d}, {1:d} instable eigenvalues".format(self.nIr, self.nIl)
+
+        if self.nIl == 0 and self.nIr == 0:
             print "No instable eigenvalues detected, no need for initial feedback"
             return
 
         # sort instable eigenvektors and eigenvalues
-        LEV = vl[:, Il]
-        REV = vr[:, Ir]
+        LEV = self.vl[:, self.Il]
+        REV = self.vr[:, self.Ir]
 
         # project
         tA = np.dot(LEV.T, (self.fullA*REV))
         tE = np.dot(LEV.T, (self.fullE*REV))
-        tB = np.dot(LEV.T, np.vstack((self.B, np.zeros((self.np, self.B.shape[1])))))
+        tB = np.dot(LEV.T, np.vstack((self.mat["B"], np.zeros((self.np, self.mat["B"].shape[1])))))
 
         # solve algebraic bernoulli equation on projected space
         try:
@@ -77,7 +87,7 @@ class Bernoulli():
 
         # build initial feedback for nontransposed A
         K0 = LEV.T*self.fullE
-        Blift = np.vstack((self.B, np.zeros((self.np, self.B.shape[1]))))
+        Blift = np.vstack((self.mat["B"], np.zeros((self.np, self.mat["B"].shape[1]))))
         K0 = np.dot(np.dot(np.dot(Blift.T, LEV), XK), K0)
         self.Feed0 = K0[:, 0:self.nv].real.T
 
