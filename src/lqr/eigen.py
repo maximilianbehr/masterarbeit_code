@@ -1,9 +1,12 @@
 import scipy.io as scio
 import scipy.sparse as scsp
 import scipy.linalg as scla
+from src.aux import *
 import numpy as np
-import os
+import matplotlib.pyplot as plt
 from src.aux import createdir
+import matplotlib
+
 
 class Eigen():
     def __init__(self, const, ref, RE):
@@ -41,11 +44,13 @@ class Eigen():
         self.eig_ric = None
         self.eig_ber = None
 
+    @profile
     def compute_eig_sys(self):
         # compute and sort eigenvalues by absolute value
         self.eig_sys = scla.eigvals(self.A, self.M, overwrite_a=False, check_finite=False)
         self.eig_sys = self.eig_sys[np.argsort(np.absolute(self.eig_sys))]
 
+    @profile
     def compute_eig_ric(self):
         # build A stable riccati feedback
         A_ric = self.A - np.dot(self.Bsys, self.Kinfsys.T)
@@ -54,6 +59,7 @@ class Eigen():
         self.eig_ric = scla.eigvals(A_ric, self.M, overwrite_a=True, check_finite=False)
         self.eig_ric = self.eig_ric[np.argsort(np.absolute(self.eig_ric))]
 
+    @profile
     def compute_eig_ber(self):
         if not os.path.isfile(self.const.BERNOULLI_FEED0_CPS_MTX(self.ref, self.RE)):
             print "No initial Bernoulli Feedback found for ref = {0:d} and RE = {1:d}".format(self.ref, self.RE)
@@ -70,17 +76,17 @@ class Eigen():
 
     def save(self):
 
-        if self.eig_sys:
+        if self.eig_sys is not None:
             file = self.const.EIGEN_SYS_CPS_MTX(self.ref, self.RE)
             createdir(file)
             scio.mmwrite(file, np.matrix(self.eig_sys))
 
-        if self.eig_ber:
+        if self.eig_ber is not None:
             file = self.const.EIGEN_BER_CPS_MTX(self.ref, self.RE)
             createdir(file)
             scio.mmwrite(file, np.matrix(self.eig_ber))
 
-        if self.eig_ric:
+        if self.eig_ric is not None:
             file = self.const.EIGEN_RIC_CPS_MTX(self.ref, self.RE)
             createdir(file)
             scio.mmwrite(file, np.matrix(self.eig_ric))

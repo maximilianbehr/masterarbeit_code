@@ -10,8 +10,8 @@ if __name__ == "__main__":
     refs = [1]
 
 
-    const.LINEARIZED_SIM_DT = 0.005
-    const.LINEARIZED_SIM_T = 10
+    #const.LINEARIZED_SIM_DT = 0.005
+    #const.LINEARIZED_SIM_T = 10
     const.LINEARIZED_SIM_INFO = 0.1
 
     # build mesh
@@ -33,8 +33,10 @@ if __name__ == "__main__":
     #solve_lqr(const, refs, REs)
 
     # simulate with control
-    # control(const, refs, REs)
+    #control(const, refs, REs)
 
     # compute eigenvalues
     compute_eigen(const, refs, REs)
 
+    # plot
+    #plot(const, refs, REs)

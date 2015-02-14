@@ -5,8 +5,9 @@ from src.lqr.bernoulli import Bernoulli
 from src.lqr.lqr_solver import LQR_Solver
 from src.lqr.linearized_sim import LinearizedSim
 from src.lqr.linearized_ctrl import LinearizedCtrl
+from src.lqr.plotter import Plotter
 from src.lqr.eigen import Eigen
-
+from src.aux import *
 
 def build_mesh(const, refs):
     if const.NAME == "bws":
@@ -61,10 +62,19 @@ def compute_eigen(const, refs, REs):
     for ref in refs:
         for RE in REs:
             print "Eigen ref={0:d} RE={1:d}".format(ref, RE)
+            clear_prof_data()
             eig = Eigen(const, ref, RE)
+
             eig.compute_eig_sys()
+            print_prof_data()
+
             eig.compute_eig_ric()
+            print_prof_data()
+
             eig.compute_eig_ber()
+            print_prof_data()
+
+            eig.save()
 
 
 def solve_lqr(const, refs, REs):
@@ -93,9 +103,11 @@ def control(const, refs, REs):
             linearizedctrl.solve_ode()
             linearizedctrl.save_log()
 
-# plotter = Plotter(ref, REs)
-# plotter.plot_linearized_sim1()
-# plotter.plot_linearized_ctrl1()
-# plotter.plot_linearized_ctrl2()
-# plotter.plot_linearized_ctrl3()
-
+def plot(const, refs, REs):
+    for ref in refs:
+        print "Plotter ref ={0:d}".format(ref)
+        plotter = Plotter(const, ref, REs)
+        plotter.plot_linearized_sim()
+        plotter.plot_linearized_ctrl()
+        plotter.plot_linearized_ctrl_controls()
+        plotter.plot_linearized_ctrl_output()

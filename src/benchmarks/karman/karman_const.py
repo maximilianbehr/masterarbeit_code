@@ -86,8 +86,6 @@ def LOCALREFINE(p):
         return True
     return False
 
-
-
 def GET_NU(RE):
     """return nu for given RE"""
     # characteristic velocity is 1 (maximum of STATIONARY_UIN)
@@ -183,10 +181,6 @@ def STATIONARY_W_XML(ref, RE):
 
 """constants for instationary solvers"""
 INSTATIONARY_RHS = Constant((0.0, 0.0))
-INSTATIONARY_V = "CG"
-INSTATIONARY_V_DIM = 2
-INSTATIONARY_Q = "CG"
-INSTATIONARY_Q_DIM = 2
 INSTATIONARY_U0 = Constant((0.0, 0.0))
 INSTATIONARY_P0 = Constant(0.0)
 INSTATIONARY_UIN_MAX = 4
@@ -276,7 +270,7 @@ LINEARIZED_SIM_DIR = "lqr_sim"
 LINEARIZED_SIM_SAVE_FREQ = 10
 LINEARIZED_SIM_INFO = 0.05
 LINEARIZED_SIM_PERTUBATIONEPS = 0.25
-LINEARIZED_SIM_DT = 0.01
+LINEARIZED_SIM_DT = 0.005
 LINEARIZED_SIM_T = 60
 
 
@@ -325,7 +319,7 @@ LINEARIZED_CTRL_DT = 0.01
 LINEARIZED_CTRL_T = 60
 LINEARIZED_CTRL_PERTUBATIONEPS = 0.25
 LINEARIZED_CTRL_DT = 0.005
-LINEARIZED_CTRL_T = 20
+LINEARIZED_CTRL_T = 60
 LINEARIZED_CTRL_START_CONTROLLING = 0.0
 
 
@@ -338,7 +332,7 @@ def LINEARIZED_CTRL_U_DELTA_PVD(ref, RE):
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u_delta.pvd")
 
 def LINEARIZED_CTRL_LOG(ref, RE):
-    return os.path.join(OUTPUTDIR(), LINEARIZED_SIM_DIR, parameters["refinement_algorithm"],
+    return os.path.join(OUTPUTDIR(), LINEARIZED_CTRL_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "log.txt")
 
 
@@ -349,31 +343,41 @@ def EIGEN_SYS_CPS_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), EIGEN_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_sys.mtx")
 
+def EIGEN_SYS_CPS_PLOT(ref, RE, ending):
+    return os.path.join(OUTPUTDIR(), EIGEN_DIR, parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_sys.{0:s}".format(ending))
+
 def EIGEN_RIC_CPS_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), EIGEN_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_ric.mtx")
+
+def EIGEN_RIC_CPS_PLOT(ref, RE, ending):
+    return os.path.join(OUTPUTDIR(), EIGEN_DIR, parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_ric.{0:s}".format(ending))
 
 def EIGEN_BER_CPS_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), EIGEN_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_ber.mtx")
 
+def EIGEN_BER_CPS_PLOT(ref, RE, ending):
+    return os.path.join(OUTPUTDIR(), EIGEN_DIR, parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_ber.{0:s}".format(ending))
+
 
 """constant for plotter"""
-def PLOTTER_LINEARIZED_SIM_LOG1(ref, ending):
-    return os.path.join(OUTPUTDIR(), "lqr_sim_plotter", parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "sim1."+ending)
+PLOTTER_DIR = "plotter"
+def PLOTTER_LINEARIZED_SIM_LOG(ref, num, ending):
+    return os.path.join(OUTPUTDIR(), PLOTTER_DIR, parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "sim{0:d}.".format(num)+ending)
 
-def PLOTTER_LINEARIZED_CTRL_LOG1(ref, ending):
-    return os.path.join(OUTPUTDIR(), "lqr_ctrl_plotter", parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "ctrl1."+ending)
+def PLOTTER_LINEARIZED_CTRL_LOG(ref, num, ending):
+    return os.path.join(OUTPUTDIR(), PLOTTER_DIR, parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "ctrl{0:d}.".format(num)+ending)
 
-def PLOTTER_LINEARIZED_CTRL_LOG2(ref, ending):
-    return os.path.join(OUTPUTDIR(), "lqr_ctrl_plotter", parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "ctrl2."+ending)
+def PLOTTER_LINEARIZED_CTRL_CONTROLS_LOG(ref, num, ending):
+    return os.path.join(OUTPUTDIR(), PLOTTER_DIR, parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "ctrl_controls{0:d}.".format(num)+ending)
 
-def PLOTTER_LINEARIZED_CTRL_LOG3(ref, ending):
-    return os.path.join(OUTPUTDIR(), "lqr_ctrl_plotter", parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "ctrl3."+ending)
-
-
-
+def PLOTTER_LINEARIZED_CTRL_OUTPUT_LOG(ref, num, ending):
+    return os.path.join(OUTPUTDIR(), PLOTTER_DIR, parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "ctrl_outputs{0:d}.".format(num)+ending)
