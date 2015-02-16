@@ -21,9 +21,11 @@ class LinearizedSim():
         self.T = self.const.LINEARIZED_SIM_T
         self.t = 0.0
         self.k = 0
+        self.save_freq = int(1.0/(self.dt*self.const.LINEARIZED_SIM_SAVE_PER_S))
 
         # log
-        self.logv = np.zeros((np.ceil(self.T/self.dt)+1, 2))
+        self.logv = np.zeros((int(self.T/(self.dt*self.save_freq)+1), 2))
+        self.klog = 0
 
         # mesh and function spaces
         self.mesh = Mesh(const.MESH_XML(ref))
@@ -94,11 +96,13 @@ class LinearizedSim():
         self.t += self.dt
 
     def log(self):
-        self.logv[self.k, 0] = self.t
-        self.logv[self.k, 1] = np.linalg.norm(self.uk_sys)
+        if self.k % self.save_freq == 0:
+            self.logv[self.klog, 0] = self.t
+            self.logv[self.klog, 1] = np.linalg.norm(self.uk_sys)
+            self.klog += 1
 
     def save(self):
-        if self.k % self.const.LINEARIZED_SIM_SAVE_FREQ == 0:
+        if self.k % self.save_freq == 0:
 
             # uncompress and save pvd for udelta
             self.uk_uncps[self.inner_nodes] = self.uk_sys
@@ -118,11 +122,11 @@ class LinearizedSim():
 
             # print info
             if self.k % int(self.const.LINEARIZED_SIM_INFO*(self.T/self.dt)) == 0:
-                print "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.logv[self.k, 0], self.logv[self.k, 1])
+                print "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.t, np.linalg.norm(self.uk_sys))
 
             self.uk_next()
 
     def save_log(self):
-        self.logv = self.logv[:self.k, :]
+        # self.logv = self.logv[:self.k, :]
         np.savetxt(self.const.LINEARIZED_SIM_LOG(self.ref, self.RE), self.logv)
 

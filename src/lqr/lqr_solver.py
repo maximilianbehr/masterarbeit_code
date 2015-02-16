@@ -3,7 +3,7 @@ import scipy.io as scio
 import os
 from pycmess import equation_dae2, options, lrnm, PYCMESS_OP_TRANSPOSE
 import warnings
-from src.aux import createdir
+from src.aux import createdir, write_matrix
 
 
 class LQR_Solver():
@@ -72,5 +72,6 @@ class LQR_Solver():
         file = self.const.ASSEMBLER_COMPRESS_CTRL_NAME_MTX(self.ref, "Kinf", self.RE)
         createdir(file)
 
-        with open(file, "w") as handle:
-            scio.mmwrite(handle, self.Kinf)
+        #with open(file, "w") as handle:
+        #    scio.mmwrite(handle, self.Kinf)
+        write_matrix(file, self.Kinf, "lqr solver Kinf, ref={0:d} RE={1:d}".format(self.ref, self.RE))

@@ -5,14 +5,16 @@ from src.aux import print_prof_data
 
 if __name__ == "__main__":
     # set Reynoldsnumbers and refinements and Parameters
-    REs = range(10, 120, 10)
+    REs = range(30, 120, 20)
     # refs = [1, 2, 3, 4, 5]
     refs = [1]
 
-
-    #const.LINEARIZED_SIM_DT = 0.005
-    #const.LINEARIZED_SIM_T = 10
+    const.LINEARIZED_SIM_T = 10
+    const.LINEARIZED_SIM_DT = 0.005
+    const.LINEARIZED_CTRL_T = 10
+    const.LINEARIZED_CTRL_DT = 0.005
     const.LINEARIZED_SIM_INFO = 0.1
+    const.LINEARIZED_CTRL_INFO = 0.1
 
     # build mesh
     #build_mesh(const, refs)
@@ -36,6 +38,7 @@ if __name__ == "__main__":
     #control(const, refs, REs)
 
     # compute eigenvalues
+    REs = range(110, 120, 20)
     compute_eigen(const, refs, REs)
 
     # plot

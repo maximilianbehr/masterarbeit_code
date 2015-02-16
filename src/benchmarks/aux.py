@@ -65,14 +65,17 @@ def compute_eigen(const, refs, REs):
             clear_prof_data()
             eig = Eigen(const, ref, RE)
 
-            eig.compute_eig_sys()
+            #eig.compute_eig_sys()
             print_prof_data()
+            clear_prof_data()
 
-            eig.compute_eig_ric()
+            #eig.compute_eig_ric()
             print_prof_data()
+            clear_prof_data()
 
             eig.compute_eig_ber()
             print_prof_data()
+            clear_prof_data()
 
             eig.save()
 

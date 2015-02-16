@@ -3,7 +3,7 @@ import scipy.io as scio
 from dolfin import *
 import numpy as np
 import os
-from src.aux import createdir
+from src.aux import createdir, write_matrix
 
 
 class Assembler():
@@ -153,10 +153,14 @@ class Assembler():
             filename = self.const.ASSEMBLER_NAME_MTX(self.ref, name, self.RE)
             createdir(filename)
 
-            with open(filename, "w") as handle:
-                if hasattr(mat, "eliminate_zeros"):
-                    mat.eliminate_zeros()
-                scio.mmwrite(handle, mat, comment="{0:s},ref={1:d},RE={2:d}".format(name, self.ref, self.RE))
+            #with open(filename, "w") as handle:
+            #    if hasattr(mat, "eliminate_zeros"):
+            #        mat.eliminate_zeros()
+            #        scio.mmwrite(handle, mat, comment="{0:s},ref={1:d},RE={2:d}".format(name, self.ref, self.RE))
+            if hasattr(mat, "eliminate_zeros"):
+                mat.eliminate_zeros()
+            write_matrix(filename, mat, "{0:s},ref={1:d},RE={2:d}".format(name, self.ref, self.RE))
+
 
     def save_mat(self):
 

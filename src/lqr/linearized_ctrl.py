@@ -21,6 +21,8 @@ class LinearizedCtrl():
         self.pertubationeps = self.const.LINEARIZED_CTRL_PERTUBATIONEPS
         self.t = 0.0
         self.k = 0
+        self.save_freq = int(1.0/(self.dt*self.const.LINEARIZED_SIM_SAVE_PER_S))
+
 
         # mesh and function spaces
         self.mesh = Mesh(const.MESH_XML(ref))
@@ -36,7 +38,9 @@ class LinearizedCtrl():
         self.inner_nodes = np.loadtxt(const.ASSEMBLER_COMPRESS_CTRL_INNERNODES_DAT(ref, RE), dtype=np.int64)
 
         # log time, norm(u_delta), outputs, inputs
-        self.logv = np.zeros((np.ceil(self.T/self.dt)+1, 2+self.mat["C"].shape[0]+self.mat["B"].shape[1]))
+        self.logv = np.zeros((int(self.T/(self.dt*self.save_freq)+1),\
+                              2+self.mat["C"].shape[0]+self.mat["B"].shape[1]))
+        self.klog = 0
 
         # system sizes
         self.nv, self.np = self.mat["G"].shape
@@ -115,22 +119,24 @@ class LinearizedCtrl():
 
     def log(self):
         # log time and u delta
-        self.logv[self.k, 0] = self.t
-        self.logv[self.k, 1] = np.linalg.norm(self.uk_sys)
+        if self.k % self.save_freq == 0:
+            self.logv[self.klog, 0] = self.t
+            self.logv[self.klog, 1] = np.linalg.norm(self.uk_sys)
 
-        # log control
-        uc = np.dot(self.mat["Kinf"].T, self.uk_sys)
-        uc.ravel()
-        self.logv[self.k, 2:2+uc.shape[0]] = uc
+            # log control
+            uc = np.dot(self.mat["Kinf"].T, self.uk_sys)
+            uc.ravel()
+            self.logv[self.klog, 2:2+uc.shape[0]] = uc
 
-        # log output
-        uout = np.dot(self.mat["C"], self.uk_sys)
-        uout.ravel()
-        self.logv[self.k, 4:4+uout.shape[0]] = uout
+            # log output
+            uout = np.dot(self.mat["C"], self.uk_sys)
+            uout.ravel()
+            self.logv[self.klog, 4:4+uout.shape[0]] = uout
+            self.klog += 1
 
     def save(self):
 
-        if self.k % self.const.LINEARIZED_CTRL_SAVE_FREQ == 0:
+        if self.k % self.save_freq == 0:
             # uncompress and save pvd for udelta
             self.uk_uncps[self.inner_nodes] = self.uk_sys
             self.udelta_dolfin.vector().set_local(self.uk_uncps)
@@ -148,10 +154,10 @@ class LinearizedCtrl():
 
             # print info
             if self.k % int(self.const.LINEARIZED_CTRL_INFO*(self.T/self.dt)) == 0:
-                print "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.logv[self.k, 0], self.logv[self.k, 1])
+                print "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.t, np.linalg.norm(self.uk_sys))
 
             self.uk_next()
 
     def save_log(self):
-        self.logv = self.logv[:self.k, :]
+        #self.logv = self.logv[:self.k, :]
         np.savetxt(self.const.LINEARIZED_CTRL_LOG(self.ref, self.RE), self.logv)

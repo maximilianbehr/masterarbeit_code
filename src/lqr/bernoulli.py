@@ -4,7 +4,7 @@ import scipy.io as scio
 import scipy.sparse as scsp
 import scipy.sparse.linalg as scspla
 import os
-from src.aux import createdir
+from src.aux import createdir, write_matrix
 
 
 
@@ -142,5 +142,6 @@ class Bernoulli():
             filename = self.const.BERNOULLI_FEED0_CPS_MTX(self.ref, self.RE)
             createdir(filename)
 
-            with open(filename, "w") as handle:
-                scio.mmwrite(handle, self.Feed0)
+            #with open(filename, "w") as handle:
+            #    scio.mmwrite(handle, self.Feed0)
+            write_matrix(filename, self.Feed0, "bernoulli Feed0, ref={0:d} RE={1:d}".format(self.ref, self.RE))

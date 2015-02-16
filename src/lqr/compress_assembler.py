@@ -2,7 +2,7 @@ from linearized_aux import compress_mat
 from linearized_aux import inner_outer_nodes
 import scipy.io as scio
 from dolfin import *
-from src.aux import createdir
+from src.aux import createdir, write_matrix
 import numpy as np
 
 class CompressAssembler():
@@ -53,8 +53,14 @@ class CompressAssembler():
                 raise ValueError("Unknow flag {0:s}".format(self.flag))
 
             createdir(filename)
-            with open(filename, "w") as handle:
-                scio.mmwrite(handle, self.matcps[name])
+            #with open(filename, "w") as handle:
+            #    write_matrix(handle, self.matcps[name], "{0:s},ref={1:d},RE={2:d}, flag={3:s}".format(name, self.ref, self.RE, self.flag))
+            #    scio.mmwrite(handle, self.matcps[name])
+            if hasattr(mat, "eliminate_zeros"):
+                mat.eliminate_zeros()
+            write_matrix(filename, mat, "{0:s},ref={1:d},RE={2:d}".format(name, self.ref, self.RE))
+
+
 
         if self.flag == "sim":
             with open(self.const.ASSEMBLER_COMPRESS_SIM_INNERNODES_DAT(self.ref, self.RE), "w") as handle:

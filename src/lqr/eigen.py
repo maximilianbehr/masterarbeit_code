@@ -67,8 +67,8 @@ class Eigen():
 
         # build A bernoulli stable feedback
         Kbernoulli = scio.mmread(self.const.BERNOULLI_FEED0_CPS_MTX(self.ref, self.RE))
-        Kbernoullisys = np.vstack((Kbernoulli, np.zeros((self.np,))))
-        A_ber = self.A - np.dot(self.Bsys,Kbernoullisys.T)
+        Kbernoullisys = np.vstack((Kbernoulli, np.zeros((self.np, Kbernoulli.shape[1]))))
+        A_ber = self.A - np.dot(self.Bsys, Kbernoullisys.T)
 
         # compute and sort eigenvalues by absolute value
         self.eig_ber = scla.eigvals(A_ber, self.M, overwrite_a=True, check_finite=False)

@@ -116,8 +116,8 @@ def BOUNDARY_PVD(ref):
     return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "boundary.pvd")
 
 
-def BOUNDARY_XDMF(ref):
-    return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "boundary.xdmf")
+#def BOUNDARY_XDMF(ref):
+#    return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "boundary.xdmf")
 
 
 def BOUNDARY_XML(ref):
@@ -128,8 +128,8 @@ def MESH_PVD(ref):
     return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "mesh.pvd")
 
 
-def MESH_XDMF(ref):
-    return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "mesh.xdmf")
+#def MESH_XDMF(ref):
+#    return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "mesh.xdmf")
 
 
 def MESH_XML(ref):
@@ -144,8 +144,6 @@ STATIONARY_NEWTON_ABS_TOL = 1e-12
 STATIONARY_NEWTON_REL_TOL = 1e-14
 STATIONARY_UIN = Expression(("1.0/(pow(ye/2.0-ya/2.0,2.0))*(ye-x[1])*(x[1]-ya)", "0.0"), \
                             ya=float(RECT["x0_0"]), ye=float(RECT["x1_1"]))
-
-
 
 
 def STATIONARY_BOUNDARY_CONDITIONS(W, boundaryfunction):
@@ -167,7 +165,7 @@ def STATIONARY_U_PVD(ref, RE):
     return os.path.join(OUTPUTDIR(), STATIONARY_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u.pvd")
 
 def STATIONARY_U_XML(ref, RE):
-    return os.path.join(OUTPUTDIR(), STATIONARY_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u.xml")
+    return os.path.join(OUTPUTDIR(), STATIONARY_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u.xml.gz")
 
 
 def STATIONARY_P_PVD(ref, RE):
@@ -175,11 +173,11 @@ def STATIONARY_P_PVD(ref, RE):
 
 
 def STATIONARY_P_XML(ref, RE):
-    return os.path.join(OUTPUTDIR(), STATIONARY_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "p.xml")
+    return os.path.join(OUTPUTDIR(), STATIONARY_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "p.xml.gz")
 
 
 def STATIONARY_W_XML(ref, RE):
-    return os.path.join(OUTPUTDIR(), STATIONARY_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "w.xml")
+    return os.path.join(OUTPUTDIR(), STATIONARY_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "w.xml.gz")
 
 """constants for instationary solvers"""
 INSTATIONARY_RHS = Constant((0.0, 0.0))
@@ -227,7 +225,7 @@ ASSEMBLER_BOUNDARY_CONTROLS =[(ASSEMBLER_UPPER_CONTROL, GAMMA_BALL_CTRLUPPER_IND
                               (ASSEMBLER_LOWER_CONTROL, GAMMA_BALL_CTRLLOWER_INDICES, "lower")]
 
 def ASSEMBLER_NAME_MTX(ref, name, RE):
-    return os.path.join(OUTPUTDIR(), ASSEMBLER_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "{0:s}.mtx".format(name))
+    return os.path.join(OUTPUTDIR(), ASSEMBLER_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "{0:s}.mtx.gz".format(name))
 
 def ASSEMBLER_MAT(ref, RE):
     return os.path.join(OUTPUTDIR(), ASSEMBLER_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "assembler.mat")
@@ -239,7 +237,7 @@ ASSEMBLER_COMPRESS_SIM_INNERNODES = [GAMMA_RIGHT_INDICES]
 
 def ASSEMBLER_COMPRESS_SIM_NAME_MTX(ref, name, RE):
     return os.path.join(OUTPUTDIR(), ASSEMBLER_COMPRESS_SIM_DIR, parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "{0:s}.mtx".format(name))
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "{0:s}.mtx.gz".format(name))
 
 def ASSEMBLER_COMPRESS_SIM_INNERNODES_DAT(ref, RE):
     return os.path.join(OUTPUTDIR(), ASSEMBLER_COMPRESS_SIM_DIR, parameters["refinement_algorithm"],
@@ -255,7 +253,7 @@ ASSEMBLER_COMPRESS_CTRL_INNERNODES = [GAMMA_RIGHT_INDICES, GAMMA_BALL_CTRLLOWER_
 
 def ASSEMBLER_COMPRESS_CTRL_NAME_MTX(ref, name, RE):
     return os.path.join(OUTPUTDIR(), ASSEMBLER_COMPRESS_CTRL_DIR, parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "{0:s}.mtx".format(name))
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "{0:s}.mtx.gz".format(name))
 
 def ASSEMBLER_COMPRESS_CTRL_INNERNODES_DAT(ref, RE):
     return os.path.join(OUTPUTDIR(), ASSEMBLER_COMPRESS_CTRL_DIR, parameters["refinement_algorithm"],
@@ -268,7 +266,7 @@ def ASSEMBLER_COMPRESS_CTRL_OUTERNODES_DAT(ref, RE):
 
 """constant for simulation of linearized navier stokes"""
 LINEARIZED_SIM_DIR = "lqr_sim"
-LINEARIZED_SIM_SAVE_FREQ = 10
+LINEARIZED_SIM_SAVE_PER_S = 10
 LINEARIZED_SIM_INFO = 0.05
 LINEARIZED_SIM_PERTUBATIONEPS = 0.25
 LINEARIZED_SIM_DT = 0.005
@@ -288,12 +286,12 @@ def LINEARIZED_SIM_LOG(ref, RE):
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "log.txt")
 
 """constants for bernoulli"""
-BERNOULLI_EIGENVALUES = 200
+BERNOULLI_EIGENVALUES = 250
 BERNOULLI_MAXIT = 50
 
 def BERNOULLI_FEED0_CPS_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), ASSEMBLER_COMPRESS_CTRL_DIR, parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "Feed0.mtx")
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "Feed0.mtx.gz")
 
 
 """constants for lqr solver of navier stokes"""
@@ -313,7 +311,7 @@ LQR_INFO = 0.05
 
 """constants for linearized control of navier stokes"""
 LINEARIZED_CTRL_DIR = "lqr_ctrl"
-LINEARIZED_CTRL_SAVE_FREQ = 10
+LINEARIZED_CTRL_SAVE_PER_S = 10
 LINEARIZED_CTRL_INFO = 0.05
 LINEARIZED_CTRL_PERTUBATIONEPS = 0.25
 LINEARIZED_CTRL_DT = 0.01
@@ -342,7 +340,7 @@ EIGEN_DIR = "eigen"
 
 def EIGEN_SYS_CPS_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), EIGEN_DIR, parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_sys.mtx")
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_sys.mtx.gz")
 
 def EIGEN_SYS_CPS_PLOT(ref, RE, ending):
     return os.path.join(OUTPUTDIR(), EIGEN_DIR, parameters["refinement_algorithm"],
@@ -350,7 +348,7 @@ def EIGEN_SYS_CPS_PLOT(ref, RE, ending):
 
 def EIGEN_RIC_CPS_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), EIGEN_DIR, parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_ric.mtx")
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_ric.mtx.gz")
 
 def EIGEN_RIC_CPS_PLOT(ref, RE, ending):
     return os.path.join(OUTPUTDIR(), EIGEN_DIR, parameters["refinement_algorithm"],
@@ -358,7 +356,7 @@ def EIGEN_RIC_CPS_PLOT(ref, RE, ending):
 
 def EIGEN_BER_CPS_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), EIGEN_DIR, parameters["refinement_algorithm"],
-                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_ber.mtx")
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "eig_ber.mtx.gz")
 
 def EIGEN_BER_CPS_PLOT(ref, RE, ending):
     return os.path.join(OUTPUTDIR(), EIGEN_DIR, parameters["refinement_algorithm"],

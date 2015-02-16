@@ -1,6 +1,18 @@
 import time
 import os
 from functools import wraps
+import gzip
+import scipy.io as scio
+import os
+
+def write_matrix(name, mat, com):
+    scio.mmwrite("tmp.dat", mat, comment=com)
+    f_in = open("tmp.dat.mtx", 'rb')
+    f_out = gzip.open(name, 'wb')
+    f_out.writelines(f_in)
+    f_out.close()
+    f_in.close()
+    os.remove("tmp.dat.mtx")
 
 
 def createdir(file):
