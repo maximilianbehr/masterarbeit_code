@@ -19,7 +19,7 @@ if __name__ == "__main__":
     const.LINEARIZED_CTRL_DT = 0.001
     const.LINEARIZED_SIM_PERTUBATIONEPS = 0.25
     const.LINEARIZED_CTRL_PERTUBATIONEPS = 0.25
-    const.ASSEMBLER_OBSERVER_POINTS = [(2.5, 0.5), (3.0, 0.5)]
+    const.ASSEMBLER_OBSERVER_POINTS = [(3.5, 0.5), (4.0, 0.5)]
 
     build_mesh(const, refs)
     solve_newton(const, refs, REs)

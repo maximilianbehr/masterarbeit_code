@@ -20,7 +20,7 @@ class LinearizedCtrl():
         self.T = self.const.LINEARIZED_CTRL_T
         self.pertubationeps = self.const.LINEARIZED_CTRL_PERTUBATIONEPS
         self.t = 0.0
-        self.k = 1
+        self.k = 0
 
         # mesh and function spaces
         self.mesh = Mesh(const.MESH_XML(ref))

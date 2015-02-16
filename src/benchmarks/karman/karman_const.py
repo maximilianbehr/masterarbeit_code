@@ -146,6 +146,8 @@ STATIONARY_UIN = Expression(("1.0/(pow(ye/2.0-ya/2.0,2.0))*(ye-x[1])*(x[1]-ya)",
                             ya=float(RECT["x0_0"]), ye=float(RECT["x1_1"]))
 
 
+
+
 def STATIONARY_BOUNDARY_CONDITIONS(W, boundaryfunction):
 
     # noslip at boundary parts
@@ -232,7 +234,6 @@ def ASSEMBLER_MAT(ref, RE):
 
 
 """constant for compress assembler"""
-ASSEMBLER_COMPRESS_SIM_DIR = "assembler_compress_sim"
 ASSEMBLER_COMPRESS_SIM_DIR = "assembler_compress_sim"
 ASSEMBLER_COMPRESS_SIM_INNERNODES = [GAMMA_RIGHT_INDICES]
 
