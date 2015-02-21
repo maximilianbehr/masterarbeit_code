@@ -52,9 +52,11 @@ class LinearizedCtrl():
 
         # visualisation
         self.u_dolfin = Function(self.V)
+        self.u_dolfin.rename(*self.const.PVD_U_LABEL_NAME)
         self.u_file = File(const.LINEARIZED_CTRL_U_PVD(self.ref, self.RE))
         self.udelta_dolfin = Function(self.V)
         self.udelta_file = File(const.LINEARIZED_CTRL_U_DELTA_PVD(self.ref, self.RE))
+        self.udelta_dolfin.rename(*self.const.PVD_U_LABEL_NAME)
 
         # define state
         self.uk_sys = np.take(self.u_stat.vector().array(), self.inner_nodes)

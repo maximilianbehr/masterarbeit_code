@@ -40,15 +40,16 @@ class LinearizedSim():
             self.mat[name] = scio.mmread(const.ASSEMBLER_COMPRESS_SIM_NAME_MTX(ref, name, RE))
         self.inner_nodes = np.loadtxt(const.ASSEMBLER_COMPRESS_SIM_INNERNODES_DAT(ref, RE), dtype=np.int64)
 
-
         # system sizes
         self.nv, self.np = self.mat["G"].shape
         self.ninner = self.inner_nodes.size
 
         # visualization
         self.u_dolfin = Function(self.V)
+        self.u_dolfin.rename(*self.const.PVD_U_LABEL_NAME)
         self.u_file = File(const.LINEARIZED_SIM_U_PVD(self.ref, self.RE))
         self.udelta_dolfin = Function(self.V)
+        self.udelta_dolfin.rename(*self.const.PVD_U_LABEL_NAME)
         self.udelta_file = File(const.LINEARIZED_SIM_U_DELTA_PVD(self.ref, self.RE))
 
         # define state and uncompress state

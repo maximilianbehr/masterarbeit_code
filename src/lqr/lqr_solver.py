@@ -28,6 +28,8 @@ class LQR_Solver():
         self.eqn.G = self.mat["G"]
         self.eqn.B = self.mat["B"]
         self.eqn.C = self.mat["C"]
+
+
         self.eqn.delta = const.LQR_DELTA
 
         # setup options
@@ -44,7 +46,14 @@ class LQR_Solver():
         self.opt.adi.output = const.LQR_ADI_OUTPUT
         self.opt.adi.res2_tol = const.LQR_ADI_RES2
         self.opt.adi.maxit = const.LQR_ADI_MAXIT
+        self.opt.adi.shifts.arp_m = const.LQR_ADI_ARP_M
+        self.opt.adi.shifts.arp_p = const.LQR_ADI_ARP_P
+        self.opt.adi.shifts.l0 = const.LQR_ADI_L0
+
         self.opt.adi.type = PYCMESS_OP_TRANSPOSE
+        self.opt.adi.rel_change_tol = const.LQR_ADI_REL_CHANGE_TOL
+        self.opt.adi.shifts.arp_m = const.LQR_ADI_ARP_M
+        self.opt.adi.shifts.arp_p = const.LQR_ADI_ARP_P
 
         # setup empty fields for solve
         self.Z = None

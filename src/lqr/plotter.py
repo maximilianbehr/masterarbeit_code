@@ -1,10 +1,7 @@
 import numpy as np
-from numpy.random import rand
 import matplotlib.pyplot as plt
 from src.aux import createdir
 import matplotlib
-#for name, hex in matplotlib.colors.cnames.iteritems():
-#    print(name, hex)
 
 
 class Plotter():
@@ -160,55 +157,3 @@ class Plotter():
         plt.savefig(self.const.PLOTTER_LINEARIZED_CTRL_OUTPUT_LOG(self.ref, num, "eps"))
         plt.close()
 
-
-"""
-    def _sort_eigs(self, eigs):
-        stable_eigs = eigs[eigs.real<0]
-        unstable_eigs = eigs[eigs.real>0]
-        zero_eigs = eigs[eigs.real==0]
-        return stable_eigs, unstable_eigs, zero_eigs
-
-    def _plot(self, eigs):
-        # sort eigs
-        stable_eigs, unstable_eigs, zero_eigs = self._sort_eigs(eigs)
-
-        # plot eigenvalues
-        fig, ax = plt.subplots()
-        ax.plot(stable_eigs.real, stable_eigs.imag, "rx")
-        ax.plot(unstable_eigs.real, unstable_eigs.imag, "bx")
-        ax.plot(zero_eigs.real, zero_eigs.imag, "gx")
-        xlimit = np.max(np.ceil(np.absolute(eigs.real)))
-        ylimit = np.max(np.ceil(np.absolute(eigs.imag)))
-        plt.xlim((-xlimit, xlimit))
-        plt.ylim((-ylimit, ylimit))
-        plt.xscale("symlog")
-        plt.xlabel("Real")
-        plt.ylabel("Imaginary")
-        #plt.show()
-
-    def plot(self):
-
-        if self.eig_ric is not None:
-            self._plot(self.eig_ric)
-            import ipdb
-            ipdb.set_trace()
-            plt.savefig(self.const.EIGEN_RIC_CPS_PLOT(self.ref, self.RE, "png"))
-            plt.savefig(self.const.EIGEN_RIC_CPS_PLOT(self.ref, self.RE, "eps"))
-            plt.savefig(self.const.EIGEN_RIC_CPS_PLOT(self.ref, self.RE, "jpeg"))
-            plt.close("all")
-
-        if self.eig_ber is not None:
-            self._plot(self.eig_ber)
-            plt.savefig(self.const.EIGEN_BER_CPS_PLOT(self.ref, self.RE, "png"))
-            plt.savefig(self.const.EIGEN_BER_CPS_PLOT(self.ref, self.RE, "eps"))
-            plt.savefig(self.const.EIGEN_BER_CPS_PLOT(self.ref, self.RE, "jpeg"))
-            plt.close("all")
-
-        if self.eig_sys is not None:
-            self._plot(self.eig_sys)
-            plt.savefig(self.const.EIGEN_SYS_CPS_PLOT(self.ref, self.RE, "png"))
-            plt.savefig(self.const.EIGEN_SYS_CPS_PLOT(self.ref, self.RE, "eps"))
-            plt.savefig(self.const.EIGEN_SYS_CPS_PLOT(self.ref, self.RE, "jpeg"))
-            plt.close("all")
-
-"""

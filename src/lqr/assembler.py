@@ -102,7 +102,7 @@ class Assembler():
                     idxs[p] = c.index()
 
         # collect vertical dofs of cells with midpoint has minimal distance
-        verticaldofs = np.empty(0, dtype=np.int32)
+        verticaldofs = np.empty(0, dtype=np.int64)
         for idx in idxs.values():
             verticaldofs = np.union1d(verticaldofs, self.V.sub(1).dofmap().cell_dofs(idx))
 

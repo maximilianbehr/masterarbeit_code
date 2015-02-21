@@ -41,6 +41,7 @@ class CompressAssembler():
             self.matcps[name] = compress_mat(self.mat[name], self.inner_nodes)
 
 
+
     def save_mtx(self):
         """save compress system matrices"""
 
@@ -59,7 +60,6 @@ class CompressAssembler():
             if hasattr(mat, "eliminate_zeros"):
                 mat.eliminate_zeros()
             write_matrix(filename, mat, "{0:s},ref={1:d},RE={2:d}".format(name, self.ref, self.RE))
-
 
 
         if self.flag == "sim":

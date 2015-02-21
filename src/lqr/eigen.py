@@ -4,8 +4,6 @@ import scipy.linalg as scla
 from src.aux import *
 import numpy as np
 import matplotlib.pyplot as plt
-from src.aux import createdir
-import matplotlib
 
 
 class Eigen():
@@ -79,16 +77,71 @@ class Eigen():
         if self.eig_sys is not None:
             file = self.const.EIGEN_SYS_CPS_MTX(self.ref, self.RE)
             createdir(file)
-            scio.mmwrite(file, np.matrix(self.eig_sys))
+            #scio.mmwrite(file, np.matrix(self.eig_sys))
+            write_matrix(file, np.matrix(self.eig_sys), "Eigen Sys ref={0:d} RE={1:d}".format(self.ref, self.RE))
 
         if self.eig_ber is not None:
             file = self.const.EIGEN_BER_CPS_MTX(self.ref, self.RE)
             createdir(file)
-            scio.mmwrite(file, np.matrix(self.eig_ber))
+            #scio.mmwrite(file, np.matrix(self.eig_ber))
+            write_matrix(file, np.matrix(self.eig_ber), "Eigen Ber ref={0:d} RE={1:d}".format(self.ref, self.RE))
 
         if self.eig_ric is not None:
             file = self.const.EIGEN_RIC_CPS_MTX(self.ref, self.RE)
             createdir(file)
-            scio.mmwrite(file, np.matrix(self.eig_ric))
+            #scio.mmwrite(file, np.matrix(self.eig_ric))
+            write_matrix(file, np.matrix(self.eig_ric), "Eigen Ric ref={0:d} RE={1:d}".format(self.ref, self.RE))
+
+    def _sort_eigs(self, eigs):
+        stable_eigs = eigs[eigs.real < 0]
+        unstable_eigs = eigs[eigs.real > 0]
+        zero_eigs = eigs[eigs.real == 0]
+        return stable_eigs, unstable_eigs, zero_eigs
+
+    def _plot(self, eigs):
+        # sort eigs
+        stable_eigs, unstable_eigs, zero_eigs = self._sort_eigs(eigs)
+
+        # plot eigenvalues
+
+        fig, ax = plt.subplots()
+        ax.plot(stable_eigs.real, stable_eigs.imag, "rx")
+        ax.plot(unstable_eigs.real, unstable_eigs.imag, "bx")
+        ax.plot(zero_eigs.real, zero_eigs.imag, "gx")
+        xlimit = np.max(np.ceil(np.absolute(eigs.real)))
+        ylimit = np.max(np.ceil(np.absolute(eigs.imag)))
+        plt.xlim((-xlimit, xlimit))
+        plt.ylim((-ylimit, ylimit))
+        plt.xscale("symlog")
+        plt.xlabel(u"Realteil")
+        plt.ylabel(u"Imagin\u00e4rteil")
+        plt.grid()
+        # plt.show()
 
 
+    def plot(self):
+        olderr = np.geterr()
+        np.seterr("ignore", "ignore", "ignore", "ignore", "ignore")
+
+        if self.eig_ric is not None:
+            self._plot(self.eig_ric)
+            plt.savefig(self.const.EIGEN_RIC_CPS_PLOT(self.ref, self.RE, "png"))
+            plt.savefig(self.const.EIGEN_RIC_CPS_PLOT(self.ref, self.RE, "eps"))
+            plt.savefig(self.const.EIGEN_RIC_CPS_PLOT(self.ref, self.RE, "jpeg"))
+            plt.close("all")
+
+        if self.eig_ber is not None:
+            self._plot(self.eig_ber)
+            plt.savefig(self.const.EIGEN_BER_CPS_PLOT(self.ref, self.RE, "png"))
+            plt.savefig(self.const.EIGEN_BER_CPS_PLOT(self.ref, self.RE, "eps"))
+            plt.savefig(self.const.EIGEN_BER_CPS_PLOT(self.ref, self.RE, "jpeg"))
+            plt.close("all")
+
+        if self.eig_sys is not None:
+            self._plot(self.eig_sys)
+            plt.savefig(self.const.EIGEN_SYS_CPS_PLOT(self.ref, self.RE, "png"))
+            plt.savefig(self.const.EIGEN_SYS_CPS_PLOT(self.ref, self.RE, "eps"))
+            plt.savefig(self.const.EIGEN_SYS_CPS_PLOT(self.ref, self.RE, "jpeg"))
+            plt.close("all")
+
+        np.seterr(**olderr)

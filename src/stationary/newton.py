@@ -87,6 +87,12 @@ class Newton():
 
 
     def save(self):
+        # set names and labels
+        self.u.rename(*self.const.PVD_U_LABEL_NAME)
+        self.p.rename(*self.const.PVD_P_LABEL_NAME)
+        self.w.rename(*self.const.PVD_W_LABEL_NAME)
+
+        # save pvd and xml files
         File(self.const.STATIONARY_U_PVD(self.ref, self.RE)) << self.u
         File(self.const.STATIONARY_U_XML(self.ref, self.RE)) << self.u
         File(self.const.STATIONARY_P_PVD(self.ref, self.RE)) << self.p

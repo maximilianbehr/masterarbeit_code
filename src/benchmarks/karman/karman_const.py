@@ -15,6 +15,12 @@ NAME = "karman"
 """dolfin version"""
 DOLFIN_VERSION = dolfin.__version__
 
+"""label and name for pvd files"""
+PVD_U_LABEL_NAME = ("v", "velocity")
+PVD_P_LABEL_NAME = ("p", "pressure")
+PVD_W_LABEL_NAME = ("v x p", "velocity x pressure")
+PVD_MESH_LABEL_NAME = ("mesh", "mesh")
+
 """function spaces"""
 V = "CG"
 V_DIM = 2
@@ -167,7 +173,6 @@ def STATIONARY_U_PVD(ref, RE):
 def STATIONARY_U_XML(ref, RE):
     return os.path.join(OUTPUTDIR(), STATIONARY_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u.xml.gz")
 
-
 def STATIONARY_P_PVD(ref, RE):
     return os.path.join(OUTPUTDIR(), STATIONARY_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "p.pvd")
 
@@ -185,6 +190,8 @@ INSTATIONARY_U0 = Constant((0.0, 0.0))
 INSTATIONARY_P0 = Constant(0.0)
 INSTATIONARY_UIN_MAX = 4
 INSTATIONARY_SAVE_FREQ = 5
+INSTATIONARY_T = 10
+INSTATIONARY_SAVE_PER_S = 10
 
 def INSTATIONARY_UIN(V,Q,t):
     return Expression(("4*(1-x[1])*x[1]*(t/(1.0+t))", "0.0"), t=t)
@@ -270,7 +277,7 @@ LINEARIZED_SIM_SAVE_PER_S = 10
 LINEARIZED_SIM_INFO = 0.05
 LINEARIZED_SIM_PERTUBATIONEPS = 0.25
 LINEARIZED_SIM_DT = 0.005
-LINEARIZED_SIM_T = 60
+LINEARIZED_SIM_T = 30
 
 
 def LINEARIZED_SIM_U_PVD(ref, RE):
@@ -298,13 +305,17 @@ def BERNOULLI_FEED0_CPS_MTX(ref, RE):
 LQR_DELTA = - 0.02
 LQR_NM_OUTPUT = 1
 LQR_NM_RES2_SAVE = 1e-5
-LQR_NM_RES2 = 5e-8
-LQR_NM_REL2_CHANGE = 1e-10
-LQR_NM_REL_CHANGE = 1e-10
-LQR_NM_MAXIT = 30
+LQR_NM_RES2 = 5e-10
+LQR_NM_REL2_CHANGE = 3e-10
+LQR_NM_REL_CHANGE = 3e-10
+LQR_NM_MAXIT = 20
 LQR_ADI_OUTPUT = 0
-LQR_ADI_RES2 = 1e-15
-LQR_ADI_MAXIT = 1000
+LQR_ADI_RES2 = 1e-16
+LQR_ADI_MAXIT = 2000
+LQR_ADI_REL_CHANGE_TOL = 1e-13
+LQR_ADI_ARP_M = 40
+LQR_ADI_ARP_P = 40
+LQR_ADI_L0 = 40
 LQR_SAVE_FREQ = 5
 LQR_START_CONTROLLING = 0
 LQR_INFO = 0.05
@@ -318,7 +329,7 @@ LINEARIZED_CTRL_DT = 0.01
 LINEARIZED_CTRL_T = 60
 LINEARIZED_CTRL_PERTUBATIONEPS = 0.25
 LINEARIZED_CTRL_DT = 0.005
-LINEARIZED_CTRL_T = 60
+LINEARIZED_CTRL_T = 30
 LINEARIZED_CTRL_START_CONTROLLING = 0.0
 
 
