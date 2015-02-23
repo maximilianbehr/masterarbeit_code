@@ -12,7 +12,7 @@ def write_matrix(name, mat, com):
     f_out.writelines(f_in)
     f_out.close()
     f_in.close()
-    os.remove("tmp.dat.mtx")
+    #os.remove("tmp.dat.mtx")
 
 
 def createdir(file):

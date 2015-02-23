@@ -25,24 +25,36 @@ if __name__ == "__main__":
         const.STATIONARY_CONTROL_LOWER.lam = lam
         const.OUTPUTDIR_NAME = "results_bws_lam_{0:3f}".format(lam)
 
-        # build mesh
-        build_mesh(const, refs)
+	# build mesh
+	print "------------build mesh------------------"
+ 	#       build_mesh(const, refs)
+	print "------------finished build mesh------------------"
 
         # solve stationary
-        solve_newton(const, refs, REs)
-
-        # assemble lqr
-        REs = [200,900]
+	print "------------newton------------------"
+        #solve_newton(const, refs, REs)
+	print "------------finished newton------------------"
+        
+	# assemble lqr
+        REs = [200,400,800]
+	print "------------assemble----------------"
         assemble_lqr(const, refs, REs)
+	print "------------finished assemble-------"
 
         # solve bernoulli
+	print "----------solve bernoulli-----------"
         solve_bernoulli(const, refs, REs)
+	print "----------finished solve bernoulli------"
 
         # solve lqr
+	print "----------solve lqr-----------------"
         solve_lqr(const, refs, REs)
+	print "----------finishe solve lqr---------"
 
         # simulate
+	print "----------simulate------------------"
         simulate(const, refs, REs)
+	print "----------finishe simulate----------"	
 
         # simulate with control
         control(const, refs, REs)
@@ -50,5 +62,5 @@ if __name__ == "__main__":
         # compute eigenvalues
         #REs = [max(REs)]
         #compute_eigen(const, refs, REs)
-
+	#break
 

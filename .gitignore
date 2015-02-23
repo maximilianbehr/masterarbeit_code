@@ -6,4 +6,5 @@ src/master/data/**
 
 nscodes
 software
-usefullcode
+usefullcode*.mtx
+*.log
