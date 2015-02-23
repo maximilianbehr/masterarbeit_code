@@ -152,7 +152,6 @@ class Assembler():
         for name, mat in self.npsc.iteritems():
             filename = self.const.ASSEMBLER_NAME_MTX(self.ref, name, self.RE)
             createdir(filename)
-
             #with open(filename, "w") as handle:
             #    if hasattr(mat, "eliminate_zeros"):
             #        mat.eliminate_zeros()

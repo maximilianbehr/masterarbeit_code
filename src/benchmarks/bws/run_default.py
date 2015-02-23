@@ -4,7 +4,7 @@ from src.benchmarks.aux import *
 
 if __name__ == "__main__":
     # set Reynoldsnumbers and refinements and Parameters
-    REs = range(100, 1000, 100)
+    REs = range(100, 1000, 50)
     # refs = [1, 2, 3, 4, 5]
     #refs = [1]
     refs = [2]
@@ -18,7 +18,7 @@ if __name__ == "__main__":
     const.LQR_ADI_OUTPUT = 1
 
     # build mesh
-    for lam in [-0.5, 0.0, 0.5]:
+    for lam in [-1.0, -0.5, 0.0, 0.5, 1.0]:
 
 
         const.STATIONARY_CONTROL_UPPER.lam = lam

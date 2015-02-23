@@ -6,6 +6,7 @@ import scipy.io as scio
 import os
 
 def write_matrix(name, mat, com):
+    print "Write Matrix {0:s}".format(name)
     scio.mmwrite("tmp.dat", mat, comment=com)
     f_in = open("tmp.dat.mtx", 'rb')
     f_out = gzip.open(name, 'wb')
