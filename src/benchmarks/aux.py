@@ -41,10 +41,12 @@ def assemble_lqr(const, refs, REs):
         for RE in REs:
             print "Assemble ref={0:d} RE={1:d}".format(ref, RE)
             assembler = Assembler(const, ref, RE)
-            assembler.save_mat()
+            # assembler.save_mat()
             assembler.save_mtx()
+            print "SimAssemble ref={0:d} RE={1:d}".format(ref, RE)
             simassembler = CompressAssembler(const, ref, RE, "sim")
             simassembler.save_mtx()
+            print "CtrlAssemble ref={0:d} RE={1:d}".format(ref, RE)
             ctrlassembler = CompressAssembler(const, ref, RE, "ctrl")
             ctrlassembler.save_mtx()
 
