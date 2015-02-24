@@ -7,14 +7,14 @@ import os
 
 def write_matrix(name, mat, com):
     print "Write Matrix {0:s}".format(name)
-    scio.mmwrite("tmp.dat", mat, comment=com)
-    f_in = open("tmp.dat.mtx", 'rb')
-    f_out = gzip.open(name, 'wb')
+    pid = os.getpid()
+    scio.mmwrite("tmp.dat_{0:d}.mtx".format(pid), mat, comment=com)
+    f_in = open("tmp.dat_{0:d}.mtx".format(pid), "rt")
+    f_out = gzip.open(name, 'wt',compresslevel=7)
     f_out.writelines(f_in)
     f_out.close()
     f_in.close()
     #os.remove("tmp.dat.mtx")
-
 
 def createdir(file):
     if not os.path.exists(os.path.dirname(file)):
