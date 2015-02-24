@@ -9,3 +9,7 @@ software
 usefullcode*.mtx
 *.log
 *.mtx
+venv/*
+results_*/*
+results/*
+.idea/*

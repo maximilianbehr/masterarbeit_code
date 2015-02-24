@@ -128,12 +128,12 @@ class LinearizedCtrl():
             # log control
             uc = np.dot(self.mat["Kinf"].T, self.uk_sys)
             uc.ravel()
-            self.logv[self.klog, 2:2+uc.shape[0]] = uc
+            self.logv[self.klog, 2:2+uc.shape[0]-1] = uc
 
             # log output
             uout = np.dot(self.mat["C"], self.uk_sys)
             uout.ravel()
-            self.logv[self.klog, 4:4+uout.shape[0]] = uout
+            self.logv[self.klog, 2+uc.shape[0]:4+uout.shape[0]-1] = uout
             self.klog += 1
 
     def save(self):

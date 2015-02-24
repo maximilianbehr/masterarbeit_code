@@ -16,6 +16,7 @@ class Bernoulli():
         self.ref = ref
         self.RE = RE
         self.const = const
+        self.bereigenvalues = self.const.BERNOULLI_EIGENVALUES
 
         # read compress system for simuation
         names = ["M", "M_BOUNDARY_CTRL", "S", "R", "K", "G", "GT", "B", "C"]
@@ -39,7 +40,9 @@ class Bernoulli():
         # set Feed0 a
         self.Feed0 = None
 
-    def _instable_subspace(self, size):
+    def _instable_subspace(self):
+
+        size = self.bereigenvalues
 
         # compute right eigenvectors
         print "Compute right eigenvectors"
@@ -55,13 +58,18 @@ class Bernoulli():
 
     def solve(self):
 
-        self._instable_subspace(self.const.BERNOULLI_EIGENVALUES)
+        self._instable_subspace()
 
-        if self.nIl != self.nIr:
-            print "Number of left eigenvalues is not the number of right eigenvalues, increase search space"
-            self._instable_subspace(2*self.const.BERNOULLI_EIGENVALUES)
-            if self.nIl != self.nIr:
+        while self.nIl != self.nIr:
+            print "Number of left eigenvalues {0:d} != {1:d} number of right eigenvalues".format(self.nIl, self.nIr)
+            self.bereigenvalues *= 2
+            print "increase search space to {0:d}".format(self.bereigenvalues)
+
+            if self.bereigenvalues >= self.fullA.shape[0]/2:
                 raise ValueError("Could not properly compute instable subspace")
+            else:
+                self._instable_subspace()
+
 
         print "Found {0:d}, {1:d} instable eigenvalues".format(self.nIr, self.nIl)
 

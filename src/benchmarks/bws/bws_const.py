@@ -63,8 +63,8 @@ def LOCALREFINE(p):
     return False
 
 """resolution of the macro mesh"""
-#INITIALRESOLUTION = 150
-INITIALRESOLUTION = 75
+INITIALRESOLUTION = 150
+#INITIALRESOLUTION = 120
 
 """indices for the boundary parts"""
 CONTROLRADIUS = 0.25*MODELHEIGHT

@@ -5,7 +5,7 @@ from src.aux import print_prof_data
 
 if __name__ == "__main__":
     # set Reynoldsnumbers and refinements and Parameters
-    #REs = range(20, 110, 20)
+    REs = range(20, 110, 20)
     # refs = [1, 2, 3, 4, 5]
     #refs = [1, 2, 3]
     refs = [2, 3]

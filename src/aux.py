@@ -10,7 +10,7 @@ def write_matrix(name, mat, com):
     pid = os.getpid()
     scio.mmwrite("tmp.dat_{0:d}.mtx".format(pid), mat, comment=com)
     f_in = open("tmp.dat_{0:d}.mtx".format(pid), "rt")
-    f_out = gzip.open(name, "wt", compresslevel=7)
+    f_out = gzip.open(name, "wt", compresslevel=9)
     f_out.writelines(f_in)
     f_out.close()
     f_in.close()
