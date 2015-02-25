@@ -7,7 +7,7 @@ if __name__ == "__main__":
     # set Reynoldsnumbers and refinements and Parameters
     REs = range(100, 1000, 50)
     # refs = [1, 2, 3, 4, 5]
-    refs = [1, 2]
+    refs = [1]
 
     const.LINEARIZED_SIM_T = 60.0
     const.LINEARIZED_SIM_T = 1.0
