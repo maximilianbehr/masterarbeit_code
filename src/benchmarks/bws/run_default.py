@@ -23,7 +23,7 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         lams = [float(sys.argv[1])]
     else:
-        lams = [-1.0, -0.5, 0.0, 0.5, 1.0]
+        lams = [-0.5, 0.0, 0.5]
 
     for lam in lams:
         print "lambda ={0:f}".format(lam)
