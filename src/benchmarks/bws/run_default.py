@@ -5,14 +5,16 @@ import sys
 
 if __name__ == "__main__":
     # set Reynoldsnumbers and refinements and Parameters
-    REs = range(100, 1000, 50)
+    REs = range(50, 1500, 50)
+    #REs = range(50, 200, 50)
+
     # refs = [1, 2, 3, 4, 5]
     refs = [1]
 
-    const.LINEARIZED_SIM_T = 60.0
+    const.LINEARIZED_SIM_T = 120.0
     const.LINEARIZED_SIM_T = 1.0
     const.LINEARIZED_SIM_DT = 0.0025
-    const.LINEARIZED_CTRL_T = 60.0
+    const.LINEARIZED_CTRL_T = 120.0
     const.LINEARIZED_CTRL_T = 1.0
     const.LINEARIZED_CTRL_DT = 0.0025
     const.LINEARIZED_SIM_INFO = 0.1
@@ -28,6 +30,8 @@ if __name__ == "__main__":
     for lam in lams:
         print "lambda ={0:f}".format(lam)
         const.STATIONARY_CONTROL_UPPER.lam = lam
+        const.STATIONARY_CONTROL_LOWER.lam = lam
+
         const.OUTPUTDIR_NAME = "results_bws_lam_{0:3f}".format(lam)
 
         # build mesh
@@ -41,7 +45,7 @@ if __name__ == "__main__":
         print "----------finished newton-----------"
 
         # assemble lqr
-        REs = [200, 400, 800]
+        REs = [200, 400, 600]
         print "----------assemble------------------"
         assemble_lqr(const, refs, REs)
         print "----------finished assemble---------"
@@ -70,4 +74,3 @@ if __name__ == "__main__":
         # REs = [max(REs)]
         # compute_eigen(const, refs, REs)
 	    # break
-
