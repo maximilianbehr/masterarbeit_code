@@ -44,10 +44,8 @@ parameters["krylov_solver"]["monitor_convergence"] = False
 MODELHEIGHT = 1.0
 # RECTLOWER = {"x0_0": 5*MODELHEIGHT, "x0_1": 0.00, "x1_0": 25*MODELHEIGHT, "x1_1": MODELHEIGHT}
 # RECTUPPER = {"x0_0": 0.00, "x0_1": MODELHEIGHT, "x1_0": 25*MODELHEIGHT, "x1_1": 5*MODELHEIGHT}
-#RECTLOWER = {"x0_0": 1.0*MODELHEIGHT, "x0_1": 0.00, "x1_0": 30*MODELHEIGHT, "x1_1": MODELHEIGHT}
-#RECTUPPER = {"x0_0": 0.00, "x0_1": MODELHEIGHT, "x1_0": 30*MODELHEIGHT, "x1_1": 2.0*MODELHEIGHT}
-RECTLOWER = {"x0_0": 1.0*MODELHEIGHT, "x0_1": 0.00, "x1_0": 30*MODELHEIGHT, "x1_1": MODELHEIGHT}
-RECTUPPER = {"x0_0": 0.00, "x0_1": MODELHEIGHT, "x1_0": 30*MODELHEIGHT, "x1_1": 2.0*MODELHEIGHT}
+RECTLOWER = {"x0_0": 10.0*MODELHEIGHT, "x0_1": 0.00, "x1_0": 30*MODELHEIGHT, "x1_1": MODELHEIGHT}
+RECTUPPER = {"x0_0": 0.00, "x0_1": 1*MODELHEIGHT, "x1_0": 30*MODELHEIGHT, "x1_1": 2.0*MODELHEIGHT}
 
 
 assert RECTUPPER["x0_0"] < RECTLOWER["x0_0"] < RECTUPPER["x1_0"]
@@ -56,15 +54,15 @@ assert RECTLOWER["x1_0"] == RECTUPPER["x1_0"]
 assert RECTLOWER["x1_1"] == RECTUPPER["x0_1"]
 
 """define local refinementzone"""
-LOCALREFINEMENTS = 0
+LOCALREFINEMENTS = 1
 def LOCALREFINE(p):
-    if (RECTLOWER["x0_0"]-0.1*MODELHEIGHT) < p.x() < 10*MODELHEIGHT and p.y() < 1.25*RECTUPPER["x0_1"]:
+    if ((RECTUPPER["x1_0"]*0.25) < p.x() < 0.5*RECTUPPER["x1_0"]) and p.y() <= 1.0*RECTUPPER["x1_1"]:
         return True
     return False
 
 """resolution of the macro mesh"""
-INITIALRESOLUTION = 150
-#INITIALRESOLUTION = 120
+#INITIALRESOLUTION = 5
+INITIALRESOLUTION = 120
 
 """indices for the boundary parts"""
 CONTROLRADIUS = 0.25*MODELHEIGHT
@@ -172,9 +170,9 @@ def STATIONARY_BOUNDARY_CONDITIONS(W, boundaryfunction):
 
 def GET_NU(RE):
     """return nu for given RE"""
-    # characteristic velocity is 1/4 (maximum of STATIONARY_UIN)
+    # characteristic velocity is 1 (maximum of STATIONARY_UIN)
     # characteristic lenght is 1 (height step)
-    return Expression("M/RE", M=float(MODELHEIGHT), RE=float(RE))
+    return Expression("M/RE", M=float(RECTLOWER["x1_1"]-RECTLOWER["x0_1"]), RE=float(RE))
 
 
 def STATIONARY_U_PVD(ref, RE):
@@ -200,7 +198,7 @@ def STATIONARY_W_XML(ref, RE):
 """constant for assembler"""
 ASSEMBLER_DIR = "assembler"
 ASSEMBLER_PENALTY_EPS = 0.001
-ASSEMBLER_OBSERVER_POINTS = [(10*MODELHEIGHT, 2.0*MODELHEIGHT), (10*MODELHEIGHT, 4.0*MODELHEIGHT)]
+ASSEMBLER_OBSERVER_POINTS = [(15*MODELHEIGHT, 0.5*MODELHEIGHT), (15*MODELHEIGHT, 1.5*MODELHEIGHT)]
 
 e1 = Expression(("( 1.0)*((h-x[1])*(x[1]-(h-r)))/pow(r/2.0,2.0)", "0.0"), r=CONTROLRADIUS, h=RECTUPPER["x0_1"])
 e2 = Expression(("(-1.0)*(x[1]*(r-x[1]))/pow(r/2.0,2.0)", "0.0"), r=CONTROLRADIUS)
@@ -290,7 +288,7 @@ LQR_ADI_MAXIT = 2000
 LQR_ADI_REL_CHANGE_TOL = 1e-13
 LQR_ADI_ARP_M = 40
 LQR_ADI_ARP_P = 40
-LQR_ADI_L0 = 40
+LQR_ADI_L0 = 25
 LQR_SAVE_FREQ = 5
 LQR_START_CONTROLLING = 0
 LQR_INFO = 0.05

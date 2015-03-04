@@ -126,12 +126,12 @@ class LinearizedCtrl():
             self.logv[self.klog, 1] = np.linalg.norm(self.uk_sys)
 
             # log control
-            uc = np.dot(self.mat["Kinf"].T, self.uk_sys)
+            uc = self.mat["Kinf"].T.dot(self.uk_sys)
             uc.ravel()
             self.logv[self.klog, 2:2+uc.shape[0]-1] = uc
 
             # log output
-            uout = np.dot(self.mat["C"], self.uk_sys)
+            uout = self.mat["C"].dot(self.uk_sys)
             uout.ravel()
             self.logv[self.klog, 2+uc.shape[0]:4+uout.shape[0]-1] = uout
             self.klog += 1

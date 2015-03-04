@@ -58,6 +58,7 @@ class Newton():
         solver.parameters["newton_solver"]["maximum_iterations"] = self.const.STATIONARY_NEWTON_STEPS
         solver.parameters["newton_solver"]["absolute_tolerance"] = self.const.STATIONARY_NEWTON_ABS_TOL
         solver.parameters["newton_solver"]["relative_tolerance"] = self.const.STATIONARY_NEWTON_REL_TOL
+
         solver.solve()
 
         # split w

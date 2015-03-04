@@ -28,6 +28,8 @@ class LQR_Solver():
         self.eqn.G = self.mat["G"]
         self.eqn.B = self.mat["B"]
         self.eqn.C = self.mat["C"]
+        if hasattr(self.eqn.C, "todense"):
+            self.eqn.C = self.eqn.C.todense()
 
 
         self.eqn.delta = const.LQR_DELTA

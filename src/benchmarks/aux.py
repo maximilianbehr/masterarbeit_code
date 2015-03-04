@@ -8,6 +8,7 @@ from src.lqr.linearized_ctrl import LinearizedCtrl
 from src.lqr.plotter import Plotter
 from src.lqr.eigen import Eigen
 from src.aux import *
+import traceback
 
 def build_mesh(const, refs):
     if const.NAME == "bws":
@@ -37,6 +38,7 @@ def solve_newton(const, refs, REs):
                 REinitial = RE
             except:
                 print "An exception in solve newton ref={0:d} RE={1:d}".format(ref, RE)
+                print traceback.format_exc()
                 break
 
 def assemble_lqr(const, refs, REs):
@@ -55,6 +57,7 @@ def assemble_lqr(const, refs, REs):
                 ctrlassembler.save_mtx()
             except:
                 print "An exception in assemble_lqr ref={0:d} RE={1:d}".format(ref, RE)
+                print traceback.format_exc()
                 break
 
 def solve_bernoulli(const, refs, REs):
@@ -67,6 +70,7 @@ def solve_bernoulli(const, refs, REs):
                 bernoulli.save()
             except:
                 print "An exception in solve_bernoulli ref={0:d} RE={1:d}".format(ref, RE)
+                print traceback.format_exc()
                 break
 
 def compute_eigen(const, refs, REs):
@@ -93,6 +97,7 @@ def compute_eigen(const, refs, REs):
                 eig.plot()
             except:
                 print "An exception in compute eigen ref={0:d} RE={1:d}".format(ref, RE)
+                print traceback.format_exc()
                 break
 
 def solve_lqr(const, refs, REs):
@@ -105,6 +110,7 @@ def solve_lqr(const, refs, REs):
                 lqrsolver.save()
             except:
                 print "An exception in solve_lqr ref={0:d} RE={1:d}".format(ref, RE)
+                print traceback.format_exc()
                 break
 
 
@@ -120,6 +126,7 @@ def simulate(const, refs, REs):
                 linearizedsim.save_log()
             except:
                 print "An exception in simulate ref={0:d} RE={1:d}".format(ref, RE)
+                print traceback.format_exc()
                 break
 
 
@@ -134,6 +141,7 @@ def control(const, refs, REs):
                 linearizedctrl.save_log()
             except:
                 print "An exception in control ref={0:d} RE={1:d}".format(ref, RE)
+                print traceback.format_exc()
                 break
 
 
@@ -148,4 +156,5 @@ def plot(const, refs, REs):
             plotter.plot_linearized_ctrl_output()
         except:
                 print "An exception in plot ref={0:d}".format(ref)
+                print traceback.format_exc()
                 break

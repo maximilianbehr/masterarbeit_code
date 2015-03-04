@@ -113,7 +113,7 @@ class Assembler():
             C[j, i] = 1
             j += 1
 
-        return C.todense()
+        return C.tocsc()
 
 
 
