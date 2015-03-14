@@ -5,13 +5,13 @@ from dolfin import *
 class Newton():
     """Newton Method for solving stationary navier stokes"""
 
-    def __init__(self, const, ref, RE, REinitial=None):
+    def __init__(self, const, ref, RE, initialw=None):
         # parameters
         self.const = const
         self.ref = ref
         self.RE = RE
         self.nu = const.GET_NU(RE)
-        self.REinitial = REinitial
+        self.initialw = initialw
 
         # mesh and function spaces
         self.mesh = Mesh(self.const.MESH_XML(ref))
@@ -29,8 +29,9 @@ class Newton():
         (v, q) = TestFunctions(self.W)
 
         # define trial function
-        if self.REinitial:
-            w = Function(self.W, self.const.STATIONARY_W_XML(self.ref, self.REinitial))
+        if self.initialw:
+            # w = Function(self.W, self.const.STATIONARY_W_XML(self.ref, self.REinitial))
+            w = Function(self.W, self.initialw)
         else:
             w = Function(self.W)
 
@@ -45,7 +46,7 @@ class Newton():
         F = a1 + a2 + a3 + cond + rhs
 
         # get boundary conditions
-        bc = self.const.STATIONARY_BOUNDARY_CONDITIONS(self.W, self.boundaryfunction)
+        bc = self.const.STATIONARY_BOUNDARY_CONDITIONS(self.W, self.boundaryfunction, self.const)
 
         # build derivative
         dw = TrialFunction(self.W)
@@ -58,7 +59,7 @@ class Newton():
         solver.parameters["newton_solver"]["maximum_iterations"] = self.const.STATIONARY_NEWTON_STEPS
         solver.parameters["newton_solver"]["absolute_tolerance"] = self.const.STATIONARY_NEWTON_ABS_TOL
         solver.parameters["newton_solver"]["relative_tolerance"] = self.const.STATIONARY_NEWTON_REL_TOL
-
+        solver.parameters["newton_solver"]["report"] = True
         solver.solve()
 
         # split w

@@ -1,26 +1,28 @@
 # -*- coding: utf-8 -*-
 from src.benchmarks.aux import *
 import src.benchmarks.karman.karman_const as const
+import sys
 from src.aux import print_prof_data
 
 if __name__ == "__main__":
     # set Reynoldsnumbers and refinements and Parameters
-    REs = range(20, 110, 20)
-    # refs = [1, 2, 3, 4, 5]
-    #refs = [1, 2, 3]
-    refs = [2, 3]
+    # REs = range(20, 110, 20)
+    REs = range(10, 500, 10)
 
     refs = [1]
-    REs = [2]
 
-
-    const.LINEARIZED_SIM_T = 10
-    const.LINEARIZED_SIM_DT = 0.005
-    const.LINEARIZED_CTRL_T = 10
-    const.LINEARIZED_CTRL_DT = 0.005
+    const.LINEARIZED_SIM_T = 20
+    const.LINEARIZED_SIM_DT = 0.00075
+    const.LINEARIZED_CTRL_T = 20
+    const.LINEARIZED_CTRL_DT = 0.00075
     const.LINEARIZED_SIM_INFO = 0.1
     const.LINEARIZED_CTRL_INFO = 0.1
     const.LQR_ADI_OUTPUT = 1
+
+    if len(sys.argv) == 3:
+        refs = [int(sys.argv[1])]
+        name = sys.argv[2]
+        const.OUTPUTDIR_NAME = "results_{0:s}".format(name)
 
     # build mesh
     build_mesh(const, refs)
@@ -29,6 +31,7 @@ if __name__ == "__main__":
     solve_newton(const, refs, REs)
 
     # assemble lqr
+    REs = range(min(REs), max(REs), 50)
     assemble_lqr(const, refs, REs)
 
     # simulate
@@ -44,7 +47,7 @@ if __name__ == "__main__":
     control(const, refs, REs)
 
     # compute eigenvalues
-    #REs = [max(REs)]
-    #compute_eigen(const, refs, REs)
+    # REs = [max(REs)]
+    # compute_eigen(const, refs, REs)
 
 

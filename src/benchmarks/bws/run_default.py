@@ -5,38 +5,28 @@ import sys
 
 if __name__ == "__main__":
     # set Reynoldsnumbers and refinements and Parameters
-    REs = range(100, 3000, 100)
-    # REs = [100]
-    # REs = range(50, 200, 50)
-
-    # refs = [1, 2, 3, 4, 5]
+    REs = range(100, 3000, 20)
     refs = [1]
 
-    const.LINEARIZED_SIM_T = 120.0
-    #const.LINEARIZED_SIM_T = 0.25
-    const.LINEARIZED_SIM_DT = 0.0025
-    const.LINEARIZED_CTRL_T = 120.0
-    #const.LINEARIZED_CTRL_T = 0.25
-    const.LINEARIZED_CTRL_DT = 0.0025
+    const.LINEARIZED_SIM_T = 40.0
+    const.LINEARIZED_SIM_DT = 0.00075
+    const.LINEARIZED_CTRL_T = 40.0
+    const.LINEARIZED_CTRL_DT = 0.00075
     const.LINEARIZED_SIM_INFO = 0.1
     const.LINEARIZED_CTRL_INFO = 0.1
-    const.LQR_ADI_OUTPUT = 0
+    const.LQR_ADI_OUTPUT = 1
+    lams = [-0.25]
 
-    # read possible inputvar
-    if len(sys.argv) == 2:
-        lams = [float(sys.argv[1])]
-    elif len(sys.argv) == 3:
-        lams = [float(sys.argv[1])]
-        refs = [int(sys.argv[2])]
-    else:
-        lams = [-0.5, 0.0, 0.5]
+    if len(sys.argv) == 3:
+        refs = [int(sys.argv[1])]
+        lams = [float(sys.argv[2])]
+        name = sys.argv[3]
+        const.OUTPUTDIR_NAME = "results_{0:s}".format(name)
+
 
     for lam in lams:
         print "lambda ={0:f}".format(lam)
-        const.STATIONARY_CONTROL_UPPER.lam = lam
-        const.STATIONARY_CONTROL_LOWER.lam = lam
-
-        const.OUTPUTDIR_NAME = "results_bws_lam_{0:3f}".format(lam)
+        const.STATIONARY_LAM = lam
 
         # build mesh
         print "----------build mesh----------------"
@@ -49,7 +39,7 @@ if __name__ == "__main__":
         print "----------finished newton-----------"
 
         # assemble lqr
-        #REs = [200, 400, 800]
+        REs = range(min(REs), max(REs), 200)
         print "----------assemble------------------"
         assemble_lqr(const, refs, REs)
         print "----------finished assemble---------"

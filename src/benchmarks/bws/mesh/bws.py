@@ -96,7 +96,7 @@ class GammaShear1(SubDomain):
 
     def inside(self, x, on_boundary):
         return on_boundary and \
-               between(x[0], (9*const.MODELHEIGHT, 10*const.MODELHEIGHT)) and \
+               between(x[0], (8*const.MODELHEIGHT, 15*const.MODELHEIGHT)) and \
                near(x[1], 0.0)
 
 
@@ -106,7 +106,7 @@ class GammaShear2(SubDomain):
 
     def inside(self, x, on_boundary):
         return on_boundary and \
-               between(x[0], (8*const.MODELHEIGHT, 10*const.MODELHEIGHT)) and \
+               between(x[0], (7*const.MODELHEIGHT, 15*const.MODELHEIGHT)) and \
                near(x[1], 0.0)
 
 
@@ -116,7 +116,7 @@ class GammaShear3(SubDomain):
 
     def inside(self, x, on_boundary):
         return on_boundary and \
-               between(x[0], (6*const.MODELHEIGHT, 10*const.MODELHEIGHT)) and \
+               between(x[0], (6*const.MODELHEIGHT, 15*const.MODELHEIGHT)) and \
                near(x[1], 0.0)
 
 

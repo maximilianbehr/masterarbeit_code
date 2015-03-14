@@ -97,7 +97,8 @@ def GET_NU(RE):
     # characteristic velocity is 1 (maximum of STATIONARY_UIN)
     # characteristic lenght is 1 (height of the mesh)
     # return float(1.0)/float(RE)
-    return float(CIRCLE["r"])/float(RE)
+    return Expression("R/RE", R=float(CIRCLE["r"]), RE=float(RE))
+    #return float(CIRCLE["r"])/float(RE)
 
 """Output directory"""
 OUTPUTDIR_NAME = "results"
@@ -148,17 +149,18 @@ STATIONARY_RHS = Constant((0.0, 0.0))
 STATIONARY_NEWTON_STEPS = 15
 STATIONARY_NEWTON_ABS_TOL = 1e-12
 STATIONARY_NEWTON_REL_TOL = 1e-14
+STATIONARY_NEWTON_REPORT = False
 STATIONARY_UIN = Expression(("1.0/(pow(ye/2.0-ya/2.0,2.0))*(ye-x[1])*(x[1]-ya)", "0.0"), \
                             ya=float(RECT["x0_0"]), ye=float(RECT["x1_1"]))
 
 
-def STATIONARY_BOUNDARY_CONDITIONS(W, boundaryfunction):
+def STATIONARY_BOUNDARY_CONDITIONS(W, boundaryfunction, const):
 
     # noslip at boundary parts
     noslip = Constant((0.0, 0.0))
 
     # define and collect boundary conditions
-    bcu = [DirichletBC(W.sub(0), STATIONARY_UIN, boundaryfunction, GAMMA_LEFT_INDICES),
+    bcu = [DirichletBC(W.sub(0), const.STATIONARY_UIN, boundaryfunction, GAMMA_LEFT_INDICES),
            DirichletBC(W.sub(0), noslip, boundaryfunction, GAMMA_LOWER_INDICES),
            DirichletBC(W.sub(0), noslip, boundaryfunction, GAMMA_UPPER_INDICES),
            DirichletBC(W.sub(0), noslip, boundaryfunction, GAMMA_BALL_INDICES),
@@ -183,26 +185,6 @@ def STATIONARY_P_XML(ref, RE):
 
 def STATIONARY_W_XML(ref, RE):
     return os.path.join(OUTPUTDIR(), STATIONARY_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "w.xml.gz")
-
-"""constants for instationary solvers"""
-INSTATIONARY_RHS = Constant((0.0, 0.0))
-INSTATIONARY_U0 = Constant((0.0, 0.0))
-INSTATIONARY_P0 = Constant(0.0)
-INSTATIONARY_UIN_MAX = 4
-INSTATIONARY_SAVE_FREQ = 5
-INSTATIONARY_T = 10
-INSTATIONARY_SAVE_PER_S = 10
-
-def INSTATIONARY_UIN(V,Q,t):
-    return Expression(("4*(1-x[1])*x[1]*(t/(1.0+t))", "0.0"), t=t)
-
-
-def INSTATIONARY_U_PVD(ref, RE, solver):
-    return os.path.join(OUTPUTDIR(), solver, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u.pvd")
-
-
-def INSTATIONARY_P_PVD(ref, RE, solver):
-    return os.path.join(OUTPUTDIR(), solver, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "p.pvd")
 
 
 """constant for assembler"""
@@ -273,7 +255,7 @@ def ASSEMBLER_COMPRESS_CTRL_OUTERNODES_DAT(ref, RE):
 
 """constant for simulation of linearized navier stokes"""
 LINEARIZED_SIM_DIR = "lqr_sim"
-LINEARIZED_SIM_SAVE_PER_S = 10
+LINEARIZED_SIM_SAVE_PER_S = 3
 LINEARIZED_SIM_INFO = 0.05
 LINEARIZED_SIM_PERTUBATIONEPS = 0.25
 LINEARIZED_SIM_DT = 0.005
@@ -315,14 +297,14 @@ LQR_ADI_MAXIT = 2000
 LQR_ADI_REL_CHANGE_TOL = 1e-13
 LQR_ADI_ARP_M = 40
 LQR_ADI_ARP_P = 40
-LQR_ADI_L0 = 40
+LQR_ADI_L0 = 25
 LQR_SAVE_FREQ = 5
 LQR_START_CONTROLLING = 0
 LQR_INFO = 0.05
 
 """constants for linearized control of navier stokes"""
 LINEARIZED_CTRL_DIR = "lqr_ctrl"
-LINEARIZED_CTRL_SAVE_PER_S = 10
+LINEARIZED_CTRL_SAVE_PER_S = 2
 LINEARIZED_CTRL_INFO = 0.05
 LINEARIZED_CTRL_PERTUBATIONEPS = 0.25
 LINEARIZED_CTRL_DT = 0.01

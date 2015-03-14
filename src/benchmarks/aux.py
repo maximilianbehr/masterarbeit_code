@@ -31,7 +31,11 @@ def solve_newton(const, refs, REs):
         REinitial = None
         for RE in REs:
             print "Newton ref={0:d} RE={1:d}".format(ref, RE)
-            newton = Newton(const, ref, RE, REinitial)
+            if REinitial:
+                winitial = const.STATIONARY_W_XML(ref, REinitial)
+                newton = Newton(const, ref, RE, winitial)
+            else:
+                newton = Newton(const, ref, RE)
             try:
                 newton.solve()
                 newton.save()

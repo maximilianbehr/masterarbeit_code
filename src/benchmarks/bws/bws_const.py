@@ -44,8 +44,8 @@ parameters["krylov_solver"]["monitor_convergence"] = False
 MODELHEIGHT = 1.0
 # RECTLOWER = {"x0_0": 5*MODELHEIGHT, "x0_1": 0.00, "x1_0": 25*MODELHEIGHT, "x1_1": MODELHEIGHT}
 # RECTUPPER = {"x0_0": 0.00, "x0_1": MODELHEIGHT, "x1_0": 25*MODELHEIGHT, "x1_1": 5*MODELHEIGHT}
-RECTLOWER = {"x0_0": 10.0*MODELHEIGHT, "x0_1": 0.00, "x1_0": 30*MODELHEIGHT, "x1_1": MODELHEIGHT}
-RECTUPPER = {"x0_0": 0.00, "x0_1": 1*MODELHEIGHT, "x1_0": 30*MODELHEIGHT, "x1_1": 2.0*MODELHEIGHT}
+RECTLOWER = {"x0_0": 5.0*MODELHEIGHT, "x0_1": 0.00, "x1_0": 20*MODELHEIGHT, "x1_1": MODELHEIGHT}
+RECTUPPER = {"x0_0": 0.00, "x0_1": 1*MODELHEIGHT, "x1_0": 20*MODELHEIGHT, "x1_1": 2.0*MODELHEIGHT}
 
 
 assert RECTUPPER["x0_0"] < RECTLOWER["x0_0"] < RECTUPPER["x1_0"]
@@ -56,13 +56,13 @@ assert RECTLOWER["x1_1"] == RECTUPPER["x0_1"]
 """define local refinementzone"""
 LOCALREFINEMENTS = 1
 def LOCALREFINE(p):
-    if ((RECTUPPER["x1_0"]*0.25) < p.x() < 0.5*RECTUPPER["x1_0"]) and p.y() <= 1.0*RECTUPPER["x1_1"]:
+    if ((RECTUPPER["x1_0"]*0.2) < p.x() < 0.4*RECTUPPER["x1_0"]) and p.y() <= 1.0*RECTUPPER["x1_1"]:
         return True
     return False
 
 """resolution of the macro mesh"""
 #INITIALRESOLUTION = 5
-INITIALRESOLUTION = 120
+INITIALRESOLUTION = 80
 
 """indices for the boundary parts"""
 CONTROLRADIUS = 0.25*MODELHEIGHT
@@ -141,27 +141,34 @@ STATIONARY_RHS = Constant((0.0, 0.0))
 STATIONARY_NEWTON_STEPS = 15
 STATIONARY_NEWTON_ABS_TOL = 1e-12
 STATIONARY_NEWTON_REL_TOL = 1e-14
-STATIONARY_CONTROL_UPPER = Expression(("lam*( 1.0)*((h-x[1])*(x[1]-(h-r)))/pow(r/2.0,2.0)", "0.0"), r=CONTROLRADIUS, h=RECTUPPER["x0_1"], lam=0.0)
-STATIONARY_CONTROL_LOWER = Expression(("lam*(-1.0)*(x[1]*(r-x[1]))/pow(r/2.0,2.0)", "0.0"), r=CONTROLRADIUS, lam=0.0)
+STATIONARY_NEWTON_REPORT = False
+STATIONARY_LAM = 0.0
+STATIONARY_CONTROL_UPPER = Expression(("lam*( 1.0)*((h-x[1])*(x[1]-(h-r)))/pow(r/2.0,2.0)", "0.0"), r=CONTROLRADIUS, h=RECTUPPER["x0_1"], lam=STATIONARY_LAM)
+STATIONARY_CONTROL_LOWER = Expression(("lam*(-1.0)*(x[1]*(r-x[1]))/pow(r/2.0,2.0)", "0.0"), r=CONTROLRADIUS, lam=STATIONARY_LAM)
 STATIONARY_UIN = Expression(("1.0/pow((x1)/2.0-(x0)/2.0,2) *(x[1]-x0)*(x1-x[1])", "0.0"), x0=RECTUPPER["x0_1"], x1=RECTUPPER["x1_1"])
 #STATIONARY_UIN = Expression(("-1.0", "0.0"))
 
 
-def STATIONARY_BOUNDARY_CONDITIONS(W, boundaryfunction):
+def STATIONARY_BOUNDARY_CONDITIONS(W, boundaryfunction, const):
 
     # noslip at boundary parts
     noslip = Constant((0.0, 0.0))
+
+    # update boundary conditions
+    const.STATIONARY_CONTROL_UPPER.lam = const.STATIONARY_LAM
+    const.STATIONARY_CONTROL_LOWER.lam = const.STATIONARY_LAM
+
 
     # define and collect boundary conditions
     bcu = [DirichletBC(W.sub(0), STATIONARY_UIN, boundaryfunction, GAMMA1_INDICES),
            DirichletBC(W.sub(0), noslip, boundaryfunction, GAMMA2_INDICES),
 
-           DirichletBC(W.sub(0), STATIONARY_CONTROL_UPPER, boundaryfunction, GAMMA3_INDICES),
+           DirichletBC(W.sub(0), const.STATIONARY_CONTROL_UPPER, boundaryfunction, GAMMA3_INDICES),
            #DirichletBC(W.sub(0), noslip, boundaryfunction, GAMMA3_INDICES),
 
            DirichletBC(W.sub(0), noslip, boundaryfunction, GAMMA4_INDICES),
 
-           DirichletBC(W.sub(0), STATIONARY_CONTROL_LOWER, boundaryfunction, GAMMA5_INDICES),
+           DirichletBC(W.sub(0), const.STATIONARY_CONTROL_LOWER, boundaryfunction, GAMMA5_INDICES),
            #DirichletBC(W.sub(0), noslip, boundaryfunction, GAMMA5_INDICES),
 
            DirichletBC(W.sub(0), noslip, boundaryfunction, GAMMA6_INDICES),
@@ -247,7 +254,7 @@ def ASSEMBLER_COMPRESS_CTRL_OUTERNODES_DAT(ref, RE):
 
 """constant for simulation of linearized navier stokes"""
 LINEARIZED_SIM_DIR = "lqr_sim"
-LINEARIZED_SIM_SAVE_PER_S = 5 #5 pictures per second
+LINEARIZED_SIM_SAVE_PER_S = 3 #5 pictures per second
 LINEARIZED_SIM_INFO = 0.05
 LINEARIZED_SIM_PERTUBATIONEPS = 0.05
 LINEARIZED_SIM_DT = 0.01
@@ -296,7 +303,7 @@ LQR_INFO = 0.05
 
 """constants for linearized control of navier stokes"""
 LINEARIZED_CTRL_DIR = "lqr_ctrl"
-LINEARIZED_CTRL_SAVE_PER_S = 5
+LINEARIZED_CTRL_SAVE_PER_S = 2
 LINEARIZED_CTRL_INFO = 0.05
 LINEARIZED_CTRL_PERTUBATIONEPS = 0.25
 LINEARIZED_CTRL_DT = 0.01
