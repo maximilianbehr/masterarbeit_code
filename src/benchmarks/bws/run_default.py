@@ -5,13 +5,13 @@ import sys
 
 if __name__ == "__main__":
     # set Reynoldsnumbers and refinements and Parameters
-    REs = range(100, 3000, 20)
+    REs = range(100, 5000, 100)
     refs = [1]
 
     const.LINEARIZED_SIM_T = 40.0
-    const.LINEARIZED_SIM_DT = 0.00075
+    const.LINEARIZED_SIM_DT = 0.00025
     const.LINEARIZED_CTRL_T = 40.0
-    const.LINEARIZED_CTRL_DT = 0.00075
+    const.LINEARIZED_CTRL_DT = 0.00025
     const.LINEARIZED_SIM_INFO = 0.1
     const.LINEARIZED_CTRL_INFO = 0.1
     const.LQR_ADI_OUTPUT = 1
@@ -39,7 +39,7 @@ if __name__ == "__main__":
         print "----------finished newton-----------"
 
         # assemble lqr
-        REs = range(min(REs), max(REs), 200)
+        REs = range(min(REs), max(REs), 600)
         print "----------assemble------------------"
         assemble_lqr(const, refs, REs)
         print "----------finished assemble---------"

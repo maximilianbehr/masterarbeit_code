@@ -6,13 +6,13 @@ import sys
 
 if __name__ == "__main__":
     # set Reynoldsnumbers and refinemnts
-    REs = range(20, 500, 10)
+    REs = range(10, 500, 10)
     refs = [1]
 
-    const.LINEARIZED_SIM_T = 20
-    const.LINEARIZED_SIM_DT = 0.00075
-    const.LINEARIZED_CTRL_T = 20
-    const.LINEARIZED_CTRL_DT = 0.00075
+    const.LINEARIZED_SIM_T = 15
+    const.LINEARIZED_SIM_DT = 0.002
+    const.LINEARIZED_CTRL_T = 15
+    const.LINEARIZED_CTRL_DT = 0.002
     const.LINEARIZED_SIM_INFO = 0.1
     const.LINEARIZED_CTRL_INFO = 0.1
     const.LQR_ADI_OUTPUT = 1
@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     build_mesh(const, refs)
     solve_newton(const, refs, REs)
-    REs = range(min(REs), max(REs), 50)
+    REs = range(min(REs), max(REs), 80)
     assemble_lqr(const, refs, REs)
     simulate(const, refs, REs)
     solve_bernoulli(const, refs, REs)

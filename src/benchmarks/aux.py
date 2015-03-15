@@ -159,6 +159,6 @@ def plot(const, refs, REs):
             plotter.plot_linearized_ctrl_controls()
             plotter.plot_linearized_ctrl_output()
         except:
-                print "An exception in plot ref={0:d}".format(ref)
-                print traceback.format_exc()
-                break
+            print "An exception in plot ref={0:d}".format(ref)
+            print traceback.format_exc()
+            break
