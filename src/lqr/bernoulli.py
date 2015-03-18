@@ -4,7 +4,7 @@ import scipy.io as scio
 import scipy.sparse as scsp
 import scipy.sparse.linalg as scspla
 import os
-from src.aux import createdir, write_matrix
+from src.aux import createdir, write_matrix, gettime
 
 
 
@@ -45,16 +45,20 @@ class Bernoulli():
         size = self.bereigenvalues
 
         # compute right eigenvectors
+        print gettime()
         print "Compute right eigenvectors"
         self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=0.25, which="LM")
         self.Ir = self.dr.real > 0
         self.nIr = self.Ir.sum()
+        print "Instable Right Eigenvalues", self.dr[self.Ir]
 
         # compute left eigenvectors
+        print gettime()
         print "Compute left eigenvectors"
-        self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(), sigma=1.0, which="LM")
+        self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(), sigma=0.25, which="LM")
         self.Il = self.dl.real > 0
         self.nIl = self.Il.sum()
+        print "Instable Left Eigenvalues", self.dl[self.Il]
 
     def solve(self):
 

@@ -23,10 +23,9 @@ if __name__ == "__main__":
         name = sys.argv[2]
         const.OUTPUTDIR_NAME = "results_{0:s}".format(name)
 
-
     build_mesh(const, refs)
     solve_newton(const, refs, REs)
-    REs = range(min(REs), max(REs), 80)
+    REs = range(min(REs), max(REs), 70)
     assemble_lqr(const, refs, REs)
     simulate(const, refs, REs)
     solve_bernoulli(const, refs, REs)

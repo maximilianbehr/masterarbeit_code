@@ -44,8 +44,8 @@ parameters["krylov_solver"]["monitor_convergence"] = False
 MODELHEIGHT = 1.0
 # RECTLOWER = {"x0_0": 5*MODELHEIGHT, "x0_1": 0.00, "x1_0": 25*MODELHEIGHT, "x1_1": MODELHEIGHT}
 # RECTUPPER = {"x0_0": 0.00, "x0_1": MODELHEIGHT, "x1_0": 25*MODELHEIGHT, "x1_1": 5*MODELHEIGHT}
-RECTLOWER = {"x0_0": 5.0*MODELHEIGHT, "x0_1": 0.00, "x1_0": 20*MODELHEIGHT, "x1_1": MODELHEIGHT}
-RECTUPPER = {"x0_0": 0.00, "x0_1": 1*MODELHEIGHT, "x1_0": 20*MODELHEIGHT, "x1_1": 2.0*MODELHEIGHT}
+RECTLOWER = {"x0_0": 5.0*MODELHEIGHT, "x0_1": 0.00, "x1_0": 25*MODELHEIGHT, "x1_1": MODELHEIGHT}
+RECTUPPER = {"x0_0": 0.00, "x0_1": 1*MODELHEIGHT, "x1_0": 25*MODELHEIGHT, "x1_1": 2.0*MODELHEIGHT}
 
 
 assert RECTUPPER["x0_0"] < RECTLOWER["x0_0"] < RECTUPPER["x1_0"]
@@ -63,6 +63,8 @@ def LOCALREFINE(p):
 """resolution of the macro mesh"""
 #INITIALRESOLUTION = 5
 INITIALRESOLUTION = 80
+#INITIALRESOLUTION = 50
+
 
 """indices for the boundary parts"""
 CONTROLRADIUS = 0.25*MODELHEIGHT
@@ -256,10 +258,11 @@ def ASSEMBLER_COMPRESS_CTRL_OUTERNODES_DAT(ref, RE):
 LINEARIZED_SIM_DIR = "lqr_sim"
 LINEARIZED_SIM_SAVE_PER_S = 3 #5 pictures per second
 LINEARIZED_SIM_INFO = 0.05
-LINEARIZED_SIM_PERTUBATIONEPS = 0.25
+LINEARIZED_SIM_PERTUBATIONEPS = 0.1
 LINEARIZED_SIM_DT = 0.01
 LINEARIZED_SIM_T = 60
-
+LINEARIZED_SIM_CORRECTION_STEPS = 100   # correction steps for time integration scheme
+LINEARIZED_SIM_CORRECTION_RES = 1e-14   # correction residual for time intergraion scheme
 
 def LINEARIZED_SIM_U_PVD(ref, RE):
     return os.path.join(OUTPUTDIR(), LINEARIZED_SIM_DIR, parameters["refinement_algorithm"],
@@ -274,8 +277,9 @@ def LINEARIZED_SIM_LOG(ref, RE):
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "log.txt")
 
 """constants for bernoulli"""
-BERNOULLI_EIGENVALUES = 250
+BERNOULLI_EIGENVALUES = 400
 BERNOULLI_MAXIT = 50
+BERNOULLI_SIGMA = 0.5  # sigma for shift inversion techniques
 
 def BERNOULLI_FEED0_CPS_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), ASSEMBLER_COMPRESS_CTRL_DIR, parameters["refinement_algorithm"],
@@ -312,6 +316,9 @@ LINEARIZED_CTRL_PERTUBATIONEPS = 0.25
 LINEARIZED_CTRL_DT = 0.005
 LINEARIZED_CTRL_T = 60
 LINEARIZED_CTRL_START_CONTROLLING = 0.0
+LINEARIZED_CTRL_CORRECTION_STEPS = 100   # correction steps for time integration scheme
+LINEARIZED_CTRL_CORRECTION_RES = 1e-14   # correction residual for time intergraion scheme
+
 
 
 def LINEARIZED_CTRL_U_PVD(ref, RE):

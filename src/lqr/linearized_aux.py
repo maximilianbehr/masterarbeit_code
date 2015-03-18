@@ -46,6 +46,17 @@ def inner_outer_nodes(V, boundaryfunction, innerboundaries):
 
         return np.array(list(inner_nodes)), np.array(list(outer_nodes))
 
+def smw(Msolver,B,K,rhs):
+    "perform inv(M-B*K.T)*rhs"
+    Minvrhs = Msolver.solve(rhs)
+    temp = np.dot(K.T, Minvrhs)
+    Minvb = Msolver.solve(B)
+    temp2 = np.dot(K.T, Minvb)
+    temp2 = np.eye(temp2.shape[0]) - temp2
+    temp = np.linalg.solve(temp2, temp)
+    temp = np.dot(B, temp)
+    return Minvrhs + Msolver.solve(temp)
+
 
 
 

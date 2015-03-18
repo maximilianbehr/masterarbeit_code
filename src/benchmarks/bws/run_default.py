@@ -5,19 +5,20 @@ import sys
 
 if __name__ == "__main__":
     # set Reynoldsnumbers and refinements and Parameters
-    REs = range(100, 5000, 100)
-    refs = [1]
+    #REs = range(100, 5000, 100)
+    REs = range(100, 5000, 50)
+    refs = [2]
 
     const.LINEARIZED_SIM_T = 40.0
-    const.LINEARIZED_SIM_DT = 0.00025
+    const.LINEARIZED_SIM_DT = 0.005
     const.LINEARIZED_CTRL_T = 40.0
-    const.LINEARIZED_CTRL_DT = 0.00025
-    const.LINEARIZED_SIM_INFO = 0.1
-    const.LINEARIZED_CTRL_INFO = 0.1
+    const.LINEARIZED_CTRL_DT = 0.005
+    const.LINEARIZED_SIM_INFO = 0.05
+    const.LINEARIZED_CTRL_INFO = 0.05
     const.LQR_ADI_OUTPUT = 1
     lams = [-0.25]
 
-    if len(sys.argv) == 3:
+    if len(sys.argv) == 4:
         refs = [int(sys.argv[1])]
         lams = [float(sys.argv[2])]
         name = sys.argv[3]
@@ -39,7 +40,9 @@ if __name__ == "__main__":
         print "----------finished newton-----------"
 
         # assemble lqr
-        REs = range(min(REs), max(REs), 600)
+        #REs = range(min(REs), max(REs), 1000)
+        REs = range(1300, max(REs), 600)
+        #REs = range(min(REs), max(REs), 100)
         print "----------assemble------------------"
         assemble_lqr(const, refs, REs)
         print "----------finished assemble---------"
@@ -67,4 +70,9 @@ if __name__ == "__main__":
         # compute eigenvalues
         # REs = [max(REs)]
         # compute_eigen(const, refs, REs)
-	    # break
+        #for ref in refs:
+        #    for RE in REs:
+        #        eig = Eigen(const, ref, RE)
+        #        eig.compute_eig_sys()
+        #        eig.save()
+        #        eig.plot()

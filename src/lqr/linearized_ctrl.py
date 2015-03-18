@@ -3,7 +3,8 @@ import scipy.sparse as scsp
 import scipy.sparse.linalg as scspli
 from dolfin import *
 import numpy as np
-
+from src.aux import gettime
+from src.lqr.linearized_aux import smw
 
 # set floating point error handling
 np.seterr(all="raise", divide="raise", over="raise", under="raise", invalid="raise")
@@ -78,10 +79,9 @@ class LinearizedCtrl():
         self.N = inner(self.w_test, grad(self.u_dolfin) * self.u_dolfin)*dx
         self.N_uk_uk = np.zeros((self.np+self.ninner,))
 
-    def assembleN(self):
-
+    def assembleN(self, uk):
         # insert values at inner nodes
-        self.uk_uncps[self.inner_nodes] = self.uk_sys
+        self.uk_uncps[self.inner_nodes] = uk
 
         # update vector, assemble form  and compress vector
         self.u_dolfin.vector().set_local(self.uk_uncps)
@@ -91,33 +91,82 @@ class LinearizedCtrl():
         self.N_uk_uk[:self.ninner] = np.take(Nassemble.array(), self.inner_nodes)
 
     def uk_next(self):
-
-        # compute new rhs
-        self.assembleN()
-        rhs = self.Msys_lift * self.uk_sys - self.dt*self.N_uk_uk
+        # compute new rhs (prediction)
+        self.assembleN(self.uk_sys)
+        Msys_lift_uk = self.Msys_lift * self.uk_sys
+        rhs = Msys_lift_uk - self.dt*self.N_uk_uk
 
         if self.t < self.const.LINEARIZED_CTRL_START_CONTROLLING:
             # print "no feed"
             temp = self.Msys_solver.solve(rhs)
+            # lift down vector
+            self.uk_sys = temp[0:self.nv]
+            # try to correct solution
+            self.correction_no_ctrl(Msys_lift_uk)
 
         else:
             # perform sherman morrison woodbury
-            Minvrhs = self.Msys_solver.solve(rhs)
-            temp = np.dot(self.Kinfsys.T, Minvrhs)
+            temp = smw(self.Msys_solver, self.Bsys, self.Kinfsys, rhs)
 
-            Minvb = self.Msys_solver.solve(self.Bsys)
-            temp2 = np.dot(self.Kinfsys.T, Minvb)
-            temp2 = np.eye(temp2.shape[0]) - temp2
-            temp  = np.linalg.solve(temp2, temp)
-
-            temp = np.dot(self.Bsys, temp)
-            temp = Minvrhs + self.Msys_solver.solve(temp)
-
-        # lift down vector
-        self.uk_sys = temp[0:self.nv]
+            # lift down vector
+            self.uk_sys = temp[0:self.nv]
+            # try to correct solution
+            self.correction_ctrl(Msys_lift_uk)
 
         self.k += 1
         self.t += self.dt
+
+    def correction_ctrl(self, Msys_lift_uk):
+
+        for i in range(self.const.LINEARIZED_CTRL_CORRECTION_STEPS):
+            # assemble nonlinear right hand side term
+            self.assembleN(self.uk_sys)
+            rhs = -self.dt*self.N_uk_uk+Msys_lift_uk
+
+            # perform sherman morrision woodbury
+            ukpk_sys_correction = smw(self.Msys_solver, self.Bsys, self.Kinfsys, rhs)
+            uk_sys_correction = ukpk_sys_correction[0:self.nv]
+
+            # compute residual for implicit euler scheme
+            self.assembleN(uk_sys_correction)
+            res = np.linalg.norm(self.Msys_ode.dot(ukpk_sys_correction)-\
+                                 self.Bsys.dot(self.Kinfsys.T.dot(ukpk_sys_correction))+\
+                                 self.dt*self.N_uk_uk-Msys_lift_uk)
+
+            # show info
+            if self.k % int(self.const.LINEARIZED_CTRL_INFO*(self.T/self.dt)) == 0:
+                diff = np.linalg.norm(self.uk_sys-uk_sys_correction)
+                print "Correction Step {0:d}\t||uk_sys-uk_sys_correction||={1:e}\t||res (implicit euler)||={2:e}".format(i, diff, res)
+
+            self.uk_sys = uk_sys_correction
+            if res < self.const.LINEARIZED_CTRL_CORRECTION_RES:
+                break
+
+
+    def correction_no_ctrl(self, Msys_lift_uk):
+
+        for i in range(self.const.LINEARIZED_CTRL_CORRECTION_STEPS):
+            # assemble nonlinear right hand side term
+            self.assembleN(self.uk_sys)
+            ukpk_sys_correction = self.Msys_solver(-self.dt*self.N_uk_uk+Msys_lift_uk)
+            uk_sys_correction = ukpk_sys_correction[0:self.nv]
+
+            # compute residual for implicit euler scheme
+            self.assembleN(uk_sys_correction)
+            res = np.linalg.norm(self.Msys_ode*ukpk_sys_correction+self.dt*self.N_uk_uk-Msys_lift_uk)
+
+            # show info
+            if self.k % int(self.const.LINEARIZED_CTRL_INFO*(self.T/self.dt)) == 0:
+                diff = np.linalg.norm(self.uk_sys-uk_sys_correction)
+                print "Correction Step {0:d}\t||uk_sys-uk_sys_correction||={1:e}\t||res (implicit euler)||={2:e}".format(i, diff, res)
+
+            self.uk_sys = uk_sys_correction
+            if res < self.const.LINEARIZED_CTRL_CORRECTION_RES:
+                break
+
+
+
+
 
     def log(self):
         # log time and u delta
@@ -156,7 +205,7 @@ class LinearizedCtrl():
 
             # print info
             if self.k % int(self.const.LINEARIZED_CTRL_INFO*(self.T/self.dt)) == 0:
-                print "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.t, np.linalg.norm(self.uk_sys))
+                print gettime(), "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.t, np.linalg.norm(self.uk_sys))
 
             self.uk_next()
 

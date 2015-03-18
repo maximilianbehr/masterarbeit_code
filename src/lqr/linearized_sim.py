@@ -3,7 +3,7 @@ import scipy.sparse as scsp
 import scipy.sparse.linalg as scspli
 import numpy as np
 from dolfin import *
-from src.aux import profile
+from src.aux import profile, gettime
 #set floating point error handling
 np.seterr(all="raise", divide="raise", over="raise", under="raise", invalid="raise")
 
@@ -74,10 +74,10 @@ class LinearizedSim():
         self.N_uk_uk = np.zeros((self.np+self.ninner,))
 
     @profile
-    def assembleN(self):
+    def assembleN(self,uk):
 
         # insert values at inner nodes
-        self.uk_uncps[self.inner_nodes] = self.uk_sys
+        self.uk_uncps[self.inner_nodes] = uk
 
         # update vector, assemble form  and compress vector
         self.u_dolfin.vector().set_local(self.uk_uncps)
@@ -88,13 +88,37 @@ class LinearizedSim():
 
     @profile
     def uk_next(self):
-
-        # compute new rhs
-        self.assembleN()
-        rhs = self.Msys_lift * self.uk_sys - self.dt*self.N_uk_uk
+        # compute new rhs (prediction)
+        self.assembleN(self.uk_sys)
+        Msys_lift_uk = self.Msys_lift * self.uk_sys
+        rhs = Msys_lift_uk - self.dt*self.N_uk_uk
         self.uk_sys = self.Msys_solver(rhs)[0:self.nv]
+        # try to correct solution
+        self.correction(Msys_lift_uk)
         self.k += 1
         self.t += self.dt
+
+    def correction(self, Msys_lift_uk):
+        # correct predicted solution
+
+        for i in range(self.const.LINEARIZED_SIM_CORRECTION_STEPS):
+            # assemble nonlinear right hand side term
+            self.assembleN(self.uk_sys)
+            ukpk_sys_correction = self.Msys_solver(-self.dt*self.N_uk_uk+Msys_lift_uk)
+            uk_sys_correction = ukpk_sys_correction[0:self.nv]
+
+            # compute residual for implicit euler scheme
+            self.assembleN(uk_sys_correction)
+            res = np.linalg.norm(self.Msys_ode*ukpk_sys_correction+self.dt*self.N_uk_uk-Msys_lift_uk)
+
+            # show info
+            if self.k % int(self.const.LINEARIZED_SIM_INFO*(self.T/self.dt)) == 0:
+                diff = np.linalg.norm(self.uk_sys-uk_sys_correction)
+                print "Correction Step {0:d}\t||uk_sys-uk_sys_correction||={1:e}\t||res (implicit euler)||={2:e}".format(i, diff, res)
+
+            self.uk_sys = uk_sys_correction
+            if res < self.const.LINEARIZED_SIM_CORRECTION_RES:
+                break
 
     def log(self):
         if self.k % self.save_freq == 0:
@@ -123,7 +147,7 @@ class LinearizedSim():
 
             # print info
             if self.k % int(self.const.LINEARIZED_SIM_INFO*(self.T/self.dt)) == 0:
-                print "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.t, np.linalg.norm(self.uk_sys))
+                print gettime(), "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.t, np.linalg.norm(self.uk_sys))
 
             self.uk_next()
 

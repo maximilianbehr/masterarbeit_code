@@ -30,7 +30,7 @@ if __name__ == "__main__":
     solve_newton(const, refs, REs)
 
     # assemble lqr
-    REs = range(min(REs), max(REs), 80)
+    REs = range(min(REs), max(REs), 70)
     assemble_lqr(const, refs, REs)
 
     # simulate
@@ -48,5 +48,6 @@ if __name__ == "__main__":
     # compute eigenvalues
     # REs = [max(REs)]
     # compute_eigen(const, refs, REs)
+
 
 
