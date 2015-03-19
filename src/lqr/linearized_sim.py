@@ -4,6 +4,7 @@ import scipy.sparse.linalg as scspli
 import numpy as np
 from dolfin import *
 from src.aux import profile, gettime
+from linearized_aux import stable_timestep
 #set floating point error handling
 np.seterr(all="raise", divide="raise", over="raise", under="raise", invalid="raise")
 
@@ -19,6 +20,20 @@ class LinearizedSim():
         self.pertubationeps = self.const.LINEARIZED_SIM_PERTUBATIONEPS
         self.dt = self.const.LINEARIZED_SIM_DT
         self.T = self.const.LINEARIZED_SIM_T
+
+        # mesh and function spaces
+        self.mesh = Mesh(const.MESH_XML(ref))
+        self.V = VectorFunctionSpace(self.mesh, const.V, const.V_DIM)
+        self.Q = FunctionSpace(self.mesh, const.Q, const.Q_DIM)
+        self.u_stat = Function(self.V, const.STATIONARY_U_XML(ref, RE))
+
+        if const.LINEARIZED_SIM_STABLE_DT:
+            # characterteristic velocity is chose as 1
+            self.dt = stable_timestep(self.T, self.const.GET_NU_FLOAT(self.RE), 1, self.mesh.hmin())
+        else:
+            self.dt = self.const.LINEARIZED_SIM_DT
+        print "dt = {0:e}".format(self.dt)
+
         self.t = 0.0
         self.k = 0
         self.save_freq = int(1.0/(self.dt*self.const.LINEARIZED_SIM_SAVE_PER_S))
@@ -26,12 +41,6 @@ class LinearizedSim():
         # log
         self.logv = np.zeros((int(self.T/(self.dt*self.save_freq)+1), 2))
         self.klog = 0
-
-        # mesh and function spaces
-        self.mesh = Mesh(const.MESH_XML(ref))
-        self.V = VectorFunctionSpace(self.mesh, const.V, const.V_DIM)
-        self.Q = FunctionSpace(self.mesh, const.Q, const.Q_DIM)
-        self.u_stat = Function(self.V, const.STATIONARY_U_XML(ref, RE))
 
         # read compress system for simuation
         names = ["M", "M_BOUNDARY_CTRL", "S", "R", "K", "G", "GT", "B", "C"]

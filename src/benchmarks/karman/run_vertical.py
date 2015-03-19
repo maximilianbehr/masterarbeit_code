@@ -9,12 +9,12 @@ if __name__ == "__main__":
     REs = range(10, 500, 10)
     refs = [1]
 
-    const.LINEARIZED_SIM_T = 15
+    const.LINEARIZED_SIM_T = 20
     const.LINEARIZED_SIM_DT = 0.002
-    const.LINEARIZED_CTRL_T = 15
+    const.LINEARIZED_CTRL_T = 20
     const.LINEARIZED_CTRL_DT = 0.002
-    const.LINEARIZED_SIM_INFO = 0.1
-    const.LINEARIZED_CTRL_INFO = 0.1
+    const.LINEARIZED_SIM_INFO = 0.02
+    const.LINEARIZED_CTRL_INFO = 0.02
     const.LQR_ADI_OUTPUT = 1
     const.ASSEMBLER_OBSERVER_POINTS = [(3.5, 0.5), (4.0, 0.5)]
 

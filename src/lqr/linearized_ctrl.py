@@ -4,7 +4,7 @@ import scipy.sparse.linalg as scspli
 from dolfin import *
 import numpy as np
 from src.aux import gettime
-from src.lqr.linearized_aux import smw
+from src.lqr.linearized_aux import smw, stable_timestep
 
 # set floating point error handling
 np.seterr(all="raise", divide="raise", over="raise", under="raise", invalid="raise")
@@ -17,19 +17,25 @@ class LinearizedCtrl():
         self.ref = ref
         self.RE = RE
         self.const = const
-        self.dt = self.const.LINEARIZED_CTRL_DT
         self.T = self.const.LINEARIZED_CTRL_T
         self.pertubationeps = self.const.LINEARIZED_CTRL_PERTUBATIONEPS
-        self.t = 0.0
-        self.k = 0
-        self.save_freq = int(1.0/(self.dt*self.const.LINEARIZED_SIM_SAVE_PER_S))
-
 
         # mesh and function spaces
         self.mesh = Mesh(const.MESH_XML(ref))
         self.V = VectorFunctionSpace(self.mesh, const.V, const.V_DIM)
         self.Q = FunctionSpace(self.mesh, const.Q, const.Q_DIM)
         self.u_stat = Function(self.V, const.STATIONARY_U_XML(ref, RE))
+
+        if const.LINEARIZED_CTRL_STABLE_DT:
+            # characterteristic velocity is chose as 1
+            self.dt = stable_timestep(self.T, self.const.GET_NU_FLOAT(self.RE), 1, self.mesh.hmin())
+        else:
+            self.dt = self.const.LINEARIZED_CTRL_DT
+        print "dt = {0:e}".format(self.dt)
+
+        self.t = 0.0
+        self.k = 0
+        self.save_freq = int(1.0/(self.dt*self.const.LINEARIZED_CTRL_SAVE_PER_S))
 
         # read compress system
         names = ["M", "M_BOUNDARY_CTRL", "S", "R", "K", "G", "GT", "B", "C", "Kinf"]

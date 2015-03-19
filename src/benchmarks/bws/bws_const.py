@@ -183,6 +183,9 @@ def GET_NU(RE):
     # characteristic lenght is 1 (height step)
     return Expression("M/RE", M=float(RECTLOWER["x1_1"]-RECTLOWER["x0_1"]), RE=float(RE))
 
+def GET_NU_FLOAT(RE):
+    """return nu for given RE"""
+    return float(RECTLOWER["x1_1"]-RECTLOWER["x0_1"])/float(RE)
 
 def STATIONARY_U_PVD(ref, RE):
     return os.path.join(OUTPUTDIR(), STATIONARY_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u.pvd")
@@ -256,11 +259,12 @@ def ASSEMBLER_COMPRESS_CTRL_OUTERNODES_DAT(ref, RE):
 
 """constant for simulation of linearized navier stokes"""
 LINEARIZED_SIM_DIR = "lqr_sim"
-LINEARIZED_SIM_SAVE_PER_S = 3 #5 pictures per second
+LINEARIZED_SIM_SAVE_PER_S = 5 #5 pictures per second
 LINEARIZED_SIM_INFO = 0.05
 LINEARIZED_SIM_PERTUBATIONEPS = 0.1
 LINEARIZED_SIM_DT = 0.01
 LINEARIZED_SIM_T = 60
+LINEARIZED_SIM_STABLE_DT = 1
 LINEARIZED_SIM_CORRECTION_STEPS = 100   # correction steps for time integration scheme
 LINEARIZED_SIM_CORRECTION_RES = 1e-14   # correction residual for time intergraion scheme
 
@@ -295,7 +299,7 @@ LQR_NM_REL_CHANGE = 3e-10
 LQR_NM_MAXIT = 20
 LQR_ADI_OUTPUT = 0
 LQR_ADI_RES2 = 1e-16
-LQR_ADI_MAXIT = 2000
+LQR_ADI_MAXIT = 5000
 LQR_ADI_REL_CHANGE_TOL = 1e-13
 LQR_ADI_ARP_M = 40
 LQR_ADI_ARP_P = 40
@@ -307,14 +311,12 @@ LQR_INFO = 0.05
 
 """constants for linearized control of navier stokes"""
 LINEARIZED_CTRL_DIR = "lqr_ctrl"
-LINEARIZED_CTRL_SAVE_PER_S = 2
+LINEARIZED_CTRL_SAVE_PER_S = 5
 LINEARIZED_CTRL_INFO = 0.05
 LINEARIZED_CTRL_PERTUBATIONEPS = 0.25
 LINEARIZED_CTRL_DT = 0.01
 LINEARIZED_CTRL_T = 60
-LINEARIZED_CTRL_PERTUBATIONEPS = 0.25
-LINEARIZED_CTRL_DT = 0.005
-LINEARIZED_CTRL_T = 60
+LINEARIZED_CTRL_STABLE_DT = 1
 LINEARIZED_CTRL_START_CONTROLLING = 0.0
 LINEARIZED_CTRL_CORRECTION_STEPS = 100   # correction steps for time integration scheme
 LINEARIZED_CTRL_CORRECTION_RES = 1e-14   # correction residual for time intergraion scheme

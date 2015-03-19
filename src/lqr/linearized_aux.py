@@ -58,6 +58,20 @@ def smw(Msolver,B,K,rhs):
     return Minvrhs + Msolver.solve(temp)
 
 
+def stable_timestep(T, nu, U, h):
+        "Return time step."
+
+        # variant 1
+        # dt =  0.25*h**2 / (U*(nu + h*U))
+
+        # variant 2
+        dt = 0.2*(float(h) / float(U))
+        n = int(float(T) / float(dt) + 1.0)
+        dt = float(T) / float(n)
+        print "Computing time step according to stability criteria"
+        return dt
+
+
 
 
 

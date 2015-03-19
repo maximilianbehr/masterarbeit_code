@@ -8,14 +8,14 @@ if __name__ == "__main__":
     # set Reynoldsnumbers and refinements and Parameters
     # REs = range(20, 110, 20)
     REs = range(10, 500, 10)
-    refs = [1]
+    refs = [2]
 
-    const.LINEARIZED_SIM_T = 15
+    const.LINEARIZED_SIM_T = 20
     const.LINEARIZED_SIM_DT = 0.002
-    const.LINEARIZED_CTRL_T = 15
+    const.LINEARIZED_CTRL_T = 20
     const.LINEARIZED_CTRL_DT = 0.002
-    const.LINEARIZED_SIM_INFO = 0.1
-    const.LINEARIZED_CTRL_INFO = 0.1
+    const.LINEARIZED_SIM_INFO = 0.02
+    const.LINEARIZED_CTRL_INFO = 0.02
     const.LQR_ADI_OUTPUT = 1
 
     if len(sys.argv) == 3:
