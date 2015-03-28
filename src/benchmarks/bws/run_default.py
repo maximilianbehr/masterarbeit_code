@@ -40,8 +40,8 @@ if __name__ == "__main__":
         print "----------finished newton-----------"
 
         # assemble lqr
-        #REs = range(min(REs), max(REs), 1000)
-        REs = range(1300, max(REs), 600)
+        REs = range(min(REs), max(REs), 1000)
+        #REs = range(1300, max(REs), 600)
         #REs = range(min(REs), max(REs), 100)
         print "----------assemble------------------"
         assemble_lqr(const, refs, REs)

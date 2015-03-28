@@ -42,11 +42,8 @@ parameters["krylov_solver"]["monitor_convergence"] = False
 """rectangular domain"""
 # parameter for adapting size of backward facing step
 MODELHEIGHT = 1.0
-# RECTLOWER = {"x0_0": 5*MODELHEIGHT, "x0_1": 0.00, "x1_0": 25*MODELHEIGHT, "x1_1": MODELHEIGHT}
-# RECTUPPER = {"x0_0": 0.00, "x0_1": MODELHEIGHT, "x1_0": 25*MODELHEIGHT, "x1_1": 5*MODELHEIGHT}
 RECTLOWER = {"x0_0": 5.0*MODELHEIGHT, "x0_1": 0.00, "x1_0": 25*MODELHEIGHT, "x1_1": MODELHEIGHT}
 RECTUPPER = {"x0_0": 0.00, "x0_1": 1*MODELHEIGHT, "x1_0": 25*MODELHEIGHT, "x1_1": 2.0*MODELHEIGHT}
-
 
 assert RECTUPPER["x0_0"] < RECTLOWER["x0_0"] < RECTUPPER["x1_0"]
 assert RECTLOWER["x0_1"] < RECTUPPER["x0_1"] < RECTUPPER["x1_1"]
@@ -61,10 +58,7 @@ def LOCALREFINE(p):
     return False
 
 """resolution of the macro mesh"""
-#INITIALRESOLUTION = 5
 INITIALRESOLUTION = 80
-#INITIALRESOLUTION = 50
-
 
 """indices for the boundary parts"""
 CONTROLRADIUS = 0.25*MODELHEIGHT
@@ -88,14 +82,12 @@ OUTPUTDIR_NAME = "results_bws"
 def OUTPUTDIR():
     dirname = os.path.join(OUTPUTDIR_NAME, DOLFIN_VERSION)
     host = socket.gethostname()
-    if host in ["pc747", "pc633", "pc800"]:
+    if host in ["pc747", "pc633", "pc800", "pc731", "adelheid", "heinrich.mpi-magdeburg.mpg.de"]:
         return os.path.abspath(os.path.join("/scratch/behr/master/", dirname))
     elif host == "jack":
         return os.path.abspath(os.path.join("/home/daniels/PycharmProjects/master", dirname))
     elif host == "editha":
         return os.path.abspath(os.path.join("/scratch/vol1/behr/", dirname))
-    elif host == "heinrich.mpi-magdeburg.mpg.de":
-        return os.path.abspath(os.path.join("/scratch/behr/", dirname))
     else:
         raise NotImplementedError("Outputpath for {0:s} is not implemented".format(host))
 
@@ -103,10 +95,6 @@ def OUTPUTDIR():
 """Output files for mesh generation"""
 def BOUNDARY_PVD(ref):
     return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "boundary.pvd")
-
-
-#def BOUNDARY_XDMF(ref):
-#    return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "boundary.xdmf")
 
 
 def BOUNDARY_XML(ref):
@@ -117,20 +105,12 @@ def MESH_PVD(ref):
     return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "mesh.pvd")
 
 
-#def MESH_XDMF(ref):
-#    return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "mesh.xdmf")
-
-
 def MESH_XML(ref):
     return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "mesh.xml.gz")
 
 
 def SHEAR_PVD(ref, num):
     return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "shear{0:d}.pvd".format(num))
-
-
-#def SHEAR_XDMF(ref, num):
-#    return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "shear{0:d}.xdmf".format(num))
 
 
 def SHEAR_XML(ref, num):
@@ -148,7 +128,7 @@ STATIONARY_LAM = 0.0
 STATIONARY_CONTROL_UPPER = Expression(("lam*( 1.0)*((h-x[1])*(x[1]-(h-r)))/pow(r/2.0,2.0)", "0.0"), r=CONTROLRADIUS, h=RECTUPPER["x0_1"], lam=STATIONARY_LAM)
 STATIONARY_CONTROL_LOWER = Expression(("lam*(-1.0)*(x[1]*(r-x[1]))/pow(r/2.0,2.0)", "0.0"), r=CONTROLRADIUS, lam=STATIONARY_LAM)
 STATIONARY_UIN = Expression(("1.0/pow((x1)/2.0-(x0)/2.0,2) *(x[1]-x0)*(x1-x[1])", "0.0"), x0=RECTUPPER["x0_1"], x1=RECTUPPER["x1_1"])
-#STATIONARY_UIN = Expression(("-1.0", "0.0"))
+
 
 
 def STATIONARY_BOUNDARY_CONDITIONS(W, boundaryfunction, const):
@@ -160,19 +140,12 @@ def STATIONARY_BOUNDARY_CONDITIONS(W, boundaryfunction, const):
     const.STATIONARY_CONTROL_UPPER.lam = const.STATIONARY_LAM
     const.STATIONARY_CONTROL_LOWER.lam = const.STATIONARY_LAM
 
-
     # define and collect boundary conditions
     bcu = [DirichletBC(W.sub(0), STATIONARY_UIN, boundaryfunction, GAMMA1_INDICES),
            DirichletBC(W.sub(0), noslip, boundaryfunction, GAMMA2_INDICES),
-
            DirichletBC(W.sub(0), const.STATIONARY_CONTROL_UPPER, boundaryfunction, GAMMA3_INDICES),
-           #DirichletBC(W.sub(0), noslip, boundaryfunction, GAMMA3_INDICES),
-
            DirichletBC(W.sub(0), noslip, boundaryfunction, GAMMA4_INDICES),
-
            DirichletBC(W.sub(0), const.STATIONARY_CONTROL_LOWER, boundaryfunction, GAMMA5_INDICES),
-           #DirichletBC(W.sub(0), noslip, boundaryfunction, GAMMA5_INDICES),
-
            DirichletBC(W.sub(0), noslip, boundaryfunction, GAMMA6_INDICES),
            DirichletBC(W.sub(0), noslip, boundaryfunction, GAMMA8_INDICES)]
     return bcu
@@ -259,7 +232,7 @@ def ASSEMBLER_COMPRESS_CTRL_OUTERNODES_DAT(ref, RE):
 
 """constant for simulation of linearized navier stokes"""
 LINEARIZED_SIM_DIR = "lqr_sim"
-LINEARIZED_SIM_SAVE_PER_S = 5 #5 pictures per second
+LINEARIZED_SIM_SAVE_PER_S = 5 #pictures per second
 LINEARIZED_SIM_INFO = 0.05
 LINEARIZED_SIM_PERTUBATIONEPS = 0.1
 LINEARIZED_SIM_DT = 0.01

@@ -1,6 +1,7 @@
 import scipy.io as scio
 import scipy.sparse as scsp
 import scipy.sparse.linalg as scspli
+import scipy.linalg as scla
 from dolfin import *
 import numpy as np
 from src.aux import gettime
@@ -85,6 +86,13 @@ class LinearizedCtrl():
         self.N = inner(self.w_test, grad(self.u_dolfin) * self.u_dolfin)*dx
         self.N_uk_uk = np.zeros((self.np+self.ninner,))
 
+        #build lu for smv
+        temp = self.Msys_solver.solve(self.Bsys)
+        temp = np.dot(self.Kinfsys.T, temp)
+        temp = np.eye(temp.shape[0]) - temp
+        lu,piv = scla.lu_factor(temp)
+        self.smvlu_piv = (lu, piv)
+
     def assembleN(self, uk):
         # insert values at inner nodes
         self.uk_uncps[self.inner_nodes] = uk
@@ -112,7 +120,7 @@ class LinearizedCtrl():
 
         else:
             # perform sherman morrison woodbury
-            temp = smw(self.Msys_solver, self.Bsys, self.Kinfsys, rhs)
+            temp = smw(self.smvlu_piv, self.Msys_solver, self.Bsys, self.Kinfsys, rhs)
 
             # lift down vector
             self.uk_sys = temp[0:self.nv]
@@ -130,7 +138,7 @@ class LinearizedCtrl():
             rhs = -self.dt*self.N_uk_uk+Msys_lift_uk
 
             # perform sherman morrision woodbury
-            ukpk_sys_correction = smw(self.Msys_solver, self.Bsys, self.Kinfsys, rhs)
+            ukpk_sys_correction = smw(self.smvlu_piv, self.Msys_solver, self.Bsys, self.Kinfsys, rhs)
             uk_sys_correction = ukpk_sys_correction[0:self.nv]
 
             # compute residual for implicit euler scheme

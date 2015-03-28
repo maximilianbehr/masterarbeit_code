@@ -7,15 +7,19 @@ from src.aux import print_prof_data
 if __name__ == "__main__":
     # set Reynoldsnumbers and refinements and Parameters
     # REs = range(20, 110, 20)
-    REs = range(10, 500, 10)
+    REs = range(10, 200, 10)
     refs = [2]
 
     const.LINEARIZED_SIM_T = 20
+    #const.LINEARIZED_SIM_T = 2
     const.LINEARIZED_SIM_DT = 0.002
+
     const.LINEARIZED_CTRL_T = 20
+    #const.LINEARIZED_CTRL_T = 2
     const.LINEARIZED_CTRL_DT = 0.002
-    const.LINEARIZED_SIM_INFO = 0.02
-    const.LINEARIZED_CTRL_INFO = 0.02
+
+    const.LINEARIZED_SIM_INFO = 0.1
+    const.LINEARIZED_CTRL_INFO = 0.1
     const.LQR_ADI_OUTPUT = 1
 
     if len(sys.argv) == 3:
@@ -30,8 +34,9 @@ if __name__ == "__main__":
     solve_newton(const, refs, REs)
 
     # assemble lqr
-    REs = range(min(REs), max(REs), 70)
+    REs = range(min(REs), max(REs), 50)
     assemble_lqr(const, refs, REs)
+
 
     # simulate
     simulate(const, refs, REs)

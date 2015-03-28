@@ -1,16 +1,17 @@
 import scipy.io as scio
 import scipy.sparse as scsp
 import scipy.sparse.linalg as scspli
-import numpy as np
 from dolfin import *
+import numpy as np
 from src.aux import profile, gettime
 from linearized_aux import stable_timestep
+
+
 #set floating point error handling
 np.seterr(all="raise", divide="raise", over="raise", under="raise", invalid="raise")
 
-
 class LinearizedSim():
-    @profile
+
     def __init__(self, const, ref, RE):
 
         # parameters
@@ -41,6 +42,7 @@ class LinearizedSim():
         # log
         self.logv = np.zeros((int(self.T/(self.dt*self.save_freq)+1), 2))
         self.klog = 0
+        self.kinfo = int(self.const.LINEARIZED_SIM_INFO*(self.T/self.dt))
 
         # read compress system for simuation
         names = ["M", "M_BOUNDARY_CTRL", "S", "R", "K", "G", "GT", "B", "C"]
@@ -74,16 +76,17 @@ class LinearizedSim():
         self.Msys_lift = scsp.vstack([self.mat["M"], scsp.csr_matrix((self.np, self.nv))]).tocsr()
 
         # build solver
-        # warning for higher refinements there are sometimes error change these parameters or ilu<->lu
-        self.Msys_solver = scspli.splu(self.Msys_ode).solve
+        self.Msys_solver = scspli.splu(self.Msys_ode.tocsc()).solve
 
         # test function and form for assembleN
         self.w_test = TestFunction(self.V)
         self.N = inner(self.w_test, grad(self.u_dolfin) * self.u_dolfin)*dx
         self.N_uk_uk = np.zeros((self.np+self.ninner,))
 
+
+
     @profile
-    def assembleN(self,uk):
+    def assembleN(self, uk):
 
         # insert values at inner nodes
         self.uk_uncps[self.inner_nodes] = uk
@@ -93,20 +96,21 @@ class LinearizedSim():
         Nassemble = assemble(self.N)
 
         # compress to inner nodes and fill into upper block
-        self.N_uk_uk[:self.ninner] = np.take(Nassemble.array(), self.inner_nodes)
+        self.N_uk_uk[:self.ninner] = np.take(Nassemble.array(), self.inner_nodes, axis=0)
 
     @profile
     def uk_next(self):
         # compute new rhs (prediction)
         self.assembleN(self.uk_sys)
         Msys_lift_uk = self.Msys_lift * self.uk_sys
-        rhs = Msys_lift_uk - self.dt*self.N_uk_uk
-        self.uk_sys = self.Msys_solver(rhs)[0:self.nv]
+        #rhs = Msys_lift_uk - self.dt*self.N_uk_uk
+        self.uk_sys = self.Msys_solver(Msys_lift_uk - self.dt*self.N_uk_uk)[0:self.nv]
         # try to correct solution
         self.correction(Msys_lift_uk)
         self.k += 1
         self.t += self.dt
 
+    @profile
     def correction(self, Msys_lift_uk):
         # correct predicted solution
 
@@ -115,19 +119,21 @@ class LinearizedSim():
             self.assembleN(self.uk_sys)
             ukpk_sys_correction = self.Msys_solver(-self.dt*self.N_uk_uk+Msys_lift_uk)
             uk_sys_correction = ukpk_sys_correction[0:self.nv]
-
-            # compute residual for implicit euler scheme
-            self.assembleN(uk_sys_correction)
-            res = np.linalg.norm(self.Msys_ode*ukpk_sys_correction+self.dt*self.N_uk_uk-Msys_lift_uk)
-
-            # show info
-            if self.k % int(self.const.LINEARIZED_SIM_INFO*(self.T/self.dt)) == 0:
-                diff = np.linalg.norm(self.uk_sys-uk_sys_correction)
-                print "Correction Step {0:d}\t||uk_sys-uk_sys_correction||={1:e}\t||res (implicit euler)||={2:e}".format(i, diff, res)
-
             self.uk_sys = uk_sys_correction
-            if res < self.const.LINEARIZED_SIM_CORRECTION_RES:
-                break
+
+            # compute residual for implicit euler scheme only in every third step to improve perfomance
+            if (i % 2) == 0:
+                self.assembleN(uk_sys_correction)
+                res = np.linalg.norm(self.Msys_ode*ukpk_sys_correction+self.dt*self.N_uk_uk-Msys_lift_uk)
+
+                # show info
+                if self.k % self.kinfo == 0:
+                    print "Correction Step {0:d}\t||res (implicit euler)||={1:e}".format(i,  res)
+
+
+                if res < self.const.LINEARIZED_SIM_CORRECTION_RES:
+                    break
+
 
     def log(self):
         if self.k % self.save_freq == 0:
@@ -148,14 +154,13 @@ class LinearizedSim():
             self.u_dolfin.vector().set_local(v)
             self.u_file << (self.u_dolfin, self.t)
 
-    @profile
     def solve_ode(self):
         while self.t < (self.T + DOLFIN_EPS):
             self.save()
             self.log()
 
             # print info
-            if self.k % int(self.const.LINEARIZED_SIM_INFO*(self.T/self.dt)) == 0:
+            if self.k % self.kinfo == 0:
                 print gettime(), "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.t, np.linalg.norm(self.uk_sys))
 
             self.uk_next()

@@ -27,6 +27,7 @@ V_DIM = 2
 Q = "CG"
 Q_DIM = 1
 
+
 """turn dof reordering off"""
 parameters["reorder_dofs_serial"] = False
 
@@ -110,14 +111,12 @@ OUTPUTDIR_NAME = "results"
 def OUTPUTDIR():
     dirname = os.path.join(OUTPUTDIR_NAME, DOLFIN_VERSION)
     host = socket.gethostname()
-    if host in ["pc747", "pc633", "pc800"]:
+    if host in ["pc747", "pc633", "pc800", "pc731", "adelheid", "heinrich.mpi-magdeburg.mpg.de"]:
         return os.path.abspath(os.path.join("/scratch/behr/master/", dirname))
     elif host == "jack":
         return os.path.abspath(os.path.join("/home/daniels/PycharmProjects/master", dirname))
     elif host == "editha":
         return os.path.abspath(os.path.join("/scratch/vol1/behr/", dirname))
-    elif host == "heinrich.mpi-magdeburg.mpg.de":
-        return os.path.abspath(os.path.join("/scratch/behr/", dirname))
     else:
         raise NotImplementedError("Outputpath for {0:s} is not implemented".format(host))
 
@@ -127,20 +126,12 @@ def BOUNDARY_PVD(ref):
     return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "boundary.pvd")
 
 
-#def BOUNDARY_XDMF(ref):
-#    return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "boundary.xdmf")
-
-
 def BOUNDARY_XML(ref):
     return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "boundary.xml.gz")
 
 
 def MESH_PVD(ref):
     return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "mesh.pvd")
-
-
-#def MESH_XDMF(ref):
-#    return os.path.join(OUTPUTDIR(), "mesh", parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "mesh.xdmf")
 
 
 def MESH_XML(ref):
@@ -195,8 +186,6 @@ def STATIONARY_W_XML(ref, RE):
 ASSEMBLER_DIR = "assembler"
 ASSEMBLER_PENALTY_EPS = 0.001
 ASSEMBLER_OBSERVER_POINTS = [(2.5, 0.25), (2.5, 0.75)]
-#ASSEMBLER_UPPER_CONTROL = Expression(("1/r * (x[0]-x0)", "1/r * (x[1]-y0)"), r=CIRCLE["r"], x0=CIRCLE["x0"], y0=CIRCLE["x1"])
-#ASSEMBLER_LOWER_CONTROL = Expression(("1/r * (x[0]-x0)", "1/r * (x[1]-y0)"), r=CIRCLE["r"], x0=CIRCLE["x0"], y0=CIRCLE["x1"])
 
 ASSEMBLER_UPPER_CONTROL = Expression(
             ("1.0/pow(phi2/2.0-phi1/2.0, 2.0) * (x[0]-x0)* (atan((x[0]-x0)/(x[1]-y0))-phi1) * (phi2-atan((x[0]-x0)/(x[1]-y0)))",
