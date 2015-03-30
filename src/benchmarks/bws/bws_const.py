@@ -237,9 +237,12 @@ LINEARIZED_SIM_INFO = 0.05
 LINEARIZED_SIM_PERTUBATIONEPS = 0.1
 LINEARIZED_SIM_DT = 0.01
 LINEARIZED_SIM_T = 60
+LINEARIZED_SIM_RES = 1e-3 # break if ||u_delta|| smaller this bound
 LINEARIZED_SIM_STABLE_DT = 1
-LINEARIZED_SIM_CORRECTION_STEPS = 100   # correction steps for time integration scheme
-LINEARIZED_SIM_CORRECTION_RES = 1e-14   # correction residual for time intergraion scheme
+LINEARIZED_SIM_CORRECTION_STEPS = 150   # correction steps for time integration scheme
+LINEARIZED_SIM_CORRECTION_RES = 1e-15   # correction residual for time intergraion scheme
+LINEARIZED_SIM_CORRECTION_RES_MOD = 15   # in every 5 steps residual is computed
+
 
 def LINEARIZED_SIM_U_PVD(ref, RE):
     return os.path.join(OUTPUTDIR(), LINEARIZED_SIM_DIR, parameters["refinement_algorithm"],
@@ -280,6 +283,7 @@ LQR_ADI_L0 = 25
 LQR_SAVE_FREQ = 5
 LQR_START_CONTROLLING = 0
 LQR_INFO = 0.05
+LQR_MEMORY_USAGE = 0
 
 
 """constants for linearized control of navier stokes"""
@@ -291,9 +295,10 @@ LINEARIZED_CTRL_DT = 0.01
 LINEARIZED_CTRL_T = 60
 LINEARIZED_CTRL_STABLE_DT = 1
 LINEARIZED_CTRL_START_CONTROLLING = 0.0
-LINEARIZED_CTRL_CORRECTION_STEPS = 100   # correction steps for time integration scheme
-LINEARIZED_CTRL_CORRECTION_RES = 1e-14   # correction residual for time intergraion scheme
-
+LINEARIZED_CTRL_CORRECTION_STEPS = 150   # correction steps for time integration scheme
+LINEARIZED_CTRL_CORRECTION_RES = 1e-15   # correction residual for time intergraion scheme
+LINEARIZED_CTRL_RES = 1e-3               # break if ||u_delta|| smaller this bound
+LINEARIZED_CTRL_CORRECTION_RES_MOD = 15   # in every 5 steps residual is computed
 
 
 def LINEARIZED_CTRL_U_PVD(ref, RE):

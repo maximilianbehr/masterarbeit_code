@@ -11,11 +11,9 @@ if __name__ == "__main__":
     refs = [2]
 
     const.LINEARIZED_SIM_T = 20
-    #const.LINEARIZED_SIM_T = 2
     const.LINEARIZED_SIM_DT = 0.002
 
     const.LINEARIZED_CTRL_T = 20
-    #const.LINEARIZED_CTRL_T = 2
     const.LINEARIZED_CTRL_DT = 0.002
 
     const.LINEARIZED_SIM_INFO = 0.1
@@ -36,7 +34,6 @@ if __name__ == "__main__":
     # assemble lqr
     REs = range(min(REs), max(REs), 50)
     assemble_lqr(const, refs, REs)
-
 
     # simulate
     simulate(const, refs, REs)

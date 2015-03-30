@@ -84,8 +84,6 @@ class LinearizedSim():
         self.N_uk_uk = np.zeros((self.np+self.ninner,))
 
 
-
-    @profile
     def assembleN(self, uk):
 
         # insert values at inner nodes
@@ -98,7 +96,6 @@ class LinearizedSim():
         # compress to inner nodes and fill into upper block
         self.N_uk_uk[:self.ninner] = np.take(Nassemble.array(), self.inner_nodes, axis=0)
 
-    @profile
     def uk_next(self):
         # compute new rhs (prediction)
         self.assembleN(self.uk_sys)
@@ -110,7 +107,6 @@ class LinearizedSim():
         self.k += 1
         self.t += self.dt
 
-    @profile
     def correction(self, Msys_lift_uk):
         # correct predicted solution
 
@@ -122,7 +118,7 @@ class LinearizedSim():
             self.uk_sys = uk_sys_correction
 
             # compute residual for implicit euler scheme only in every third step to improve perfomance
-            if (i % 2) == 0:
+            if (i % self.const.LINEARIZED_SIM_CORRECTION_RES_MOD) == 0:
                 self.assembleN(uk_sys_correction)
                 res = np.linalg.norm(self.Msys_ode*ukpk_sys_correction+self.dt*self.N_uk_uk-Msys_lift_uk)
 
@@ -130,6 +126,8 @@ class LinearizedSim():
                 if self.k % self.kinfo == 0:
                     print "Correction Step {0:d}\t||res (implicit euler)||={1:e}".format(i,  res)
 
+                if np.isnan(res):
+                    raise ValueError('nan during computation')
 
                 if res < self.const.LINEARIZED_SIM_CORRECTION_RES:
                     break
@@ -137,9 +135,21 @@ class LinearizedSim():
 
     def log(self):
         if self.k % self.save_freq == 0:
+            nrm = np.linalg.norm(self.uk_sys)
             self.logv[self.klog, 0] = self.t
-            self.logv[self.klog, 1] = np.linalg.norm(self.uk_sys)
+            self.logv[self.klog, 1] = nrm
             self.klog += 1
+
+            if np.isnan(nrm):
+                print "nan during computation"
+                return False
+
+            if nrm < self.const.LINEARIZED_SIM_RES:
+                print "convergenced reached"
+                return False
+
+        return True
+
 
     def save(self):
         if self.k % self.save_freq == 0:
@@ -157,7 +167,8 @@ class LinearizedSim():
     def solve_ode(self):
         while self.t < (self.T + DOLFIN_EPS):
             self.save()
-            self.log()
+            if not self.log():
+                break
 
             # print info
             if self.k % self.kinfo == 0:

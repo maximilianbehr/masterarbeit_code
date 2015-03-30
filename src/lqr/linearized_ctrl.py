@@ -49,6 +49,7 @@ class LinearizedCtrl():
         self.logv = np.zeros((int(self.T/(self.dt*self.save_freq)+1),\
                               2+self.mat["C"].shape[0]+self.mat["B"].shape[1]))
         self.klog = 0
+        self.kinfo = int(self.const.LINEARIZED_CTRL_INFO*(self.T/self.dt))
 
         # system sizes
         self.nv, self.np = self.mat["G"].shape
@@ -90,7 +91,7 @@ class LinearizedCtrl():
         temp = self.Msys_solver.solve(self.Bsys)
         temp = np.dot(self.Kinfsys.T, temp)
         temp = np.eye(temp.shape[0]) - temp
-        lu,piv = scla.lu_factor(temp)
+        lu, piv = scla.lu_factor(temp)
         self.smvlu_piv = (lu, piv)
 
     def assembleN(self, uk):
@@ -141,21 +142,25 @@ class LinearizedCtrl():
             ukpk_sys_correction = smw(self.smvlu_piv, self.Msys_solver, self.Bsys, self.Kinfsys, rhs)
             uk_sys_correction = ukpk_sys_correction[0:self.nv]
 
-            # compute residual for implicit euler scheme
-            self.assembleN(uk_sys_correction)
-            res = np.linalg.norm(self.Msys_ode.dot(ukpk_sys_correction)-\
-                                 self.Bsys.dot(self.Kinfsys.T.dot(ukpk_sys_correction))+\
-                                 self.dt*self.N_uk_uk-Msys_lift_uk)
 
-            # show info
-            if self.k % int(self.const.LINEARIZED_CTRL_INFO*(self.T/self.dt)) == 0:
-                diff = np.linalg.norm(self.uk_sys-uk_sys_correction)
-                print "Correction Step {0:d}\t||uk_sys-uk_sys_correction||={1:e}\t||res (implicit euler)||={2:e}".format(i, diff, res)
+            if (i % self.const.LINEARIZED_CTRL_CORRECTION_RES_MOD) == 0:
+                # compute residual for implicit euler scheme
+                self.assembleN(uk_sys_correction)
+                res = np.linalg.norm(self.Msys_ode.dot(ukpk_sys_correction)-\
+                                     self.Bsys.dot(self.Kinfsys.T.dot(ukpk_sys_correction))+\
+                                     self.dt*self.N_uk_uk-Msys_lift_uk)
+
+                # show info
+                if self.k % self.kinfo == 0:
+                    print "Correction Step {0:d}\t||res (implicit euler)||={1:e}".format(i,  res)
+
+                if np.isnan(res):
+                    raise ValueError('nan during computation')
+
+                if res < self.const.LINEARIZED_CTRL_CORRECTION_RES:
+                    break
 
             self.uk_sys = uk_sys_correction
-            if res < self.const.LINEARIZED_CTRL_CORRECTION_RES:
-                break
-
 
     def correction_no_ctrl(self, Msys_lift_uk):
 
@@ -170,23 +175,20 @@ class LinearizedCtrl():
             res = np.linalg.norm(self.Msys_ode*ukpk_sys_correction+self.dt*self.N_uk_uk-Msys_lift_uk)
 
             # show info
-            if self.k % int(self.const.LINEARIZED_CTRL_INFO*(self.T/self.dt)) == 0:
+            if self.k % self.kinfo == 0:
                 diff = np.linalg.norm(self.uk_sys-uk_sys_correction)
-                print "Correction Step {0:d}\t||uk_sys-uk_sys_correction||={1:e}\t||res (implicit euler)||={2:e}".format(i, diff, res)
+                print "Correction Step {0:d}\t||res (implicit euler)||={1:e}".format(i, res)
 
             self.uk_sys = uk_sys_correction
             if res < self.const.LINEARIZED_CTRL_CORRECTION_RES:
                 break
 
-
-
-
-
     def log(self):
         # log time and u delta
         if self.k % self.save_freq == 0:
+            nrm = np.linalg.norm(self.uk_sys)
             self.logv[self.klog, 0] = self.t
-            self.logv[self.klog, 1] = np.linalg.norm(self.uk_sys)
+            self.logv[self.klog, 1] = nrm
 
             # log control
             uc = self.mat["Kinf"].T.dot(self.uk_sys)
@@ -198,6 +200,16 @@ class LinearizedCtrl():
             uout.ravel()
             self.logv[self.klog, 2+uc.size:2+uc.size+uout.size] = uout
             self.klog += 1
+
+            if np.isnan(nrm):
+                print "nan during computation"
+                return False
+
+            if nrm < self.const.LINEARIZED_CTRL_RES:
+                print "convergenced reached"
+                return False
+
+        return True
 
     def save(self):
 
@@ -215,7 +227,9 @@ class LinearizedCtrl():
     def solve_ode(self):
         while self.t < (self.T + DOLFIN_EPS):
             self.save()
-            self.log()
+
+            if not self.log():
+                break
 
             # print info
             if self.k % int(self.const.LINEARIZED_CTRL_INFO*(self.T/self.dt)) == 0:
