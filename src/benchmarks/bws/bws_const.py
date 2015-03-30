@@ -240,7 +240,7 @@ LINEARIZED_SIM_T = 60
 LINEARIZED_SIM_RES = 1e-3 # break if ||u_delta|| smaller this bound
 LINEARIZED_SIM_STABLE_DT = 1
 LINEARIZED_SIM_CORRECTION_STEPS = 150   # correction steps for time integration scheme
-LINEARIZED_SIM_CORRECTION_RES = 1e-15   # correction residual for time intergraion scheme
+LINEARIZED_SIM_CORRECTION_RES = 1e-16   # correction residual for time intergraion scheme
 LINEARIZED_SIM_CORRECTION_RES_MOD = 15   # in every 5 steps residual is computed
 
 
@@ -264,6 +264,10 @@ BERNOULLI_SIGMA = 0.5  # sigma for shift inversion techniques
 def BERNOULLI_FEED0_CPS_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), ASSEMBLER_COMPRESS_CTRL_DIR, parameters["refinement_algorithm"],
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "Feed0.mtx.gz")
+
+def BERNOULLI_FEED1_CPS_MTX(ref, RE):
+    return os.path.join(OUTPUTDIR(), ASSEMBLER_COMPRESS_CTRL_DIR, parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "Feed1.mtx.gz")
 
 """constants for lqr solver of navier stokes"""
 LQR_DELTA = - 0.02
@@ -296,7 +300,7 @@ LINEARIZED_CTRL_T = 60
 LINEARIZED_CTRL_STABLE_DT = 1
 LINEARIZED_CTRL_START_CONTROLLING = 0.0
 LINEARIZED_CTRL_CORRECTION_STEPS = 150   # correction steps for time integration scheme
-LINEARIZED_CTRL_CORRECTION_RES = 1e-15   # correction residual for time intergraion scheme
+LINEARIZED_CTRL_CORRECTION_RES = 1e-16   # correction residual for time intergraion scheme
 LINEARIZED_CTRL_RES = 1e-3               # break if ||u_delta|| smaller this bound
 LINEARIZED_CTRL_CORRECTION_RES_MOD = 15   # in every 5 steps residual is computed
 

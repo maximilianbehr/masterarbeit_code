@@ -23,6 +23,8 @@ class Bernoulli():
         self.mat = {}
         for name in names:
             self.mat[name] = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_NAME_MTX(ref, name, RE))
+        if hasattr(self.mat["C"], 'toarray'):
+            self.mat["C"] = self.mat["C"].toarray()
 
         # system sizes
         self.nv = self.mat["M"].shape[0]
@@ -39,6 +41,7 @@ class Bernoulli():
 
         # set Feed0 a
         self.Feed0 = None
+        self.Feed1 = None
 
     def _instable_subspace(self):
 
@@ -47,7 +50,7 @@ class Bernoulli():
         # compute right eigenvectors
         print gettime()
         print "Compute right eigenvectors"
-        self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=0.25, which="LM")
+        self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=self.const.BERNOULLI_SIGMA, which="LM")
         self.Ir = self.dr.real > 0
         self.nIr = self.Ir.sum()
         print "Instable Right Eigenvalues", self.dr[self.Ir]
@@ -55,7 +58,7 @@ class Bernoulli():
         # compute left eigenvectors
         print gettime()
         print "Compute left eigenvectors"
-        self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(), sigma=0.25, which="LM")
+        self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(), sigma=self.const.BERNOULLI_SIGMA, which="LM")
         self.Il = self.dl.real > 0
         self.nIl = self.Il.sum()
         print "Instable Left Eigenvalues", self.dl[self.Il]
@@ -89,11 +92,15 @@ class Bernoulli():
         tA = np.dot(LEV.T, (self.fullA*REV))
         tE = np.dot(LEV.T, (self.fullE*REV))
         tB = np.dot(LEV.T, np.vstack((self.mat["B"], np.zeros((self.np, self.mat["B"].shape[1])))))
+        tC = np.dot(np.hstack((self.mat["C"], np.zeros((self.mat["C"].shape[0], self.np)))), REV)
 
         # solve algebraic bernoulli equation on projected space
         try:
             XK, it = self._abe_gsign(tA, np.dot(tB, tB.T), tE)
             print "ABE solved within {0:d} steps.".format(it)
+            XL, it = self._abe_gsign(tA.T, np.dot(tC.T, tC), tE.T)
+            print "ABE solved within {0:d} steps.".format(it)
+
         except Exception, e:
             return
 
@@ -102,6 +109,12 @@ class Bernoulli():
         Blift = np.vstack((self.mat["B"], np.zeros((self.np, self.mat["B"].shape[1]))))
         K0 = np.dot(np.dot(np.dot(Blift.T, LEV), XK), K0)
         self.Feed0 = K0[:, 0:self.nv].real.T
+
+        # build initial feedback for transposed A
+        K1 = REV.T*self.fullE.T
+        Clift = np.hstack((self.mat["C"], np.zeros((self.mat["C"].shape[0], self.np))))
+        K1 = np.dot(np.dot(np.dot(Clift, REV), XL), K1)
+        self.Feed1 = K1[:, 0:self.nv].real.T
 
     def _abe_gsign(self, A, B, E):
 
@@ -153,7 +166,9 @@ class Bernoulli():
         if self.Feed0 is not None:
             filename = self.const.BERNOULLI_FEED0_CPS_MTX(self.ref, self.RE)
             createdir(filename)
-
-            #with open(filename, "w") as handle:
-            #    scio.mmwrite(handle, self.Feed0)
             write_matrix(filename, self.Feed0, "bernoulli Feed0, ref={0:d} RE={1:d}".format(self.ref, self.RE))
+
+        if self.Feed1 is not None:
+            filename = self.const.BERNOULLI_FEED1_CPS_MTX(self.ref, self.RE)
+            createdir(filename)
+            write_matrix(filename, self.Feed1, "bernoulli Feed1, ref={0:d} RE={1:d}".format(self.ref, self.RE))
