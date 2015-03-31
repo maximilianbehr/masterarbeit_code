@@ -13,7 +13,7 @@ if __name__ == "__main__":
     const.LINEARIZED_SIM_T = 20
     const.LINEARIZED_SIM_DT = 0.002
 
-    const.LINEARIZED_CTRL_T = 20
+    const.LINEARIZED_CTRL_T = 2
     const.LINEARIZED_CTRL_DT = 0.002
 
     const.LINEARIZED_SIM_INFO = 0.1

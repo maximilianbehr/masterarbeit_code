@@ -240,7 +240,7 @@ LINEARIZED_SIM_T = 60
 LINEARIZED_SIM_RES = 1e-3 # break if ||u_delta|| smaller this bound
 LINEARIZED_SIM_STABLE_DT = 1
 LINEARIZED_SIM_CORRECTION_STEPS = 150   # correction steps for time integration scheme
-LINEARIZED_SIM_CORRECTION_RES = 1e-16   # correction residual for time intergraion scheme
+LINEARIZED_SIM_CORRECTION_RES = 1e-15   # correction residual for time intergraion scheme
 LINEARIZED_SIM_CORRECTION_RES_MOD = 15   # in every 5 steps residual is computed
 
 
@@ -300,7 +300,7 @@ LINEARIZED_CTRL_T = 60
 LINEARIZED_CTRL_STABLE_DT = 1
 LINEARIZED_CTRL_START_CONTROLLING = 0.0
 LINEARIZED_CTRL_CORRECTION_STEPS = 150   # correction steps for time integration scheme
-LINEARIZED_CTRL_CORRECTION_RES = 1e-16   # correction residual for time intergraion scheme
+LINEARIZED_CTRL_CORRECTION_RES = 1e-15   # correction residual for time intergraion scheme
 LINEARIZED_CTRL_RES = 1e-3               # break if ||u_delta|| smaller this bound
 LINEARIZED_CTRL_CORRECTION_RES_MOD = 15   # in every 5 steps residual is computed
 
