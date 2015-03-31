@@ -26,20 +26,20 @@ if __name__ == "__main__":
         const.OUTPUTDIR_NAME = "results_{0:s}".format(name)
 
     # build mesh
-    #build_mesh(const, refs)
+    build_mesh(const, refs)
 
     # solve stationary
-    #solve_newton(const, refs, REs)
+    solve_newton(const, refs, REs)
 
     # assemble lqr
-    #REs = range(min(REs), max(REs), 50)
-    #assemble_lqr(const, refs, REs)
+    REs = range(min(REs), max(REs), 50)
+    assemble_lqr(const, refs, REs)
 
     # simulate
-    #simulate(const, refs, REs)
+    simulate(const, refs, REs)
 
     # solve bernoulli
-    #solve_bernoulli(const, refs, REs)
+    solve_bernoulli(const, refs, REs)
 
     # solve lqr
     solve_lqr(const, refs, REs)
