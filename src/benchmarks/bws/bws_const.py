@@ -287,7 +287,12 @@ LQR_ADI_L0 = 25
 LQR_SAVE_FREQ = 5
 LQR_START_CONTROLLING = 0
 LQR_INFO = 0.05
-LQR_MEMORY_USAGE = 0
+
+if socket.gethostname() == "editha":
+    LQR_MEMORY_USAGE = 1
+else:
+    LQR_MEMORY_USAGE = 0
+
 
 
 """constants for linearized control of navier stokes"""
