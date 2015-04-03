@@ -23,12 +23,12 @@ class CompressAssembler():
         # define attributes v_inner_nodes and v_outer_nodes
         if self.flag == "sim":
             # parts of boundary are added as inner nodes
-            self.inner_nodes, self.outer_nodes = inner_outer_nodes(self.V, self.boundaryfunction, \
-                                                                   const.ASSEMBLER_COMPRESS_SIM_INNERNODES)
+            self.outer_nodes, self.inner_nodes = inner_outer_nodes(self.V, self.boundaryfunction, \
+                                                                   const.ASSEMBLER_COMPRESS_SIM_DIRI_ZEROS)
         elif self.flag == "ctrl":
             # GammaRight Boundary Part is added to the inner nodes
-            self.inner_nodes, self.outer_nodes = inner_outer_nodes(self.V, self.boundaryfunction, \
-                                                                   const.ASSEMBLER_COMPRESS_CTRL_INNERNODES)
+            self.outer_nodes, self.inner_nodes = inner_outer_nodes(self.V, self.boundaryfunction, \
+                                                                   const.ASSEMBLER_COMPRESS_CTRL_DIRI_ZEROS)
         else:
             raise ValueError('unknown flag {s}'.format(self.flag))
 

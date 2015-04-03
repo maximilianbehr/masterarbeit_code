@@ -10,13 +10,13 @@ if __name__ == "__main__":
     REs = range(10, 200, 10)
     refs = [2]
 
-    const.LINEARIZED_SIM_T = 20
+    const.LINEARIZED_SIM_T = 3
     const.LINEARIZED_SIM_DT = 0.002
 
     const.LINEARIZED_CTRL_T = 2
     const.LINEARIZED_CTRL_DT = 0.002
 
-    const.LINEARIZED_SIM_INFO = 0.1
+    const.LINEARIZED_SIM_INFO = 0.01
     const.LINEARIZED_CTRL_INFO = 0.1
     const.LQR_ADI_OUTPUT = 1
 
@@ -26,26 +26,28 @@ if __name__ == "__main__":
         const.OUTPUTDIR_NAME = "results_{0:s}".format(name)
 
     # build mesh
-    build_mesh(const, refs)
+    #build_mesh(const, refs)
 
     # solve stationary
-    solve_newton(const, refs, REs)
+    #solve_newton(const, refs, REs)
 
     # assemble lqr
-    REs = range(min(REs), max(REs), 50)
-    assemble_lqr(const, refs, REs)
+    #REs = range(min(REs), max(REs), 50)
+    REs = [50]
+    #assemble_lqr(const, refs, REs)
 
     # simulate
+    const.LINEARIZED_SIM_CORRECTION_STEPS=0
     simulate(const, refs, REs)
 
     # solve bernoulli
-    solve_bernoulli(const, refs, REs)
+    #solve_bernoulli(const, refs, REs)
 
     # solve lqr
-    solve_lqr(const, refs, REs)
+    #solve_lqr(const, refs, REs)
 
     # simulate with control
-    control(const, refs, REs)
+    #control(const, refs, REs)
 
     # compute eigenvalues
     # REs = [max(REs)]

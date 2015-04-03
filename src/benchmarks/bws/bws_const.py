@@ -199,6 +199,9 @@ def ASSEMBLER_MAT(ref, RE):
 """constant for compress assembler simulation"""
 ASSEMBLER_COMPRESS_SIM_DIR = "assembler_compress_sim"
 ASSEMBLER_COMPRESS_SIM_INNERNODES = [GAMMA7_INDICES]
+ASSEMBLER_COMPRESS_SIM_DIRI_ZEROS = [GAMMA1_INDICES, GAMMA2_INDICES, GAMMA3_INDICES,\
+                                     GAMMA4_INDICES, GAMMA5_INDICES, GAMMA6_INDICES,\
+                                     GAMMA8_INDICES]
 
 def ASSEMBLER_COMPRESS_SIM_NAME_MTX(ref, name, RE):
     return os.path.join(OUTPUTDIR(), ASSEMBLER_COMPRESS_SIM_DIR, parameters["refinement_algorithm"],
@@ -214,8 +217,8 @@ def ASSEMBLER_COMPRESS_SIM_OUTERNODES_DAT(ref, RE):
 
 """constant for compress assembler control"""
 ASSEMBLER_COMPRESS_CTRL_DIR = "assembler_compress_ctrl"
-ASSEMBLER_COMPRESS_CTRL_INNERNODES = [GAMMA7_INDICES, GAMMA3_INDICES, GAMMA5_INDICES]
-
+ASSEMBLER_COMPRESS_CTRL_DIRI_ZEROS = [GAMMA1_INDICES, GAMMA2_INDICES, GAMMA4_INDICES, \
+                                      GAMMA6_INDICES, GAMMA8_INDICES]
 
 def ASSEMBLER_COMPRESS_CTRL_NAME_MTX(ref, name, RE):
     return os.path.join(OUTPUTDIR(), ASSEMBLER_COMPRESS_CTRL_DIR, parameters["refinement_algorithm"],
@@ -292,8 +295,6 @@ if socket.gethostname() == "editha":
     LQR_MEMORY_USAGE = 1
 else:
     LQR_MEMORY_USAGE = 0
-
-
 
 """constants for linearized control of navier stokes"""
 LINEARIZED_CTRL_DIR = "lqr_ctrl"

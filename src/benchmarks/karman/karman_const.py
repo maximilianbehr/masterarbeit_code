@@ -215,7 +215,11 @@ def ASSEMBLER_MAT(ref, RE):
 
 """constant for compress assembler"""
 ASSEMBLER_COMPRESS_SIM_DIR = "assembler_compress_sim"
-ASSEMBLER_COMPRESS_SIM_INNERNODES = [GAMMA_RIGHT_INDICES]
+ASSEMBLER_COMPRESS_SIM_DIRI_ZEROS = [GAMMA_LEFT_INDICES, GAMMA_LOWER_INDICES, \
+                                     GAMMA_UPPER_INDICES, GAMMA_BALL_INDICES, \
+                                     GAMMA_BALL_CTRLLOWER_INDICES, GAMMA_BALL_CTRLUPPER_INDICES]
+
+
 
 def ASSEMBLER_COMPRESS_SIM_NAME_MTX(ref, name, RE):
     return os.path.join(OUTPUTDIR(), ASSEMBLER_COMPRESS_SIM_DIR, parameters["refinement_algorithm"],
@@ -231,7 +235,8 @@ def ASSEMBLER_COMPRESS_SIM_OUTERNODES_DAT(ref, RE):
 
 """constant for compress assembler control"""
 ASSEMBLER_COMPRESS_CTRL_DIR = "assembler_compress_ctrl"
-ASSEMBLER_COMPRESS_CTRL_INNERNODES = [GAMMA_RIGHT_INDICES, GAMMA_BALL_CTRLLOWER_INDICES, GAMMA_BALL_CTRLUPPER_INDICES]
+ASSEMBLER_COMPRESS_CTRL_DIRI_ZEROS = [GAMMA_LEFT_INDICES, GAMMA_LOWER_INDICES, \
+                                      GAMMA_UPPER_INDICES, GAMMA_BALL_INDICES]
 
 def ASSEMBLER_COMPRESS_CTRL_NAME_MTX(ref, name, RE):
     return os.path.join(OUTPUTDIR(), ASSEMBLER_COMPRESS_CTRL_DIR, parameters["refinement_algorithm"],
@@ -258,7 +263,6 @@ LINEARIZED_SIM_CORRECTION_STEPS = 150   # correction steps for time integration 
 LINEARIZED_SIM_CORRECTION_RES = 1e-15   # correction residual for time intergraion scheme
 LINEARIZED_SIM_RES = 1e-3 # break if ||u_delta|| smaller this bound
 LINEARIZED_SIM_CORRECTION_RES_MOD = 15   # in every 5 steps residual is computed
-
 
 
 def LINEARIZED_SIM_U_PVD(ref, RE):

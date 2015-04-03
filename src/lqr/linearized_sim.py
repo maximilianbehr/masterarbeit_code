@@ -64,9 +64,14 @@ class LinearizedSim():
         self.udelta_file = File(const.LINEARIZED_SIM_U_DELTA_PVD(self.ref, self.RE))
 
         # define state and uncompress state
-        self.uk_sys = np.take(self.u_stat.vector().array(), self.inner_nodes)
-        self.uk_sys *= self.pertubationeps
+        # self.uk_sys = np.take(self.u_stat.vector().array(), self.inner_nodes)
+        # self.uk_sys *= self.pertubationeps
+        # self.uk_uncps = np.zeros((self.V.dim(),))
+
+        u_pertubated = project(self.pertubationeps*self.u_stat, self.V)
+        self.uk_sys = np.take(u_pertubated.vector().array(), self.inner_nodes)
         self.uk_uncps = np.zeros((self.V.dim(),))
+        self.uk_uncps[self.inner_nodes] = self.uk_sys
 
         # build system matrices
         self.Asys = -self.mat["S"]-self.mat["R"]-self.mat["K"]
@@ -82,6 +87,7 @@ class LinearizedSim():
         self.w_test = TestFunction(self.V)
         self.N = inner(self.w_test, grad(self.u_dolfin) * self.u_dolfin)*dx
         self.N_uk_uk = np.zeros((self.np+self.ninner,))
+        self.assembleN(self.uk_sys)
 
 
     def assembleN(self, uk):
@@ -97,11 +103,13 @@ class LinearizedSim():
         self.N_uk_uk[:self.ninner] = np.take(Nassemble.array(), self.inner_nodes, axis=0)
 
     def uk_next(self):
+        import ipdb
+        ipdb.set_trace()
         # compute new rhs (prediction)
         self.assembleN(self.uk_sys)
         Msys_lift_uk = self.Msys_lift * self.uk_sys
         #rhs = Msys_lift_uk - self.dt*self.N_uk_uk
-        self.uk_sys = self.Msys_solver(Msys_lift_uk - self.dt*self.N_uk_uk)[0:self.nv]
+        self.uk_sys = self.Msys_solver(Msys_lift_uk - self.dt*self.N_uk_uk)[0:self.ninner]
         # try to correct solution
         self.correction(Msys_lift_uk)
         self.k += 1
@@ -135,9 +143,13 @@ class LinearizedSim():
 
     def log(self):
         if self.k % self.save_freq == 0:
-            nrm = np.linalg.norm(self.uk_sys)
+            # nrm = np.linalg.norm(self.uk_sys)
+            self.uk_uncps[self.inner_nodes] = self.uk_sys
+            self.udelta_dolfin.vector().set_local(self.uk_uncps)
+            nrm = norm(self.udelta_dolfin, "L2", mesh=self.mesh)
             self.logv[self.klog, 0] = self.t
             self.logv[self.klog, 1] = nrm
+
             self.klog += 1
 
             if np.isnan(nrm):
@@ -171,8 +183,12 @@ class LinearizedSim():
                 break
 
             # print info
-            if self.k % self.kinfo == 0:
-                print gettime(), "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.t, np.linalg.norm(self.uk_sys))
+            if self.k % self.kinfo == 0 or True:
+                print np.linalg.norm(self.N_uk_uk)
+                self.uk_uncps[self.inner_nodes] = self.uk_sys
+                self.udelta_dolfin.vector().set_local(self.uk_uncps)
+                nrm = norm(self.udelta_dolfin, "L2", mesh=self.mesh)
+                print gettime(), "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.t, nrm)
 
             self.uk_next()
 

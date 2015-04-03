@@ -25,26 +25,30 @@ def compress_mat(M, inner_nodes):
     return ret
 
 
-def inner_outer_nodes(V, boundaryfunction, innerboundaries):
+def inner_outer_nodes(V, boundaryfunction, diri_zeros):
         """compute return indices of inner and outer nodes,
         function assumes homogenius dirichlet boundary conditions
         on boundary parts not specified by innerboundaries"""
 
         # collect all boundary parts
         noslip = Constant((0.0, 0.0))
-        bcouter = DirichletBC(V, noslip, DomainBoundary())
-        outer_nodes = set(bcouter.get_boundary_values().keys())
 
         # remove boundary parts which should belong to the inner
-        for innerboundary in innerboundaries:
+        diri_nodes =[]
+        for diri_zero in diri_zeros:
             # create abritray dirichlet bc for identifying the nodes
-            d = DirichletBC(V, noslip, boundaryfunction, innerboundary)
-            outer_nodes = outer_nodes - set(d.get_boundary_values().keys())
+            d = DirichletBC(V, noslip, boundaryfunction, diri_zero)
+            diri_nodes.extend(d.get_boundary_values().keys())
 
-        # inner nodes are all nodes which are no outer nodes
-        inner_nodes = set(range(0, V.dim())) - outer_nodes
+        diri_nodes = set(diri_nodes)
+        # diri nodes are all nodes which are no outer nodes
+        inner_nodes = set(range(0, V.dim())) - diri_nodes
 
-        return np.array(list(inner_nodes)), np.array(list(outer_nodes))
+        diri_nodes = np.array(list(diri_nodes))
+        diri_nodes.sort()
+        inner_nodes = np.array(list(inner_nodes))
+        inner_nodes.sort()
+        return diri_nodes, inner_nodes
 
 def smw(smvlu_piv,Msolver,B,K,rhs):
     "perform inv(M-B*K.T)*rhs"
