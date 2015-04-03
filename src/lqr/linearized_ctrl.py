@@ -87,7 +87,7 @@ class LinearizedCtrl():
         self.N = inner(self.w_test, grad(self.u_dolfin) * self.u_dolfin)*dx
         self.N_uk_uk = np.zeros((self.np+self.ninner,))
 
-        #build lu for smv
+        # build lu for smv
         temp = self.Msys_solver.solve(self.Bsys)
         temp = np.dot(self.Kinfsys.T, temp)
         temp = np.eye(temp.shape[0]) - temp
@@ -186,7 +186,9 @@ class LinearizedCtrl():
     def log(self):
         # log time and u delta
         if self.k % self.save_freq == 0:
-            nrm = np.linalg.norm(self.uk_sys)
+            self.uk_uncps[self.inner_nodes] = self.uk_sys
+            self.u_dolfin.vector().set_local(self.uk_uncps)
+            nrm = norm(self.u_dolfin, "L2", mesh=self.mesh)
             self.logv[self.klog, 0] = self.t
             self.logv[self.klog, 1] = nrm
 
@@ -233,10 +235,13 @@ class LinearizedCtrl():
 
             # print info
             if self.k % int(self.const.LINEARIZED_CTRL_INFO*(self.T/self.dt)) == 0:
-                print gettime(), "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.t, np.linalg.norm(self.uk_sys))
+                self.uk_uncps[self.inner_nodes] = self.uk_sys
+                self.u_dolfin.vector().set_local(self.uk_uncps)
+                nrm = norm(self.u_dolfin, "L2", mesh=self.mesh)
+                print gettime(), "{0:.2f}%\t t={1:.3f}\t ||u_delta||={2:e}".format(self.t/self.T*100, self.t, nrm)
 
             self.uk_next()
 
     def save_log(self):
-        #self.logv = self.logv[:self.k, :]
+        # self.logv = self.logv[:self.k, :]
         np.savetxt(self.const.LINEARIZED_CTRL_LOG(self.ref, self.RE), self.logv)

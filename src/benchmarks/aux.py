@@ -8,6 +8,8 @@ from src.lqr.linearized_sim_petsc import LinearizedSimPETSC
 from src.lqr.linearized_ctrl import LinearizedCtrl
 from src.lqr.plotter import Plotter
 from src.lqr.eigen import Eigen
+import multiprocessing as mp
+import socket
 from src.aux import *
 import traceback
 
@@ -65,6 +67,7 @@ def assemble_lqr(const, refs, REs):
                 print traceback.format_exc()
                 break
 
+
 def solve_bernoulli(const, refs, REs):
     for ref in refs:
         for RE in REs:
@@ -118,25 +121,19 @@ def solve_lqr(const, refs, REs):
                 print traceback.format_exc()
                 break
 
-
-
-
 def simulate(const, refs, REs):
     for ref in refs:
         for RE in REs:
             try:
                 print "Simulate ref={0:d} RE={1:d}".format(ref, RE)
-
-                #linearizedsim = LinearizedSim(const, ref, RE)
+                # linearizedsim = LinearizedSim(const, ref, RE)
                 linearizedsim = LinearizedSimPETSC(const, ref, RE)
                 linearizedsim.solve_ode()
-                #linearizedsim.save_log()
+                linearizedsim.save_log()
             except:
                 print "An exception in simulate ref={0:d} RE={1:d}".format(ref, RE)
                 print traceback.format_exc()
                 break
-
-
 
 def control(const, refs, REs):
     for ref in refs:

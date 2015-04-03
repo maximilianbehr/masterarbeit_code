@@ -235,16 +235,16 @@ def ASSEMBLER_COMPRESS_CTRL_OUTERNODES_DAT(ref, RE):
 
 """constant for simulation of linearized navier stokes"""
 LINEARIZED_SIM_DIR = "lqr_sim"
-LINEARIZED_SIM_SAVE_PER_S = 5 #pictures per second
+LINEARIZED_SIM_SAVE_PER_S = 5           # pictures per second
 LINEARIZED_SIM_INFO = 0.05
 LINEARIZED_SIM_PERTUBATIONEPS = 0.1
 LINEARIZED_SIM_DT = 0.01
 LINEARIZED_SIM_T = 60
-LINEARIZED_SIM_RES = 1e-3 # break if ||u_delta|| smaller this bound
+LINEARIZED_SIM_RES = 1e-5               # break if ||u_delta|| smaller this bound
 LINEARIZED_SIM_STABLE_DT = 1
-LINEARIZED_SIM_CORRECTION_STEPS = 150   # correction steps for time integration scheme
+LINEARIZED_SIM_CORRECTION_STEPS = 60    # correction steps for time integration scheme
 LINEARIZED_SIM_CORRECTION_RES = 1e-15   # correction residual for time intergraion scheme
-LINEARIZED_SIM_CORRECTION_RES_MOD = 15   # in every 5 steps residual is computed
+LINEARIZED_SIM_CORRECTION_RES_MOD = 5   # in every 5 steps residual is computed
 
 
 def LINEARIZED_SIM_U_PVD(ref, RE):
@@ -305,10 +305,10 @@ LINEARIZED_CTRL_DT = 0.01
 LINEARIZED_CTRL_T = 60
 LINEARIZED_CTRL_STABLE_DT = 1
 LINEARIZED_CTRL_START_CONTROLLING = 0.0
-LINEARIZED_CTRL_CORRECTION_STEPS = 150   # correction steps for time integration scheme
-LINEARIZED_CTRL_CORRECTION_RES = 1e-15   # correction residual for time intergraion scheme
-LINEARIZED_CTRL_RES = 1e-3               # break if ||u_delta|| smaller this bound
-LINEARIZED_CTRL_CORRECTION_RES_MOD = 15   # in every 5 steps residual is computed
+LINEARIZED_CTRL_CORRECTION_STEPS = 60       # correction steps for time integration scheme
+LINEARIZED_CTRL_CORRECTION_RES = 1e-15      # correction residual for time intergraion scheme
+LINEARIZED_CTRL_RES = 1e-5                  # break if ||u_delta|| smaller this bound
+LINEARIZED_CTRL_CORRECTION_RES_MOD = 5      # in every 5 steps residual is computed
 
 
 def LINEARIZED_CTRL_U_PVD(ref, RE):

@@ -126,7 +126,7 @@ class LinearizedSimPETSC():
             # compute residual for implicit euler scheme only in every third step to improve perfomance
             if (i % self.const.LINEARIZED_SIM_CORRECTION_RES_MOD) == 0:
                 self.assembleN()
-                residual= self.Msys_ode*self.up.vector()+self.dt*self.N-Msys_liftup
+                residual = self.Msys_ode*self.up.vector()+self.dt*self.N-Msys_liftup
                 res = np.linalg.norm(residual.array())
 
                 # show info
@@ -142,8 +142,8 @@ class LinearizedSimPETSC():
     def log(self):
         if self.k % self.save_freq == 0:
             # nrm = np.linalg.norm(self.uk_sys)
-            (self.u, self.p) = self.up.split()
-            nrm = norm(self.u, "L2", mesh=self.mesh)
+            (u, p) = self.up.split()
+            nrm = norm(u, "L2", mesh=self.mesh)
             self.logv[self.klog, 0] = self.t
             self.logv[self.klog, 1] = nrm
 
@@ -169,8 +169,8 @@ class LinearizedSimPETSC():
 
             # add stationary and save pvd
             v = self.udelta.vector().array() + self.u_stat.vector().array()
-            self.u.vector().set_local(v)
-            self.u_file << (self.u, self.t)
+            self.udelta.vector().set_local(v)
+            self.u_file << (self.udelta, self.t)
 
     def solve_ode(self):
         while self.t < (self.T + DOLFIN_EPS):
@@ -181,8 +181,8 @@ class LinearizedSimPETSC():
 
             # print info
             if self.k % self.kinfo == 0:
-                (self.u, self.p) = self.up.split()
-                print gettime(), "{0:.2f}%\t t={1:.3f}\t||u_delta||={2:e}".format(self.t/self.T*100, self.t, norm(self.u,'L2', mesh=self.mesh))
+                (u, p) = self.up.split()
+                print gettime(), "{0:.2f}%\t t={1:.3f}\t||u_delta||={2:e}".format(self.t/self.T*100, self.t, norm(u, "L2", mesh=self.mesh))
 
             self.uk_next()
 
