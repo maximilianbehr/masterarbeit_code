@@ -10,13 +10,13 @@ if __name__ == "__main__":
     REs = range(10, 200, 10)
     refs = [2]
 
-    const.LINEARIZED_SIM_T = 3
+    const.LINEARIZED_SIM_T = 0.05
     const.LINEARIZED_SIM_DT = 0.002
 
     const.LINEARIZED_CTRL_T = 2
     const.LINEARIZED_CTRL_DT = 0.002
 
-    const.LINEARIZED_SIM_INFO = 0.01
+    const.LINEARIZED_SIM_INFO = 0.05
     const.LINEARIZED_CTRL_INFO = 0.1
     const.LQR_ADI_OUTPUT = 1
 
@@ -37,8 +37,9 @@ if __name__ == "__main__":
     #assemble_lqr(const, refs, REs)
 
     # simulate
-    const.LINEARIZED_SIM_CORRECTION_STEPS=0
+    #const.LINEARIZED_SIM_CORRECTION_STEPS=0
     simulate(const, refs, REs)
+    print_prof_data()
 
     # solve bernoulli
     #solve_bernoulli(const, refs, REs)

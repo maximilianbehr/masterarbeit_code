@@ -102,9 +102,8 @@ class LinearizedSim():
         # compress to inner nodes and fill into upper block
         self.N_uk_uk[:self.ninner] = np.take(Nassemble.array(), self.inner_nodes, axis=0)
 
+    @profile
     def uk_next(self):
-        import ipdb
-        ipdb.set_trace()
         # compute new rhs (prediction)
         self.assembleN(self.uk_sys)
         Msys_lift_uk = self.Msys_lift * self.uk_sys
@@ -183,8 +182,7 @@ class LinearizedSim():
                 break
 
             # print info
-            if self.k % self.kinfo == 0 or True:
-                print np.linalg.norm(self.N_uk_uk)
+            if self.k % self.kinfo == 0:
                 self.uk_uncps[self.inner_nodes] = self.uk_sys
                 self.udelta_dolfin.vector().set_local(self.uk_uncps)
                 nrm = norm(self.udelta_dolfin, "L2", mesh=self.mesh)

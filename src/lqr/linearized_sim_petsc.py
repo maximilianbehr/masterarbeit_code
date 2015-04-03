@@ -10,6 +10,9 @@ np.seterr(all="raise", divide="raise", over="raise", under="raise", invalid="rai
 class LinearizedSimPETSC():
 
     def __init__(self, const, ref, RE):
+        parameters["reorder_dofs_serial"] = False
+        parameters["reorder_vertices_gps"] = False
+        parameters["reorder_cells_gps"] = False
 
         # parameters
         self.ref = ref
@@ -79,54 +82,113 @@ class LinearizedSimPETSC():
 
         # for visualisation
         self.u_file = File(const.LINEARIZED_SIM_U_PVD(self.ref, self.RE))
+        self.u = Function(self.V)
+        self.p = Function(self.Q)
+        self.udelta_file = File(const.LINEARIZED_SIM_U_DELTA_PVD(self.ref, self.RE))
+        self.udelta = Function(self.V)
+        self.pdelta = Function(self.Q)
 
         # setup lu solver
-        self.solver = LUSolver(self.Msys_ode)
+        self.solver = LUSolver()
+        self.solver.set_operator(self.Msys_ode)
         self.solver.parameters["reuse_factorization"] = True
-        self.solver.parameters["verbose"] = True
 
-    def assemble_N(self):
+    @profile
+    def assembleN(self):
 
         (w_test, p_test) = TestFunctions(self.W)
-        (u, p) = self.up.split(deepcopy=True)
+        (u, p) = self.up.split()
         self.N = assemble(inner(w_test, grad(u) * u)*dx)
         [bcup.apply(self.N) for bcup in self.bcups]
 
+    @profile
     def uk_next(self):
 
-        #(w_test, p_test) = TestFunctions(self.W)
-        #(self.u, self.p) = self.up.split(deepcopy=True)
-        #N = assemble(inner(w_test, grad(self.u) * self.u)*dx)
-        #[bcup.apply(N) for bcup in self.bcups]
-        self.assemble_N()
-
+        self.assembleN()
+        Msys_liftup = self.Msys_lift*self.up.vector()
         rhs = self.Msys_lift*self.up.vector()-self.dt*self.N
         self.solver.solve(self.up_k.vector(), rhs)
-        #print norm(self.Msys_ode*self.up_k.vector()-rhs, 'l2')
-
-
+        # print norm(self.Msys_ode*self.up_k.vector()-rhs, 'l2')
         self.up.assign(self.up_k)
+        # try to correct solution
+        self.correction(Msys_liftup)
         self.k += 1
         self.t += self.dt
 
-        if (self.k % self.save_freq)==0:
-            self.u.vector()[:] = self.u.vector()[:]+self.u_stat.vector()[:]
-            self.u_file << (self.u, self.t)
+    def correction(self, Msys_liftup):
+        # correct predicted solution
+        for i in range(self.const.LINEARIZED_SIM_CORRECTION_STEPS):
+            # assemble nonlinear right hand side term
+            self.assembleN()
+            self.solver.solve(self.up_k.vector(), -self.dt*self.N+Msys_liftup)
+            self.up.assign(self.up_k)
 
+            # compute residual for implicit euler scheme only in every third step to improve perfomance
+            if (i % self.const.LINEARIZED_SIM_CORRECTION_RES_MOD) == 0:
+                self.assembleN()
+                residual= self.Msys_ode*self.up.vector()+self.dt*self.N-Msys_liftup
+                res = np.linalg.norm(residual.array())
+
+                # show info
+                if self.k % self.kinfo == 0:
+                    print "Correction Step {0:d}\t||res (implicit euler)||={1:e}".format(i,  res)
+
+                if np.isnan(res):
+                    raise ValueError('nan during computation')
+
+                if res < self.const.LINEARIZED_SIM_CORRECTION_RES:
+                    break
+
+    def log(self):
+        if self.k % self.save_freq == 0:
+            # nrm = np.linalg.norm(self.uk_sys)
+            (self.u, self.p) = self.up.split()
+            nrm = norm(self.u, "L2", mesh=self.mesh)
+            self.logv[self.klog, 0] = self.t
+            self.logv[self.klog, 1] = nrm
+
+            self.klog += 1
+
+            if np.isnan(nrm):
+                print "nan during computation"
+                return False
+
+            if nrm < self.const.LINEARIZED_SIM_RES:
+                print "convergenced reached"
+                return False
+
+        return True
+
+
+    def save(self):
+        if self.k % self.save_freq == 0:
+
+            # uncompress and save pvd for udelta
+            (self.udelta, self.pdelta) = self.up.split(deepcopy=True)
+            self.udelta_file << (self.udelta, self.t)
+
+            # add stationary and save pvd
+            v = self.udelta.vector().array() + self.u_stat.vector().array()
+            self.u.vector().set_local(v)
+            self.u_file << (self.u, self.t)
 
     def solve_ode(self):
         while self.t < (self.T + DOLFIN_EPS):
+            self.save()
+
+            if not self.log():
+                break
 
             # print info
             if self.k % self.kinfo == 0:
-                (self.u, self.p) = self.up.split(deepcopy=True)
+                (self.u, self.p) = self.up.split()
                 print gettime(), "{0:.2f}%\t t={1:.3f}\t||u_delta||={2:e}".format(self.t/self.T*100, self.t, norm(self.u,'L2', mesh=self.mesh))
-
-
-
 
             self.uk_next()
 
+    def save_log(self):
+        # self.logv = self.logv[:self.k, :]
+        np.savetxt(self.const.LINEARIZED_SIM_LOG(self.ref, self.RE), self.logv)
 
 
 
