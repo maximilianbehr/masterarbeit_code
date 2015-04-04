@@ -28,7 +28,10 @@ if __name__ == "__main__":
         refs = [int(sys.argv[1])]
         name = sys.argv[2]
         const.OUTPUTDIR_NAME = "results_{0:s}".format(name)
-        REscompute = [int(sys.argv[3])]
+        desiredRE = int(sys.argv[3])
+        REscompute = [desiredRE]
+        REs = range(10, desiredRE, 10)
+        REs.append(desiredRE)
 
     # build mesh
     build_mesh(const, refs)

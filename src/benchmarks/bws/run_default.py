@@ -22,6 +22,15 @@ if __name__ == "__main__":
         lams = [float(sys.argv[2])]
         name = sys.argv[3]
         const.OUTPUTDIR_NAME = "results_{0:s}".format(name)
+    elif len(sys.argv) == 5:
+        refs = [int(sys.argv[1])]
+        lams = [float(sys.argv[2])]
+        name = sys.argv[3]
+        const.OUTPUTDIR_NAME = "results_{0:s}".format(name)
+        desiredRE = int(sys.argv[4])
+        REscompute = [desiredRE]
+        REs = range(10, desiredRE, 10)
+        REs.append(desiredRE)
 
 
     for lam in lams:
@@ -40,8 +49,7 @@ if __name__ == "__main__":
 
         # assemble lqr
         #REs = range(min(REs), max(REs), 1000)
-        REs = range(1300, max(REs), 600)
-        #REs = range(min(REs), max(REs), 100)
+        REs = REscompute
         print "----------assemble------------------"
         assemble_lqr(const, refs, REs)
         print "----------finished assemble---------"
