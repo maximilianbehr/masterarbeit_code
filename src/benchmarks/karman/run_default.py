@@ -9,7 +9,7 @@ if __name__ == "__main__":
     REscompute = range(min(REs), max(REs), 50)
     refs = [2]
 
-    const.LINEARIZED_SIM_T = 1
+    const.LINEARIZED_SIM_T = 20
     const.LINEARIZED_SIM_DT = 0.002
     const.LINEARIZED_CTRL_T = 20
     const.LINEARIZED_CTRL_DT = 0.002
