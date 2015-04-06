@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import src.benchmarks.karman.karman_const as const
 from src.benchmarks.aux import *
-from src.aux import print_prof_data
 import sys
 
 if __name__ == "__main__":
@@ -23,12 +22,21 @@ if __name__ == "__main__":
         refs = [int(sys.argv[1])]
         name = sys.argv[2]
         const.OUTPUTDIR_NAME = "results_{0:s}".format(name)
+    elif len(sys.argv) == 4:
+        refs = [int(sys.argv[1])]
+        name = sys.argv[2]
+        const.OUTPUTDIR_NAME = "results_{0:s}".format(name)
+        desiredRE = int(sys.argv[3])
+        REscompute = [desiredRE]
+        REs = range(10, desiredRE, 10)
+        REs.append(desiredRE)
+
 
     const.BERNOULLI_FEED0_CPS_MTX = lambda ref, RE: const.ASSEMBLER_COMPRESS_CTRL_NAME_MTX(ref, "Kinf", RE)
 
     build_mesh(const, refs)
     solve_newton(const, refs, REs)
-    REs = range(min(REs), max(REs), 50)
+    REs = REscompute
     assemble_lqr(const, refs, REs)
     simulate(const, refs, REs)
     solve_bernoulli(const, refs, REs)

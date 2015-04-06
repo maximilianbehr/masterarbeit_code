@@ -29,7 +29,7 @@ if __name__ == "__main__":
         const.OUTPUTDIR_NAME = "results_{0:s}".format(name)
         desiredRE = int(sys.argv[4])
         REscompute = [desiredRE]
-        REs = range(10, desiredRE, 10)
+        REs = range(100, desiredRE, 50)
         REs.append(desiredRE)
 
 

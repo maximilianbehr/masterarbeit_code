@@ -1,9 +1,12 @@
 #!/bin/sh
 
-
 #echo "KARMAN REF 1 DEFAULT"
 #python src/benchmarks/karman/run_default.py 1 karman_ref_1 > karman_ref_1.log &
-#python src/benchmarks/karman/run_default.py 1 karman_ref_1_RE10 10
+#python -u src/benchmarks/karman/run_default.py 1 karman_ref_1 10 > karman_ref_1_RE_10.log &
+#python -u src/benchmarks/karman/run_default.py 1 karman_ref_1 60 > karman_ref_1_RE_60.log &
+python -u src/benchmarks/karman/run_default.py 1 karman_ref_1 90 #> karman_ref_1_RE_90.log &
+
+
 
 #echo "KARMAN REF 2 DEFAULT"
 #python src/benchmarks/karman/run_default.py 2 karman_ref_2 > karman_ref_2.log &

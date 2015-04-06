@@ -3,13 +3,10 @@ from src.lqr.assembler import Assembler
 from src.lqr.compress_assembler import CompressAssembler
 from src.lqr.bernoulli import Bernoulli
 from src.lqr.lqr_solver import LQR_Solver
-from src.lqr.linearized_sim import LinearizedSim
 from src.lqr.linearized_sim_petsc import LinearizedSimPETSC
 from src.lqr.linearized_ctrl import LinearizedCtrl
 from src.lqr.plotter import Plotter
 from src.lqr.eigen import Eigen
-import multiprocessing as mp
-import socket
 from src.aux import *
 import traceback
 
