@@ -40,9 +40,8 @@ class LinearizedSimPETSC():
 
         if const.LINEARIZED_SIM_STABLE_DT:
             # characterteristic velocity is chose as 1
-            self.dt = stable_timestep(self.T, self.const.GET_NU_FLOAT(self.RE), 1, self.mesh.hmin())
-        else:
-            self.dt = self.const.LINEARIZED_SIM_DT
+            self.dt = stable_timestep(self.T, self.const.GET_NU_FLOAT(self.RE), self.const.U, self.mesh.hmin())
+
         print "dt = {0:e}".format(self.dt)
 
         self.t = 0.0

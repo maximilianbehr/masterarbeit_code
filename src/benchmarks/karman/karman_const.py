@@ -8,7 +8,6 @@ import socket
 import numpy as np
 import os
 
-
 """name of scneario"""
 NAME = "karman"
 
@@ -26,7 +25,6 @@ V = "CG"
 V_DIM = 2
 Q = "CG"
 Q_DIM = 1
-
 
 """turn dof reordering off"""
 parameters["reorder_dofs_serial"] = False
@@ -99,11 +97,12 @@ def GET_NU(RE):
     # characteristic lenght is 1 (height of the mesh)
     # return float(1.0)/float(RE)
     return Expression("R/RE", R=float(CIRCLE["r"]), RE=float(RE))
-    #return float(CIRCLE["r"])/float(RE)
 
 def GET_NU_FLOAT(RE):
     return float(CIRCLE["r"])/float(RE)
 
+"""velocity for time stepping"""
+U = 1.0
 
 """Output directory"""
 OUTPUTDIR_NAME = "results"
@@ -256,12 +255,13 @@ LINEARIZED_SIM_DIR = "lqr_sim"
 LINEARIZED_SIM_SAVE_PER_S = 5
 LINEARIZED_SIM_INFO = 0.05
 LINEARIZED_SIM_PERTUBATIONEPS = 0.25
-LINEARIZED_SIM_DT = 0.005
+LINEARIZED_SIM_DT = 0.002
 LINEARIZED_SIM_STABLE_DT = 1
-LINEARIZED_SIM_T = 30
-LINEARIZED_SIM_CORRECTION_STEPS = 60   # correction steps for time integration scheme
+LINEARIZED_SIM_T = 60
+LINEARIZED_SIM_CORRECTION_STEPS = 60    # correction steps for time integration scheme
 LINEARIZED_SIM_CORRECTION_RES = 1e-15   # correction residual for time intergraion scheme
-LINEARIZED_SIM_RES = 1e-5 # break if ||u_delta|| smaller this bound
+#LINEARIZED_SIM_RES = 1e-5               # break if ||u_delta|| smaller this bound
+LINEARIZED_SIM_RES = 0               # break if ||u_delta|| smaller this bound
 LINEARIZED_SIM_CORRECTION_RES_MOD = 5   # in every 5 steps residual is computed
 
 
@@ -298,7 +298,7 @@ LQR_NM_RES2 = 5e-10
 LQR_NM_REL2_CHANGE = 3e-10
 LQR_NM_REL_CHANGE = 3e-10
 LQR_NM_MAXIT = 20
-LQR_ADI_OUTPUT = 0
+LQR_ADI_OUTPUT = 1
 LQR_ADI_RES2 = 1e-16
 LQR_ADI_MAXIT = 5000
 LQR_ADI_REL_CHANGE_TOL = 1e-13
@@ -318,13 +318,14 @@ LINEARIZED_CTRL_DIR = "lqr_ctrl"
 LINEARIZED_CTRL_SAVE_PER_S = 5
 LINEARIZED_CTRL_INFO = 0.05
 LINEARIZED_CTRL_PERTUBATIONEPS = 0.25
-LINEARIZED_CTRL_DT = 0.01
+LINEARIZED_CTRL_DT = 0.002
 LINEARIZED_CTRL_STABLE_DT = 1
 LINEARIZED_CTRL_T = 60
 LINEARIZED_CTRL_START_CONTROLLING = 0.0
 LINEARIZED_CTRL_CORRECTION_STEPS = 60    # correction steps for time integration scheme
 LINEARIZED_CTRL_CORRECTION_RES = 1e-15   # correction residual for time intergraion scheme
-LINEARIZED_CTRL_RES = 1e-5               # break if ||u_delta|| smaller this bound
+#LINEARIZED_CTRL_RES = 1e-5              # break if ||u_delta|| smaller this bound
+LINEARIZED_CTRL_RES = 0                  # break if ||u_delta|| smaller this bound
 LINEARIZED_CTRL_CORRECTION_RES_MOD = 5   # in every 5 steps residual is computed
 
 

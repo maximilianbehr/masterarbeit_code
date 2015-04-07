@@ -25,7 +25,6 @@ def build_mesh(const, refs):
         meshbuilder.refine()
         meshbuilder.save()
 
-
 def solve_newton(const, refs, REs):
     for ref in refs:
         REinitial = None
@@ -43,7 +42,7 @@ def solve_newton(const, refs, REs):
             except:
                 print "An exception in solve newton ref={0:d} RE={1:d}".format(ref, RE)
                 print traceback.format_exc()
-                break
+                continue
 
 def assemble_lqr(const, refs, REs):
     for ref in refs:
@@ -62,7 +61,7 @@ def assemble_lqr(const, refs, REs):
             except:
                 print "An exception in assemble_lqr ref={0:d} RE={1:d}".format(ref, RE)
                 print traceback.format_exc()
-                break
+                continue
 
 
 def solve_bernoulli(const, refs, REs):
@@ -76,34 +75,27 @@ def solve_bernoulli(const, refs, REs):
             except:
                 print "An exception in solve_bernoulli ref={0:d} RE={1:d}".format(ref, RE)
                 print traceback.format_exc()
-                break
+                continue
 
 def compute_eigen(const, refs, REs):
     for ref in refs:
+        if ref > 1:
+            print "ref {0:d} to large".format(ref)
+            break
+
         for RE in REs:
             try:
                 print "Eigen ref={0:d} RE={1:d}".format(ref, RE)
-                clear_prof_data()
                 eig = Eigen(const, ref, RE)
-
                 eig.compute_eig_sys()
-                print_prof_data()
-                clear_prof_data()
-
                 eig.compute_eig_ric()
-                print_prof_data()
-                clear_prof_data()
-
                 eig.compute_eig_ber()
-                print_prof_data()
-                clear_prof_data()
-
                 eig.save()
                 eig.plot()
             except:
                 print "An exception in compute eigen ref={0:d} RE={1:d}".format(ref, RE)
                 print traceback.format_exc()
-                break
+                continue
 
 def solve_lqr(const, refs, REs):
     for ref in refs:
@@ -116,7 +108,7 @@ def solve_lqr(const, refs, REs):
             except:
                 print "An exception in solve_lqr ref={0:d} RE={1:d}".format(ref, RE)
                 print traceback.format_exc()
-                break
+                continue
 
 def simulate(const, refs, REs):
     for ref in refs:
@@ -130,7 +122,7 @@ def simulate(const, refs, REs):
             except:
                 print "An exception in simulate ref={0:d} RE={1:d}".format(ref, RE)
                 print traceback.format_exc()
-                break
+                continue
 
 def control(const, refs, REs):
     for ref in refs:
@@ -143,7 +135,7 @@ def control(const, refs, REs):
             except:
                 print "An exception in control ref={0:d} RE={1:d}".format(ref, RE)
                 print traceback.format_exc()
-                break
+                continue
 
 
 def plot(const, refs, REs):
@@ -158,4 +150,4 @@ def plot(const, refs, REs):
         except:
             print "An exception in plot ref={0:d}".format(ref)
             print traceback.format_exc()
-            break
+            continue

@@ -57,23 +57,24 @@ class Plotter():
         for RE in self.REs:
             log = np.loadtxt(self.const.LINEARIZED_SIM_LOG(self.ref, RE))
             length = log.shape[0]
-            plt.semilogy(log[int(percent*length):, 0], log[int(percent*length):, 1],\
-                         label="$Re={0:d}$".format(RE), color=self.color[k])
+            # plt.semilogy(log[int(percent*length):, 0], log[int(percent*length):, 1],\
+            #             label="$Re={0:d}$".format(RE), color=self.color[k])
+            plt.plot(log[int(percent*length):, 0], log[int(percent*length):, 1], \
+                     label="$Re={0:d}$".format(RE), color=self.color[k])
             k += 1
 
         plt.title("Simulation $v_{\delta}$")
         plt.grid(True)
         plt.xlabel("$t \mathrm{\;in\;Sekunden}$")
-        plt.ylabel("$\|\| v_{\delta} \|\|_2$")
+        plt.ylabel("$\|\| v_{\delta} \|\|$")
         l = int(min(log[int(percent*length):, 0]))
         u = int(max(log[int(percent*length):, 0]))+1
         plt.xticks(np.arange(l, u, 4))
         # legend for each plot
         plt.legend(bbox_to_anchor=(0.0, 0.0), loc=3, prop={'size': self.legendsize})
-        #plt.show(block=True)
+        # plt.show(block=True)
         createdir(self.const.PLOTTER_LINEARIZED_SIM_LOG(self.ref, num, "png"))
         plt.savefig(self.const.PLOTTER_LINEARIZED_SIM_LOG(self.ref, num, "png"))
-        plt.savefig(self.const.PLOTTER_LINEARIZED_SIM_LOG(self.ref, num, "jpeg"))
         plt.savefig(self.const.PLOTTER_LINEARIZED_SIM_LOG(self.ref, num, "eps"))
         plt.close()
 
@@ -90,7 +91,7 @@ class Plotter():
         plt.title("Simulation mit Steuerung $v_{\delta}$")
         plt.grid(True)
         plt.xlabel("$t \mathrm{\;in\;Sekunden}$")
-        plt.ylabel("$\|\| v_{\delta} \|\|_2$")
+        plt.ylabel("$\|\| v_{\delta} \|\|$")
         l = int(min(log[int(percent*length):, 0]))
         u = int(max(log[int(percent*length):, 0]))+1
         plt.xticks(np.arange(l, u, 4))
@@ -99,7 +100,6 @@ class Plotter():
         #plt.show(block=True)
         createdir(self.const.PLOTTER_LINEARIZED_CTRL_LOG(self.ref, num, "png"))
         plt.savefig(self.const.PLOTTER_LINEARIZED_CTRL_LOG(self.ref, num, "png"))
-        plt.savefig(self.const.PLOTTER_LINEARIZED_CTRL_LOG(self.ref, num, "jpeg"))
         plt.savefig(self.const.PLOTTER_LINEARIZED_CTRL_LOG(self.ref, num, "eps"))
         plt.close()
 
@@ -126,7 +126,6 @@ class Plotter():
         #plt.show(block=True)
         createdir(self.const.PLOTTER_LINEARIZED_CTRL_CONTROLS_LOG(self.ref, num, "png"))
         plt.savefig(self.const.PLOTTER_LINEARIZED_CTRL_CONTROLS_LOG(self.ref, num, "png"))
-        plt.savefig(self.const.PLOTTER_LINEARIZED_CTRL_CONTROLS_LOG(self.ref, num, "jpeg"))
         plt.savefig(self.const.PLOTTER_LINEARIZED_CTRL_CONTROLS_LOG(self.ref, num, "eps"))
         plt.close()
 
@@ -153,7 +152,6 @@ class Plotter():
         #plt.show(block=True)
         createdir(self.const.PLOTTER_LINEARIZED_CTRL_OUTPUT_LOG(self.ref, num, "png"))
         plt.savefig(self.const.PLOTTER_LINEARIZED_CTRL_OUTPUT_LOG(self.ref, num, "png"))
-        plt.savefig(self.const.PLOTTER_LINEARIZED_CTRL_OUTPUT_LOG(self.ref, num, "jpeg"))
         plt.savefig(self.const.PLOTTER_LINEARIZED_CTRL_OUTPUT_LOG(self.ref, num, "eps"))
         plt.close()
 

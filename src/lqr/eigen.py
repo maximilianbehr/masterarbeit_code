@@ -49,36 +49,25 @@ class Eigen():
         self.eig_ric = None
         self.eig_ber = None
 
-    @profile
     def compute_eig_sys(self):
-        print gettime()
+        print gettime(), "eigen sys"
         # compute and sort eigenvalues by absolute value
-        #if self.nv >= 10000:
-        #A = self.A.tocsc()
-        #M = self.M.tocsc()
-        #self.eig_sys = scspla.eigs(A=A, k=400, M=M, which='LM', return_eigenvectors=False, sigma=0.0)
-        #self.eig_sys = self.eig_sys[np.argsort(np.absolute(self.eig_sys))]
-
-        #else:
         A = self.A.todense()
         M = self.M.todense()
         self.eig_sys = scla.eigvals(A, M, overwrite_a=True, check_finite=False)
         self.eig_sys = self.eig_sys[np.argsort(np.absolute(self.eig_sys))]
 
-    @profile
     def compute_eig_ric(self):
-        print gettime()
+        print gettime(), "eigen ric"
         # build A stable riccati feedback
         A_ric = self.A - np.dot(self.Bsys, self.Kinfsys.T)
-        A_ric = A_ric.todense()
-
+        M = self.M.todense()
         # compute and sort eigenvalues by absolute value
-        self.eig_ric = scla.eigvals(A_ric, self.M, overwrite_a=True, check_finite=False)
+        self.eig_ric = scla.eigvals(A_ric, M, overwrite_a=True, check_finite=False)
         self.eig_ric = self.eig_ric[np.argsort(np.absolute(self.eig_ric))]
 
-    @profile
     def compute_eig_ber(self):
-        print gettime()
+        print gettime(), "eigen ber"
         if not os.path.isfile(self.const.BERNOULLI_FEED0_CPS_MTX(self.ref, self.RE)):
             print "No initial Bernoulli Feedback found for ref = {0:d} and RE = {1:d}".format(self.ref, self.RE)
             return
@@ -87,9 +76,9 @@ class Eigen():
         Kbernoulli = scio.mmread(self.const.BERNOULLI_FEED0_CPS_MTX(self.ref, self.RE))
         Kbernoullisys = np.vstack((Kbernoulli, np.zeros((self.np, Kbernoulli.shape[1]))))
         A_ber = self.A - np.dot(self.Bsys, Kbernoullisys.T)
-        A_ber = A_ber.todense()
+        M = self.M.todense()
         # compute and sort eigenvalues by absolute value
-        self.eig_ber = scla.eigvals(A_ber, self.M, overwrite_a=True, check_finite=False)
+        self.eig_ber = scla.eigvals(A_ber, M, overwrite_a=True, check_finite=False)
         self.eig_ber = self.eig_ber[np.argsort(np.absolute(self.eig_ber))]
 
     def save(self):
@@ -148,21 +137,18 @@ class Eigen():
             self._plot(self.eig_ric)
             plt.savefig(self.const.EIGEN_RIC_CPS_PLOT(self.ref, self.RE, "png"))
             plt.savefig(self.const.EIGEN_RIC_CPS_PLOT(self.ref, self.RE, "eps"))
-            plt.savefig(self.const.EIGEN_RIC_CPS_PLOT(self.ref, self.RE, "jpeg"))
             plt.close("all")
 
         if self.eig_ber is not None:
             self._plot(self.eig_ber)
             plt.savefig(self.const.EIGEN_BER_CPS_PLOT(self.ref, self.RE, "png"))
             plt.savefig(self.const.EIGEN_BER_CPS_PLOT(self.ref, self.RE, "eps"))
-            plt.savefig(self.const.EIGEN_BER_CPS_PLOT(self.ref, self.RE, "jpeg"))
             plt.close("all")
 
         if self.eig_sys is not None:
             self._plot(self.eig_sys)
             plt.savefig(self.const.EIGEN_SYS_CPS_PLOT(self.ref, self.RE, "png"))
             plt.savefig(self.const.EIGEN_SYS_CPS_PLOT(self.ref, self.RE, "eps"))
-            plt.savefig(self.const.EIGEN_SYS_CPS_PLOT(self.ref, self.RE, "jpeg"))
             plt.close("all")
 
         np.seterr(**olderr)

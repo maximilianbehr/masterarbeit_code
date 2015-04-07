@@ -160,6 +160,9 @@ def GET_NU_FLOAT(RE):
     """return nu for given RE"""
     return float(RECTLOWER["x1_1"]-RECTLOWER["x0_1"])/float(RE)
 
+"""velocity for time stepping"""
+U = 1.0
+
 def STATIONARY_U_PVD(ref, RE):
     return os.path.join(OUTPUTDIR(), STATIONARY_DIR, parameters["refinement_algorithm"], "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "u.pvd")
 
@@ -183,7 +186,8 @@ def STATIONARY_W_XML(ref, RE):
 """constant for assembler"""
 ASSEMBLER_DIR = "assembler"
 ASSEMBLER_PENALTY_EPS = 0.001
-ASSEMBLER_OBSERVER_POINTS = [(15*MODELHEIGHT, 0.5*MODELHEIGHT), (15*MODELHEIGHT, 1.5*MODELHEIGHT)]
+ASSEMBLER_OBSERVER_POINTS = [(8*MODELHEIGHT, 0.5*MODELHEIGHT), (8*MODELHEIGHT, 1.5*MODELHEIGHT)]
+
 
 e1 = Expression(("( 1.0)*((h-x[1])*(x[1]-(h-r)))/pow(r/2.0,2.0)", "0.0"), r=CONTROLRADIUS, h=RECTUPPER["x0_1"])
 e2 = Expression(("(-1.0)*(x[1]*(r-x[1]))/pow(r/2.0,2.0)", "0.0"), r=CONTROLRADIUS)
@@ -235,12 +239,13 @@ def ASSEMBLER_COMPRESS_CTRL_OUTERNODES_DAT(ref, RE):
 
 """constant for simulation of linearized navier stokes"""
 LINEARIZED_SIM_DIR = "lqr_sim"
-LINEARIZED_SIM_SAVE_PER_S = 5           # pictures per second
+LINEARIZED_SIM_SAVE_PER_S = 10           # pictures per second
 LINEARIZED_SIM_INFO = 0.05
 LINEARIZED_SIM_PERTUBATIONEPS = 0.1
 LINEARIZED_SIM_DT = 0.01
-LINEARIZED_SIM_T = 60
-LINEARIZED_SIM_RES = 1e-5               # break if ||u_delta|| smaller this bound
+LINEARIZED_SIM_T = 90
+#LINEARIZED_SIM_RES = 1e-5               # break if ||u_delta|| smaller this bound
+LINEARIZED_SIM_RES = 0                  # break if ||u_delta|| smaller this bound
 LINEARIZED_SIM_STABLE_DT = 1
 LINEARIZED_SIM_CORRECTION_STEPS = 60    # correction steps for time integration scheme
 LINEARIZED_SIM_CORRECTION_RES = 1e-15   # correction residual for time intergraion scheme
@@ -260,9 +265,9 @@ def LINEARIZED_SIM_LOG(ref, RE):
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "log.txt")
 
 """constants for bernoulli"""
-BERNOULLI_EIGENVALUES = 400
+BERNOULLI_EIGENVALUES = 1000
 BERNOULLI_MAXIT = 50
-BERNOULLI_SIGMA = 0.5  # sigma for shift inversion techniques
+BERNOULLI_SIGMA = 1.0  # sigma for shift inversion techniques
 
 def BERNOULLI_FEED0_CPS_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), ASSEMBLER_COMPRESS_CTRL_DIR, parameters["refinement_algorithm"],
@@ -282,7 +287,7 @@ LQR_NM_REL_CHANGE = 3e-10
 LQR_NM_MAXIT = 20
 LQR_ADI_OUTPUT = 0
 LQR_ADI_RES2 = 1e-16
-LQR_ADI_MAXIT = 5000
+LQR_ADI_MAXIT = 8000
 LQR_ADI_REL_CHANGE_TOL = 1e-13
 LQR_ADI_ARP_M = 40
 LQR_ADI_ARP_P = 40
@@ -298,16 +303,17 @@ else:
 
 """constants for linearized control of navier stokes"""
 LINEARIZED_CTRL_DIR = "lqr_ctrl"
-LINEARIZED_CTRL_SAVE_PER_S = 5
+LINEARIZED_CTRL_SAVE_PER_S = 10
 LINEARIZED_CTRL_INFO = 0.05
 LINEARIZED_CTRL_PERTUBATIONEPS = 0.25
 LINEARIZED_CTRL_DT = 0.01
-LINEARIZED_CTRL_T = 60
+LINEARIZED_CTRL_T = 90
 LINEARIZED_CTRL_STABLE_DT = 1
 LINEARIZED_CTRL_START_CONTROLLING = 0.0
-LINEARIZED_CTRL_CORRECTION_STEPS = 60       # correction steps for time integration scheme
+LINEARIZED_CTRL_CORRECTION_STEPS = 90       # correction steps for time integration scheme
 LINEARIZED_CTRL_CORRECTION_RES = 1e-15      # correction residual for time intergraion scheme
-LINEARIZED_CTRL_RES = 1e-5                  # break if ||u_delta|| smaller this bound
+#LINEARIZED_CTRL_RES = 1e-5                  # break if ||u_delta|| smaller this bound
+LINEARIZED_CTRL_RES = 0                  # break if ||u_delta|| smaller this bound
 LINEARIZED_CTRL_CORRECTION_RES_MOD = 5      # in every 5 steps residual is computed
 
 
