@@ -6,6 +6,7 @@ import sys
 if __name__ == "__main__":
     # set Reynoldsnumbers and refinemnts
     REs = range(10, 200, 10)
+    REscompute = range(min(REs), max(REs), 50)
     refs = [2]
 
     if len(sys.argv) == 3:

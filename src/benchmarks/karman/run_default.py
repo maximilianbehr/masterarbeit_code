@@ -24,13 +24,13 @@ if __name__ == "__main__":
 
     build_mesh(const, refs)
     solve_newton(const, refs, REs)
-    REs = REscompute
+    #REs = REscompute
     assemble_lqr(const, refs, REs)
-    simulate(const, refs, REs)
+    #simulate(const, refs, REs)
     solve_bernoulli(const, refs, REs)
-    solve_lqr(const, refs, REs)
-    control(const, refs, REs)
-    compute_eigen(const, refs, REs)
+    #solve_lqr(const, refs, REs)
+    #control(const, refs, REs)
+    #compute_eigen(const, refs, REs)
 
 
 

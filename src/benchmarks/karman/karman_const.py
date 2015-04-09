@@ -278,9 +278,12 @@ def LINEARIZED_SIM_LOG(ref, RE):
                         "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "log.txt")
 
 """constants for bernoulli"""
-BERNOULLI_EIGENVALUES = 250
 BERNOULLI_MAXIT = 50
-BERNOULLI_SIGMA = 1.0
+#BERNOULLI_STRATEGY = {"strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 250}
+BERNOULLI_STRATEGY = {"strategy": "moebius", "sigma": 1, "tau": -1, "eigenvals": 10, "maxiter": 2000}
+# choose eigenvals in moebius as small as possible
+# sigma must be positive and tau negative and they must have the same absolute value
+
 
 def BERNOULLI_FEED0_CPS_MTX(ref, RE):
     return os.path.join(OUTPUTDIR(), ASSEMBLER_COMPRESS_CTRL_DIR, parameters["refinement_algorithm"],

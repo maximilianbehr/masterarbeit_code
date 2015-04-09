@@ -16,7 +16,7 @@ class Bernoulli():
         self.ref = ref
         self.RE = RE
         self.const = const
-        self.bereigenvalues = self.const.BERNOULLI_EIGENVALUES
+        self.strategy = self.const.BERNOULLI_STRATEGY
 
         # read compress system for simuation
         names = ["M", "M_BOUNDARY_CTRL", "S", "R", "K", "G", "GT", "B", "C"]
@@ -37,52 +37,126 @@ class Bernoulli():
 
         # build fullE
         upper = scsp.hstack([self.mat["M"], scsp.csr_matrix((self.nv, self.np))])
-        self.fullE = scsp.vstack([upper, scsp.csr_matrix((self.np, self.nv+self.np))])
+        lower = scsp.hstack([scsp.csr_matrix((self.np, self.nv)), scsp.csr_matrix((self.np, self.np))])
+        self.fullE = scsp.vstack([upper, lower])
 
         # set Feed0 a
         self.Feed0 = None
         self.Feed1 = None
 
-    def _instable_subspace(self):
+    def _instable_subspace_shiftinvert(self, size):
 
-        size = self.bereigenvalues
-
+        sigma = self.const.BERNOULLI_STRATEGY["sigma"]
         # compute right eigenvectors
-        print gettime()
-        print "Compute right eigenvectors"
-        self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=self.const.BERNOULLI_SIGMA, which="LM")
+        print gettime(), "Compute right eigenvectors"
+
+        self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=sigma, which="LM")
         self.Ir = self.dr.real > 0
         self.nIr = self.Ir.sum()
         print "Instable Right Eigenvalues", self.dr[self.Ir]
 
         # compute left eigenvectors
-        print gettime()
-        print "Compute left eigenvectors"
-        self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(), sigma=self.const.BERNOULLI_SIGMA, which="LM")
+        print gettime(), "Compute left eigenvectors"
+        self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(), sigma=sigma, which="LM")
         self.Il = self.dl.real > 0
         self.nIl = self.Il.sum()
         print "Instable Left Eigenvalues", self.dl[self.Il]
 
+    def _instable_subspace_moebius(self, size):
+
+        sigma = self.const.BERNOULLI_STRATEGY["sigma"]
+        tau = self.const.BERNOULLI_STRATEGY["tau"]
+        maxiter = self.const.BERNOULLI_STRATEGY["maxiter"]
+        print "maxiter={0:d}, sigma={1:f}, tau={2:f}".format(maxiter, sigma, tau)
+
+        # build linear operators for moebius transformed left and right ev problem
+        shape = (self.nv+self.np, self.nv+self.np)
+        Moeb1 = self.fullA-sigma*self.fullE
+        Moeb2 = self.fullA-tau*self.fullE
+        Moeb1 = Moeb1.tocsc(); Moeb2 = Moeb2.tocsc()
+        Moeb1T = Moeb1.T.tocsc(); Moeb2T = Moeb2.T.tocsc()
+        Moeb1solver = scspla.splu(Moeb1).solve; Moeb1Tsolver = scspla.splu(Moeb1T).solve
+        matvecR = lambda x: Moeb1solver(Moeb2*x)
+        matvecL = lambda x: Moeb2T*Moeb1Tsolver(x)
+        MoebL = scspla.LinearOperator(shape, matvecL)
+        MoebR = scspla.LinearOperator(shape, matvecR)
+
+        print gettime(), "Compute right eigenvectors"
+        try:
+            dr, vr = scspla.eigs(MoebR, size, which="LM", maxiter=maxiter)
+        except scspla.ArpackNoConvergence as e:
+            print "Arpack did not converge take current (right) eigenvalues eigenvectors"
+            dr = e.eigenvalues
+            vr = e.eigenvectors
+
+        print gettime(), "Compute left eigenvectors"
+        try:
+            dl, vl = scspla.eigs(MoebL, size, which="LM",maxiter=maxiter)
+        except scspla.ArpackNoConvergence as e:
+            print "Arpack did not converge take current (left) eigenvalues eigenvectors"
+            dl = e.eigenvalues
+            vl = e.eigenvectors
+
+        # print found transformed eigenvalues
+        print "Found (right/left) {0:d} {1:d} moebiues transformed eigenvalues ".format(dr.size, dl.size)
+        print dr, dl
+
+        # print transformed instable eigenvalues
+        instabler = dr[np.absolute(dr)>1]
+        instablel = dl[np.absolute(dl)>1]
+        print "Found (right/left) {0:d} {1:d} moebiues transformed eigenvalues with |lambda|>1 (instable)".format(instabler.size, instablel.size)
+        print instabler, np.absolute(instabler)
+        print instablel, np.absolute(instablel)
+
+        # transform instable eigenvalues back
+        instablebackr = (instabler*sigma-tau)/(instabler-1)
+        instablebackl = (instablel*sigma-tau)/(instablel-1)
+        print "backtransformed (right/left) moebiues eigenvalues with |lambda|>1 (instable)"
+        print instablebackr, instablebackl
+
+        # set attributes transform all back set attributes (eigenvectors change not)
+        self.vr = vr
+        self.vl = vl
+        self.dr = (dr*sigma-tau)/(dr-1)
+        self.dl = (dl*sigma-tau)/(dl-1)
+        self.Ir = self.dr.real > 0
+        self.Il = self.dl.real > 0
+        self.nIr = self.Ir.sum()
+        self.nIl = self.Il.sum()
+
     def solve(self):
 
-        self._instable_subspace()
-
-        while self.nIl != self.nIr:
-            print "Number of left eigenvalues {0:d} != {1:d} number of right eigenvalues".format(self.nIl, self.nIr)
-            self.bereigenvalues *= 2
-            print "increase search space to {0:d}".format(self.bereigenvalues)
-
-            if self.bereigenvalues >= self.fullA.shape[0]/2:
-                raise ValueError("Could not properly compute instable subspace")
+        # chose strategy and solve
+        size = self.const.BERNOULLI_STRATEGY["eigenvals"]
+        strategy = self.const.BERNOULLI_STRATEGY["strategy"]
+        sizeincrease = 0
+        while True:
+            if strategy == "shiftinvert":
+                self._instable_subspace_shiftinvert(size)
+            elif strategy == "moebius":
+                self._instable_subspace_moebius(size)
             else:
-                self._instable_subspace()
+                raise ValueError('unknown bernoulli eigenvalue shifting strategy {0:s}'.format(strategy))
 
+            if self.nIr != self.nIl:
+                print "Number of left eigenvalues {0:d} != {1:d} number of right eigenvalues".format(self.nIl, self.nIr)
+                if strategy == "moebius":
+                    raise ValueError("Could not properly compute instable subspace.")
 
-        print "Found {0:d}, {1:d} instable eigenvalues".format(self.nIr, self.nIl)
+                size = int(1.5*size)
+                sizeincrease += 1
 
-        if self.nIl == 0 and self.nIr == 0:
-            print "No instable eigenvalues detected, no need for initial feedback"
-            return
+                if sizeincrease > 5:
+                    raise ValueError("Could not properly compute instable subspace, to much search space increases")
+
+                print "{0:d} size increase search space to {1:d}".format(sizeincrease, self.bereigenvalues)
+
+            elif self.nIl == 0 and self.nIr == 0:
+                print "No instable eigenvalues detected, no need for initial feedback"
+                return
+            else:
+                print "Found {0:d}, {1:d} instable eigenvalues".format(self.nIr, self.nIl)
+                break
 
         # sort instable eigenvektors and eigenvalues
         LEV = self.vl[:, self.Il]
