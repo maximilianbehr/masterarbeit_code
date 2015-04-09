@@ -266,8 +266,9 @@ def LINEARIZED_SIM_LOG(ref, RE):
 
 """constants for bernoulli"""
 BERNOULLI_MAXIT = 50
-BERNOULLI_STRATEGY = {"strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 1000, "delta": -0.02}
-BERNOULLI_STRATEGY = {"strategy": "moebius", "sigma": 1.0, "tau": 1.0, "eigenvals": 1000, "delta": -0.02}
+BERNOULLI_STRATEGY = {"strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 20, "target" : "LR"}
+#BERNOULLI_STRATEGY = {"strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 500, "target" : "LM"}
+#BERNOULLI_STRATEGY = {"strategy": "moebius", "sigma": 1, "tau": -1, "eigenvals": 10, "maxiter": 2000, "target": "LM"}
 
 
 def BERNOULLI_FEED0_CPS_MTX(ref, RE):

@@ -47,17 +47,18 @@ class Bernoulli():
     def _instable_subspace_shiftinvert(self, size):
 
         sigma = self.const.BERNOULLI_STRATEGY["sigma"]
+        target = self.const.BERNOULLI_STRATEGY["target"]
         # compute right eigenvectors
         print gettime(), "Compute right eigenvectors"
 
-        self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=sigma, which="LM")
+        self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=sigma, which=target)
         self.Ir = self.dr.real > 0
         self.nIr = self.Ir.sum()
         print "Instable Right Eigenvalues", self.dr[self.Ir]
 
         # compute left eigenvectors
         print gettime(), "Compute left eigenvectors"
-        self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(), sigma=sigma, which="LM")
+        self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(), sigma=sigma, which=target)
         self.Il = self.dl.real > 0
         self.nIl = self.Il.sum()
         print "Instable Left Eigenvalues", self.dl[self.Il]
@@ -67,6 +68,7 @@ class Bernoulli():
         sigma = self.const.BERNOULLI_STRATEGY["sigma"]
         tau = self.const.BERNOULLI_STRATEGY["tau"]
         maxiter = self.const.BERNOULLI_STRATEGY["maxiter"]
+        target = self.const.BERNOULLI_STRATEGY["target"]
         print "maxiter={0:d}, sigma={1:f}, tau={2:f}".format(maxiter, sigma, tau)
 
         # build linear operators for moebius transformed left and right ev problem
@@ -83,7 +85,7 @@ class Bernoulli():
 
         print gettime(), "Compute right eigenvectors"
         try:
-            dr, vr = scspla.eigs(MoebR, size, which="LM", maxiter=maxiter)
+            dr, vr = scspla.eigs(MoebR, size, which=target, maxiter=maxiter)
         except scspla.ArpackNoConvergence as e:
             print "Arpack did not converge take current (right) eigenvalues eigenvectors"
             dr = e.eigenvalues
@@ -91,7 +93,7 @@ class Bernoulli():
 
         print gettime(), "Compute left eigenvectors"
         try:
-            dl, vl = scspla.eigs(MoebL, size, which="LM",maxiter=maxiter)
+            dl, vl = scspla.eigs(MoebL, size, which=target, maxiter=maxiter)
         except scspla.ArpackNoConvergence as e:
             print "Arpack did not converge take current (left) eigenvalues eigenvectors"
             dl = e.eigenvalues
