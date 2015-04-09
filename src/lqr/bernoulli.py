@@ -30,6 +30,10 @@ class Bernoulli():
         self.nv = self.mat["M"].shape[0]
         self.np = self.mat["G"].shape[1]
 
+        # store blocks
+        self.G = self.mat["G"]
+        self.GT = self.mat["GT"]
+
         # build fullA
         upper = scsp.hstack([-self.mat["S"]-self.mat["R"]-self.mat["K"]-self.mat["M_BOUNDARY_CTRL"], self.mat["G"]])
         lower = scsp.hstack([self.mat["GT"], scsp.csr_matrix((self.np, self.np))])
@@ -48,20 +52,24 @@ class Bernoulli():
 
         sigma = self.const.BERNOULLI_STRATEGY["sigma"]
         target = self.const.BERNOULLI_STRATEGY["target"]
-        # compute right eigenvectors
-        print gettime(), "Compute right eigenvectors"
+        print "sigma={0:f} target={1:s}".format(sigma,target)
+        if target == "LM" or target == "LR":
+            # compute right eigenvectors
+            print gettime(), "Compute right eigenvectors"
+            self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=sigma, which=target)
+            self.Ir = self.dr.real > 0
+            self.nIr = self.Ir.sum()
+            print "Instable Right Eigenvalues", self.dr[self.Ir]
 
-        self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=sigma, which=target)
-        self.Ir = self.dr.real > 0
-        self.nIr = self.Ir.sum()
-        print "Instable Right Eigenvalues", self.dr[self.Ir]
+            # compute left eigenvectors
+            print gettime(), "Compute left eigenvectors"
+            self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(), sigma=sigma, which=target)
+            self.Il = self.dl.real > 0
+            self.nIl = self.Il.sum()
+            print "Instable Left Eigenvalues", self.dl[self.Il]
+        else:
+            raise ValueError("target is propably not usefull for shiftinverting technique")
 
-        # compute left eigenvectors
-        print gettime(), "Compute left eigenvectors"
-        self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(), sigma=sigma, which=target)
-        self.Il = self.dl.real > 0
-        self.nIl = self.Il.sum()
-        print "Instable Left Eigenvalues", self.dl[self.Il]
 
     def _instable_subspace_moebius(self, size):
 
@@ -131,6 +139,7 @@ class Bernoulli():
         # chose strategy and solve
         size = self.const.BERNOULLI_STRATEGY["eigenvals"]
         strategy = self.const.BERNOULLI_STRATEGY["strategy"]
+        target = self.const.BERNOULLI_STRATEGY["target"]
         sizeincrease = 0
         while True:
             if strategy == "shiftinvert":
@@ -142,7 +151,7 @@ class Bernoulli():
 
             if self.nIr != self.nIl:
                 print "Number of left eigenvalues {0:d} != {1:d} number of right eigenvalues".format(self.nIl, self.nIr)
-                if strategy == "moebius":
+                if strategy == "moebius" or (strategy == "shiftinvert" and target == "LR"):
                     raise ValueError("Could not properly compute instable subspace.")
 
                 size = int(1.5*size)
