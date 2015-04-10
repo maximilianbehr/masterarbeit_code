@@ -52,18 +52,41 @@ class Bernoulli():
 
         sigma = self.const.BERNOULLI_STRATEGY["sigma"]
         target = self.const.BERNOULLI_STRATEGY["target"]
+
         print "sigma={0:f} target={1:s}".format(sigma,target)
         if target == "LM" or target == "LR":
             # compute right eigenvectors
             print gettime(), "Compute right eigenvectors"
-            self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=sigma, which=target)
+            try:
+                if "maxiter" in self.const.BERNOULLI_STRATEGY.keys():
+                    maxiter = self.const.BERNOULLI_STRATEGY["maxiter"]
+                    print "maxiter={0:d}".format(maxiter)
+                    self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=sigma, which=target, maxiter=maxiter)
+                else:
+                    self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=sigma, which=target)
+            except scspla.ArpackNoConvergence as e:
+                print "Arpack did not converge take current (right) eigenvalues eigenvectors"
+                self.dr = e.eigenvalues
+                self.vr = e.eigenvectors
+
             self.Ir = self.dr.real > 0
             self.nIr = self.Ir.sum()
             print "Instable Right Eigenvalues", self.dr[self.Ir]
 
             # compute left eigenvectors
             print gettime(), "Compute left eigenvectors"
-            self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(), sigma=sigma, which=target)
+            try:
+                if "maxiter" in self.const.BERNOULLI_STRATEGY.keys():
+                    maxiter = self.const.BERNOULLI_STRATEGY["maxiter"]
+                    print "maxiter={0:d}".format(maxiter)
+                    self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(),  sigma=sigma, which=target, maxiter=maxiter)
+                else:
+                    self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(),  sigma=sigma, which=target)
+            except scspla.ArpackNoConvergence as e:
+                print "Arpack did not converge take current (right) eigenvalues eigenvectors"
+                self.dl = e.eigenvalues
+                self.vl = e.eigenvectors
+
             self.Il = self.dl.real > 0
             self.nIl = self.Il.sum()
             print "Instable Left Eigenvalues", self.dl[self.Il]
