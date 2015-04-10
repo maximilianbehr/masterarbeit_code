@@ -6,8 +6,7 @@ import sys
 if __name__ == "__main__":
     # set Reynoldsnumbers and refinements
     REs = range(10, 200, 10)
-    #REscompute = range(min(REs), max(REs), 50)
-    REscompute = [10,100,160]
+    REscompute = range(min(REs), max(REs), 50)
     refs = [2]
 
     if len(sys.argv) == 3:
@@ -23,14 +22,14 @@ if __name__ == "__main__":
         REs = range(10, desiredRE, 10)
         REs.append(desiredRE)
 
-    #build_mesh(const, refs)
-    #solve_newton(const, refs, REs)
-    #REs = REscompute
-    #assemble_lqr(const, refs, REs)
-    #simulate(const, refs, REs)
-    #solve_bernoulli(const, refs, REs)
+    build_mesh(const, refs)
+    solve_newton(const, refs, REs)
+    REs = REscompute
+    assemble_lqr(const, refs, REs)
+    simulate(const, refs, REs)
+    solve_bernoulli(const, refs, REs)
     solve_lqr(const, refs, REs)
-    #control(const, refs, REs)
+    control(const, refs, REs)
     #compute_eigen(const, refs, REs)
 
 
