@@ -63,10 +63,13 @@ class Assembler():
 
         for (controlfunc, indices, name) in self.const.ASSEMBLER_BOUNDARY_CONTROLS:
             self.var["B_{0:s}".format(name)] = \
-                1.0 / self.penalty_eps * inner(controlfunc, w_test) * ds(indices)
+                self.nu*(1.0 / self.penalty_eps) * inner(controlfunc, w_test) * ds(indices)
+                # (1.0 / self.penalty_eps) * inner(controlfunc, w_test) * ds(indices)
 
             self.var["M_{0:s}".format(name)] = \
-                1.0 / self.penalty_eps * inner(u, w_test) * ds(indices)
+                self.nu*(1.0 / self.penalty_eps) * inner(u, w_test) * ds(indices)
+                # (1.0 / self.penalty_eps) * inner(u, w_test) * ds(indices)
+
 
     def _lns_ublas(self):
         if not self.var:

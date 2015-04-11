@@ -29,7 +29,7 @@ if __name__ == "__main__":
         const.OUTPUTDIR_NAME = "results_{0:s}".format(name)
         desiredRE = int(sys.argv[4])
         REscompute = [desiredRE]
-        REs = range(100, desiredRE, 50)
+        REs = range(100, desiredRE, 1000)
         REs.append(desiredRE)
 
 
@@ -37,11 +37,11 @@ if __name__ == "__main__":
 
     build_mesh(const, refs)
     solve_newton(const, refs, REs)
-    # REs = range(min(REs), max(REs), 1000)
     REs = REscompute
     assemble_lqr(const, refs, REs)
-    #simulate(const, refs, REs)
+    compute_condition(const, refs, REs)
+    simulate(const, refs, REs)
     solve_bernoulli(const, refs, REs)
-    #solve_lqr(const, refs, REs)
-    #control(const, refs, REs)
+    solve_lqr(const, refs, REs)
+    control(const, refs, REs)
     # compute_eigen(const, refs, REs)

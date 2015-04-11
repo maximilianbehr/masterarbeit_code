@@ -9,6 +9,7 @@ if __name__ == "__main__":
     REscompute = range(min(REs), max(REs), 50)
     refs = [2]
 
+
     if len(sys.argv) == 3:
         refs = [int(sys.argv[1])]
         name = sys.argv[2]
@@ -22,11 +23,16 @@ if __name__ == "__main__":
         REs = range(10, desiredRE, 10)
         REs.append(desiredRE)
 
-    build_mesh(const, refs)
-    solve_newton(const, refs, REs)
+    const.LINEARIZED_SIM_T = 10
+    const.LINEARIZED_CTRL_T = 10
+    const.ASSEMBLER_PENALTY_EPS = 1e-6
+
+    #build_mesh(const, refs)
+    #solve_newton(const, refs, REs)
     REs = REscompute
     assemble_lqr(const, refs, REs)
-    simulate(const, refs, REs)
+    #compute_condition(const, refs, REs)
+    #simulate(const, refs, REs)
     solve_bernoulli(const, refs, REs)
     solve_lqr(const, refs, REs)
     control(const, refs, REs)

@@ -7,6 +7,7 @@ from src.lqr.linearized_sim_petsc import LinearizedSimPETSC
 from src.lqr.linearized_ctrl import LinearizedCtrl
 from src.lqr.plotter import Plotter
 from src.lqr.eigen import Eigen
+from src.lqr.condition import Condition
 from src.aux import *
 import traceback
 
@@ -137,6 +138,17 @@ def control(const, refs, REs):
                 print traceback.format_exc()
                 continue
 
+
+def compute_condition(const, refs, REs):
+    for ref in refs:
+        for RE in REs:
+            try:
+                condition_estimator = Condition(const, ref, RE)
+                condition_estimator.compute_condests()
+            except:
+                print "An exception in condition estimation ref={0:d} RE={1:d}".format(ref, RE)
+                print traceback.format_exc()
+                continue
 
 def plot(const, refs, REs):
     for ref in refs:

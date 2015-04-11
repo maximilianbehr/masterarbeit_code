@@ -42,33 +42,36 @@ function clear_dir()
 function mess_co()
 {   
     cd ${SCRATCH_BEHR};
-    svn co http://svncsc.mpi-magdeburg.mpg.de/repos/mess/cmess/branches/hiwi_behr/;
+    git clone --recursive git@gitlab.mpi-magdeburg.mpg.de:mess/cmess.git hiwi_behr
+    cd hiwi_behr
+    git checkout hiwi_behr
+    cd ..
 }
 
 #update cmess
-function mess_up()
-{   
-    cd ${SCRATCH_BEHR};
-	cd hiwi_behr;
-	svn up;
-}
+#function mess_up()
+#{
+#    cd ${SCRATCH_BEHR};
+#	cd hiwi_behr;
+#	svn up;
+#}
 
 
 #checkout mmess
-function mmess_co()
-{   
-    cd ${SCRATCH_BEHR};
-    svn co http://svncsc.mpi-magdeburg.mpg.de/repos/mess/mmess/trunk/ mmess;
-}
+#function mmess_co()
+#{
+#    cd ${SCRATCH_BEHR};
+#    svn co http://svncsc.mpi-magdeburg.mpg.de/repos/mess/mmess/trunk/ mmess;
+#}
 
 
 #update mmess
-function mmess_up()
-{   
-    cd ${SCRATCH_BEHR};
-	cd mmess;
-	svn up;
-}
+#function mmess_up()
+#{
+#    cd ${SCRATCH_BEHR};
+#	cd mmess;
+#	svn up;
+#}
 
 
 #build openblas
@@ -171,6 +174,18 @@ function build_scipy()
 	python -c "import scipy;print scipy.__file__; scipy.test()"
 }
 
+#function build pyamg
+function build_pyamg()
+{
+    cd ${SCRATCH_BEHR}
+    git clone https://github.com/pyamg/pyamg.git
+    cd pyamg
+    python setup.py build
+    python setup.py install --prefix=${USR_LOCAL}
+
+}
+
+}
 #function build scikit-umfpack
 function build_scikitumfpack()
 {
@@ -210,7 +225,8 @@ function build_mess()
 #build_nose;
 #build_numpy;
 #build_scipy;
-build_scikitumfpack;
+build_pyamg;
+#build_scikitumfpack;
 #mess_up;
 #mmess_up;
 #build_mess;

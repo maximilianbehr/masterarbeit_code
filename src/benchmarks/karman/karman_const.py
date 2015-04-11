@@ -183,7 +183,7 @@ def STATIONARY_W_XML(ref, RE):
 
 """constant for assembler"""
 ASSEMBLER_DIR = "assembler"
-ASSEMBLER_PENALTY_EPS = 0.001
+ASSEMBLER_PENALTY_EPS = 1e-3
 ASSEMBLER_OBSERVER_POINTS = [(2.5, 0.25), (2.5, 0.75)]
 
 ASSEMBLER_UPPER_CONTROL = Expression(
