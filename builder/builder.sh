@@ -185,7 +185,6 @@ function build_pyamg()
 
 }
 
-}
 #function build scikit-umfpack
 function build_scikitumfpack()
 {
