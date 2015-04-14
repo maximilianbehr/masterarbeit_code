@@ -54,7 +54,7 @@ class LinearizedCtrl():
 
         # lift input matrix and feedback
         self.Kinfsys = np.vstack((self.mat["Kinf"], np.zeros((self.np, self.mat["Kinf"].shape[1]))))
-        self.Bsys = -1*self.dt * np.vstack((self.mat["B"], np.zeros((self.np, self.mat["B"].shape[1]))))
+        self.Bsys = -self.dt * np.vstack((self.mat["B"], np.zeros((self.np, self.mat["B"].shape[1]))))
 
         # visualisation
         self.u_dolfin = Function(self.V)
@@ -71,8 +71,8 @@ class LinearizedCtrl():
 
         # build system matrices
         self.Asys = -self.mat["S"]-self.mat["R"]-self.mat["K"]-self.mat["M_BOUNDARY_CTRL"]
-        u = scsp.hstack([self.mat["M"] - self.dt*self.Asys, self.dt*(-self.mat["G"])])
-        l = scsp.hstack([self.dt * (-self.mat["GT"]), scsp.csr_matrix((self.np, self.np))])
+        u = scsp.hstack([self.mat["M"] - self.dt*self.Asys, self.dt*(self.mat["G"])])
+        l = scsp.hstack([self.dt * (self.mat["GT"]), scsp.csr_matrix((self.np, self.np))])
         self.Msys_ode = scsp.vstack([u, l]).tocsc()
         self.Msys_lift = scsp.vstack([self.mat["M"], scsp.csr_matrix((self.np, self.nv))]).tocsr()
 

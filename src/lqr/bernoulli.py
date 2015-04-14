@@ -3,6 +3,7 @@ import scipy.linalg as scla
 import scipy.io as scio
 import scipy.sparse as scsp
 import scipy.sparse.linalg as scspla
+from dolfin import *
 import os
 from src.aux import createdir, write_matrix, gettime
 
@@ -43,6 +44,10 @@ class Bernoulli():
         upper = scsp.hstack([self.mat["M"], scsp.csr_matrix((self.nv, self.np))])
         lower = scsp.hstack([scsp.csr_matrix((self.np, self.nv)), scsp.csr_matrix((self.np, self.np))])
         self.fullE = scsp.vstack([upper, lower])
+
+        # build B
+        self.B = self.mat["B"]
+        self.C = self.mat["C"]
 
         # set Feed0 a
         self.Feed0 = None
@@ -157,40 +162,113 @@ class Bernoulli():
         self.nIr = self.Ir.sum()
         self.nIl = self.Il.sum()
 
+    def _instable_subspace_slepc(self):
+        # check if slepc is available
+        if not has_slepc():
+            raise ValueError('FeNICS has no SLEPC support use scipy strategy')
+
+        # convert matrix to petsc
+        #from petsc4py import PETSc
+        #self.fullA = self.fullA.tocsr()
+        #self.fullE = self.fullE.tocsc()
+
+        #fullApetsc = PETSc.Mat().createAIJ(size=self.fullA.shape, csr=(self.fullA.indptr, self.fullA.indices, self.fullA.data))
+        #fullEpetsc = PETSc.Mat().createAIJ(size=self.fullE.shape, csr=(self.fullE.indptr, self.fullE.indices, self.fullE.data))
+        #fullApetscdolfin = PETScMatrix(fullApetsc)
+        #fullEpetscdolfin = PETScMatrix(fullEpetsc)
+
+        # build mesh and function spaces, stationary solution and dirichlet bcs and matrices
+        #nu = self.const.GET_NU(self.RE)
+        #penalty_eps = self.const.ASSEMBLER_PENALTY_EPS
+
+        #mesh = Mesh(self.const.MESH_XML(self.ref))
+        #V = VectorFunctionSpace(mesh, self.const.V, self.const.V_DIM)
+        #Q = FunctionSpace(mesh, self.const.Q, self.const.Q_DIM)
+        #W = V*Q
+        #boundaryfunction = MeshFunction("size_t", mesh, self.const.BOUNDARY_XML(self.ref))
+        #u_stat = Function(V, self.const.STATIONARY_U_XML(self.ref, self.RE))
+        #w_stat = Function(W, self.const.STATIONARY_W_XML(self.ref, self.RE))
+
+        # get zero dirichlet boundary conditions
+        #noslip = Constant((0.0, 0.0))
+        #bcups = [DirichletBC(W.sub(0), noslip, boundaryfunction, INDICES) \
+        #              for INDICES in self.const.ASSEMBLER_COMPRESS_CTRL_DIRI_ZEROS]
+
+        # build system matrices from weak formulation
+        # trial and test functions
+        #(dudt, dpdt) = TrialFunctions(W)
+        #(u, p) = TrialFunctions(W)
+        #(w_test, p_test) = TestFunctions(W)
+        #ds = Measure("ds")[boundaryfunction]
+        #M = inner(dudt, w_test) * dx
+        #S = nu * inner(grad(u), grad(w_test)) * dx
+        #K = inner(grad(u_stat) * u, w_test) * dx
+        #R = inner(grad(u) * u_stat, w_test) * dx
+        #G = p * div(w_test) * dx
+        #GT = div(u) * p_test * dx
+        #MGamma = sum([nu*(1.0/penalty_eps) * inner(u, w_test) * ds(indices)\
+        #        for (controlfunc, indices, name) in self.const.ASSEMBLER_BOUNDARY_CONTROLS])
+
+        #A = -1*(S+R+K)+G+GT -MGamma
+        #fullAdolfin = assemble(A)
+        #fullEdolfin = assemble(M)
+        #fullApetscdolfin = as_backend_type(fullAdolfin)
+        #fullEpetscdolfin = as_backend_type(fullEdolfin)
+
+        # apply dirichlet bcs dont pertubate dirichlet nodes
+        #[bcup.apply(fullApetscdolfin) for bcup in bcups]
+        #[bcup.apply(fullEpetscdolfin) for bcup in bcups]
+
+        eigensolver = SLEPcEigenSolver(fullApetscdolfin, fullEpetscdolfin)
+        #eigensolver = SLEPcEigenSolver(fullApetscdolfin)
+        eigensolver.parameters["spectrum"] = "largest real"
+        eigensolver.parameters["solver"] = "subspace"
+        #eigensolver.parameters["tolerance"] = 1e-13
+        #eigensolver.parameters["maximum_iterations"] = 10000
+        eigensolver.parameters["problem_type"] = "gen_pos_non_hermitian"
+        eigensolver.parameters["spectral_shift"]= 1.0
+        eigensolver.parameters["verbose"] = True
+
+        # first tow desired eigenvalues
+        eigensolver.solve(2)
+
+        import ipdb
+        ipdb.set_trace()
+        a = 2
+        #eigensolver.get_eigenpair(0)
+
+
+
+
+
+
+
+
     def solve(self):
 
         # chose strategy and solve
         size = self.const.BERNOULLI_STRATEGY["eigenvals"]
         strategy = self.const.BERNOULLI_STRATEGY["strategy"]
-        target = self.const.BERNOULLI_STRATEGY["target"]
-        sizeincrease = 0
-        while True:
-            if strategy == "shiftinvert":
-                self._instable_subspace_shiftinvert(size)
-            elif strategy == "moebius":
-                self._instable_subspace_moebius(size)
-            else:
-                raise ValueError('unknown bernoulli eigenvalue shifting strategy {0:s}'.format(strategy))
+        solver = self.const.BERNOULLI_STRATEGY["solver"]
 
-            if self.nIr != self.nIl:
-                print "Number of left eigenvalues {0:d} != {1:d} number of right eigenvalues".format(self.nIl, self.nIr)
-                if strategy == "moebius" or (strategy == "shiftinvert" and target == "LR"):
-                    raise ValueError("Could not properly compute instable subspace.")
+        if solver == "scipy" and strategy == "shiftinvert":
+            self._instable_subspace_shiftinvert(size)
+        elif solver == "scipy" and strategy == "moebius":
+            self._instable_subspace_moebius(size)
+        elif solver == "slepc":
+            self._instable_subspace_slepc()
+        else:
+            raise ValueError('unknown bernoulli eigenvalue shifting strategy {0:s}'.format(strategy))
 
-                size = int(1.5*size)
-                sizeincrease += 1
+        if self.nIr != self.nIl:
+            print "Number of left eigenvalues {0:d} != {1:d} number of right eigenvalues".format(self.nIl, self.nIr)
+            raise ValueError("Could not properly compute instable subspace.")
 
-                if sizeincrease > 5:
-                    raise ValueError("Could not properly compute instable subspace, to much search space increases")
-
-                print "{0:d} size increase search space to {1:d}".format(sizeincrease, self.bereigenvalues)
-
-            elif self.nIl == 0 and self.nIr == 0:
-                print "No instable eigenvalues detected, no need for initial feedback"
-                return
-            else:
-                print "Found {0:d}, {1:d} instable eigenvalues".format(self.nIr, self.nIl)
-                break
+        elif self.nIl == 0 and self.nIr == 0:
+            print "No instable eigenvalues detected, no need for initial feedback"
+            return
+        else:
+            print "Found {0:d}, {1:d} instable eigenvalues".format(self.nIr, self.nIl)
 
         # sort instable eigenvektors and eigenvalues
         LEV = self.vl[:, self.Il]
@@ -199,8 +277,8 @@ class Bernoulli():
         # project
         tA = np.dot(LEV.T, (self.fullA*REV))
         tE = np.dot(LEV.T, (self.fullE*REV))
-        tB = np.dot(LEV.T, np.vstack((self.mat["B"], np.zeros((self.np, self.mat["B"].shape[1])))))
-        tC = np.dot(np.hstack((self.mat["C"], np.zeros((self.mat["C"].shape[0], self.np)))), REV)
+        tB = np.dot(LEV.T, np.vstack((self.B, np.zeros((self.np, self.B.shape[1])))))
+        tC = np.dot(np.hstack((self.C, np.zeros((self.C.shape[0], self.np)))), REV)
 
         # solve algebraic bernoulli equation on projected space
         try:
@@ -214,13 +292,13 @@ class Bernoulli():
 
         # build initial feedback for nontransposed A
         K0 = LEV.T*self.fullE
-        Blift = np.vstack((self.mat["B"], np.zeros((self.np, self.mat["B"].shape[1]))))
+        Blift = np.vstack((self.B, np.zeros((self.np, self.B.shape[1]))))
         K0 = np.dot(np.dot(np.dot(Blift.T, LEV), XK), K0)
         self.Feed0 = K0[:, 0:self.nv].real.T
 
         # build initial feedback for transposed A
         K1 = REV.T*self.fullE.T
-        Clift = np.hstack((self.mat["C"], np.zeros((self.mat["C"].shape[0], self.np))))
+        Clift = np.hstack((self.C, np.zeros((self.C.shape[0], self.np))))
         K1 = np.dot(np.dot(np.dot(Clift, REV), XL), K1)
         self.Feed1 = K1[:, 0:self.nv].real.T
 

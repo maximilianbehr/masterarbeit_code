@@ -7,12 +7,9 @@ from linearized_aux import stable_timestep
 #set floating point error handling
 np.seterr(all="raise", divide="raise", over="raise", under="raise", invalid="raise")
 
-class LinearizedSimPETSC():
+class EigenSlepc():
 
     def __init__(self, const, ref, RE):
-        parameters["reorder_dofs_serial"] = False
-        parameters["reorder_vertices_gps"] = False
-        parameters["reorder_cells_gps"] = False
 
         # parameters
         self.ref = ref
@@ -21,8 +18,6 @@ class LinearizedSimPETSC():
         self.const = const
         self.pertubationeps = self.const.LINEARIZED_SIM_PERTUBATIONEPS
         self.penalty_eps = const.ASSEMBLER_PENALTY_EPS
-        self.dt = self.const.LINEARIZED_SIM_DT
-        self.T = self.const.LINEARIZED_SIM_T
 
         # mesh and function spaces, stationary solution and dirichlet bcs
         self.mesh = Mesh(const.MESH_XML(ref))
@@ -36,22 +31,8 @@ class LinearizedSimPETSC():
         # get zero dirichlet boundary conditions
         noslip = Constant((0.0, 0.0))
         self.bcups = [DirichletBC(self.W.sub(0), noslip, self.boundaryfunction, INDICES) \
-                      for INDICES in self.const.ASSEMBLER_COMPRESS_SIM_DIRI_ZEROS]
+                      for INDICES in self.const.ASSEMBLER_COMPRESS_CTRL_DIRI_ZEROS]
 
-        if const.LINEARIZED_SIM_STABLE_DT:
-            # characterteristic velocity is chose as 1
-            self.dt = stable_timestep(self.T, self.const.GET_NU_FLOAT(self.RE), self.const.U, self.mesh.hmin())
-
-        print "dt = {0:e}".format(self.dt)
-
-        self.t = 0.0
-        self.k = 0
-        self.save_freq = int(1.0/(self.dt*self.const.LINEARIZED_SIM_SAVE_PER_S))
-
-        # log
-        self.logv = np.zeros((int(self.T/(self.dt*self.save_freq)+1), 2))
-        self.klog = 0
-        self.kinfo = int(self.const.LINEARIZED_SIM_INFO*(self.T/self.dt))
 
         # build system matrices from weak formulation
         # trial and test functions
@@ -66,8 +47,9 @@ class LinearizedSimPETSC():
         G = p * div(w_test) * dx
         GT = div(u) * p_test * dx
 
-        A = -1*(S+R+K)
-        self.Msys_ode = assemble(M-1*self.dt*A-self.dt*G-self.dt*GT)
+        A = -1*(S+R+K)-G-GT
+
+        self.Msys_ode = assemble(M-1*self.dt*A-1*self.dt*G-1*self.dt*GT)
         self.Msys_lift = assemble(M)
 
         # set initial value
@@ -92,7 +74,7 @@ class LinearizedSimPETSC():
         self.solver.set_operator(self.Msys_ode)
         self.solver.parameters["reuse_factorization"] = True
 
-
+    @profile
     def assembleN(self):
 
         (w_test, p_test) = TestFunctions(self.W)
@@ -100,7 +82,7 @@ class LinearizedSimPETSC():
         self.N = assemble(inner(w_test, grad(u) * u)*dx)
         [bcup.apply(self.N) for bcup in self.bcups]
 
-
+    @profile
     def uk_next(self):
 
         self.assembleN()

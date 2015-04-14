@@ -62,10 +62,6 @@ class LinearizedSim():
         self.udelta_file = File(const.LINEARIZED_SIM_U_DELTA_PVD(self.ref, self.RE))
 
         # define state and uncompress state
-        # self.uk_sys = np.take(self.u_stat.vector().array(), self.inner_nodes)
-        # self.uk_sys *= self.pertubationeps
-        # self.uk_uncps = np.zeros((self.V.dim(),))
-
         u_pertubated = project(self.pertubationeps*self.u_stat, self.V)
         self.uk_sys = np.take(u_pertubated.vector().array(), self.inner_nodes)
         self.uk_uncps = np.zeros((self.V.dim(),))
@@ -73,8 +69,8 @@ class LinearizedSim():
 
         # build system matrices
         self.Asys = -self.mat["S"]-self.mat["R"]-self.mat["K"]
-        u = scsp.hstack([self.mat["M"] - self.dt*self.Asys, self.dt*(-self.mat["G"])])
-        l = scsp.hstack([self.dt * (-self.mat["GT"]), scsp.csr_matrix((self.np, self.np))])
+        u = scsp.hstack([self.mat["M"] - self.dt*self.Asys, -self.dt*(self.mat["G"])])
+        l = scsp.hstack([-self.dt * (self.mat["GT"]), scsp.csr_matrix((self.np, self.np))])
         self.Msys_ode = scsp.vstack([u, l]).tocsc()
         self.Msys_lift = scsp.vstack([self.mat["M"], scsp.csr_matrix((self.np, self.nv))]).tocsr()
 
@@ -86,7 +82,6 @@ class LinearizedSim():
         self.N = inner(self.w_test, grad(self.u_dolfin) * self.u_dolfin)*dx
         self.N_uk_uk = np.zeros((self.np+self.ninner,))
         self.assembleN(self.uk_sys)
-
 
     def assembleN(self, uk):
 
@@ -100,12 +95,11 @@ class LinearizedSim():
         # compress to inner nodes and fill into upper block
         self.N_uk_uk[:self.ninner] = np.take(Nassemble.array(), self.inner_nodes, axis=0)
 
-    @profile
+
     def uk_next(self):
         # compute new rhs (prediction)
         self.assembleN(self.uk_sys)
         Msys_lift_uk = self.Msys_lift * self.uk_sys
-        #rhs = Msys_lift_uk - self.dt*self.N_uk_uk
         self.uk_sys = self.Msys_solver(Msys_lift_uk - self.dt*self.N_uk_uk)[0:self.ninner]
         # try to correct solution
         self.correction(Msys_lift_uk)

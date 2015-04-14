@@ -266,9 +266,9 @@ def LINEARIZED_SIM_LOG(ref, RE):
 
 """constants for bernoulli"""
 BERNOULLI_MAXIT = 50
-BERNOULLI_STRATEGY = {"strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 2, "target" : "LR", "maxiter": 3000}
-#BERNOULLI_STRATEGY = {"strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 250, "target" : "LM"}
-#BERNOULLI_STRATEGY = {"strategy": "moebius", "sigma": 1, "tau": -1, "eigenvals": 10, "maxiter": 2000, "target": "LM"}
+BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 2, "target" : "LR", "maxiter": 3000}
+# BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 250, "target" : "LM"}
+# BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "moebius", "sigma": 1, "tau": -1, "eigenvals": 10, "maxiter": 2000, "target": "LM"}
 # choose eigenvals in moebius and shiftinvert with LR to that number of instable eigenvalues
 # for karman experiments have shown that there are two
 # sigma must be positive and tau negative and they must have the same absolute value
