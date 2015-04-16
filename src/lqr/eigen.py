@@ -43,6 +43,7 @@ class Eigen():
             self.Kinfsys = np.vstack((self.mat["Kinf"], np.zeros((self.np, self.mat["Kinf"].shape[1]))))
         except:
             print "Probably no feedback available"
+            self.Kinfsys = None
 
         # attributes for eigenvalues
         self.eig_sys = None
@@ -59,6 +60,9 @@ class Eigen():
 
     def compute_eig_ric(self):
         print gettime(), "eigen ric"
+        if self.Kinfsys is None:
+            print "No optimal riccati feedback"
+            return
         # build A stable riccati feedback
         A_ric = self.A - np.dot(self.Bsys, self.Kinfsys.T)
         M = self.M.todense()
@@ -82,7 +86,7 @@ class Eigen():
         self.eig_ber = self.eig_ber[np.argsort(np.absolute(self.eig_ber))]
 
     def save(self):
-
+        print "save"
         if self.eig_sys is not None:
             file = self.const.EIGEN_SYS_CPS_MTX(self.ref, self.RE)
             createdir(file)

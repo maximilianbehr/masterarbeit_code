@@ -3,6 +3,7 @@
 source venv/bin/activate
 
 export PYTHONPATH=`pwd`:${PYTHONPATH}
+export PYTHONPATH=/usr/local/lib/python2.7:${PYTHONPATH}
 #export PYTHONPATH=/home/daniels/build/usr/local/lib/python2.7/site-packages:${PYTHONPATH}
 export LD_LIBRARY_PATH=/home/daniels/build/mess_build_debug/lib:${LD_LIBRARY_PATH}
 

@@ -25,16 +25,15 @@ if __name__ == "__main__":
 
     const.LINEARIZED_SIM_T = 5
     const.LINEARIZED_CTRL_T = 5
-    const.ASSEMBLER_PENALTY_EPS = 1e-6
 
-    #build_mesh(const, refs)
-    #solve_newton(const, refs, REs)
+    build_mesh(const, refs)
+    solve_newton(const, refs, REs)
     REs = REscompute
-    #assemble_lqr(const, refs, REs)
-    #compute_condition(const, refs, REs)
+    assemble_lqr(const, refs, REs)
+    compute_condition(const, refs, REs)
     #simulate(const, refs, REs)
     solve_bernoulli(const, refs, REs)
-    #solve_lqr(const, refs, REs)
+    solve_lqr(const, refs, REs)
     #control(const, refs, REs)
     #compute_eigen(const, refs, REs)
 

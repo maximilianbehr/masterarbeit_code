@@ -71,8 +71,8 @@ class LinearizedCtrl():
 
         # build system matrices
         self.Asys = -self.mat["S"]-self.mat["R"]-self.mat["K"]-self.mat["M_BOUNDARY_CTRL"]
-        u = scsp.hstack([self.mat["M"] - self.dt*self.Asys, self.dt*(self.mat["G"])])
-        l = scsp.hstack([self.dt * (self.mat["GT"]), scsp.csr_matrix((self.np, self.np))])
+        u = scsp.hstack([self.mat["M"] - self.dt*self.Asys, -self.dt*(self.mat["G"])])
+        l = scsp.hstack([-self.dt * (self.mat["GT"]), scsp.csr_matrix((self.np, self.np))])
         self.Msys_ode = scsp.vstack([u, l]).tocsc()
         self.Msys_lift = scsp.vstack([self.mat["M"], scsp.csr_matrix((self.np, self.nv))]).tocsr()
 

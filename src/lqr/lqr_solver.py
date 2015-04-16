@@ -26,7 +26,7 @@ class LQR_Solver():
         self.eqn.M = self.mat["M"]
         self.eqn.A = -self.mat["S"] - self.mat["K"] - self.mat["R"] - self.mat["M_BOUNDARY_CTRL"]
         self.eqn.G = self.mat["G"]
-        self.eqn.B = self.mat["B"]
+        self.eqn.B = -self.mat["B"]
         self.eqn.C = self.mat["C"]
         if hasattr(self.eqn.C, "todense"):
             self.eqn.C = self.eqn.C.todense()

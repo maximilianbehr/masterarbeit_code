@@ -53,12 +53,12 @@ assert RECTLOWER["x1_1"] == RECTUPPER["x0_1"]
 """define local refinementzone"""
 LOCALREFINEMENTS = 1
 def LOCALREFINE(p):
-    if ((RECTUPPER["x1_0"]*0.2) < p.x() < 0.4*RECTUPPER["x1_0"]) and p.y() <= 1.0*RECTUPPER["x1_1"]:
+    if ((RECTUPPER["x1_0"]*0.2) < p.x() < 0.4*RECTUPPER["x1_0"]) and p.y() <= 0.5*RECTUPPER["x1_1"]:
         return True
     return False
 
 """resolution of the macro mesh"""
-INITIALRESOLUTION = 80
+INITIALRESOLUTION = 60
 
 """indices for the boundary parts"""
 CONTROLRADIUS = 0.25*MODELHEIGHT
@@ -185,8 +185,8 @@ def STATIONARY_W_XML(ref, RE):
 
 """constant for assembler"""
 ASSEMBLER_DIR = "assembler"
-ASSEMBLER_PENALTY_EPS = 0.001
-ASSEMBLER_OBSERVER_POINTS = [(8*MODELHEIGHT, 0.5*MODELHEIGHT), (8*MODELHEIGHT, 1.5*MODELHEIGHT)]
+ASSEMBLER_PENALTY_EPS = 1e-6
+ASSEMBLER_OBSERVER_POINTS = [(7*MODELHEIGHT, 0.5*MODELHEIGHT), (7*MODELHEIGHT, 1.5*MODELHEIGHT)]
 
 
 e1 = Expression(("( 1.0)*((h-x[1])*(x[1]-(h-r)))/pow(r/2.0,2.0)", "0.0"), r=CONTROLRADIUS, h=RECTUPPER["x0_1"])
@@ -266,7 +266,8 @@ def LINEARIZED_SIM_LOG(ref, RE):
 
 """constants for bernoulli"""
 BERNOULLI_MAXIT = 50
-BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 2, "target" : "LR", "maxiter": 3000}
+BERNOULLI_STRATEGY = {"solver": "slepc", "strategy": "", "eigenvals": 1, "sigma": 1.0, "verbose": True, "maxiter": 1000, "tol": 1e-13}
+# BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 2, "target" : "LR", "maxiter": 3000}
 # BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 250, "target" : "LM"}
 # BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "moebius", "sigma": 1, "tau": -1, "eigenvals": 10, "maxiter": 2000, "target": "LM"}
 # choose eigenvals in moebius and shiftinvert with LR to that number of instable eigenvalues
