@@ -17,7 +17,8 @@ class Bernoulli():
         self.ref = ref
         self.RE = RE
         self.const = const
-        self.strategy = self.const.BERNOULLI_STRATEGY
+        self.bernoulli_instable_re = self.const.BERNOULLI_INSTABLE_RE
+
 
         # read compress system for simuation
         names = ["M", "M_BOUNDARY_CTRL", "S", "R", "K", "G", "GT", "B", "C"]
@@ -26,6 +27,9 @@ class Bernoulli():
             self.mat[name] = scio.mmread(const.ASSEMBLER_COMPRESS_CTRL_NAME_MTX(ref, name, RE))
         if hasattr(self.mat["C"], 'toarray'):
             self.mat["C"] = self.mat["C"].toarray()
+
+        # choose initial bernoulli strategy
+        self.bernoullistrategy = self.const.BERNOULLI_STRATEGY_1
 
         # system sizes
         self.nv = self.mat["M"].shape[0]
@@ -63,9 +67,9 @@ class Bernoulli():
 
     def _instable_subspace_shiftinvert(self, size):
 
-        sigma = self.const.BERNOULLI_STRATEGY["sigma"]
-        target = self.const.BERNOULLI_STRATEGY["target"]
-        tol = self.const.BERNOULLI_STRATEGY["tol"]
+        sigma = self.bernoullistrategy["sigma"]
+        target = self.bernoullistrategy["target"]
+        tol = self.bernoullistrategy["tol"]
 
         print "sigma={0:e} target={1:s} tol={2:e}".format(sigma, target, tol)
         if target == "LM" or target == "LR":
@@ -99,11 +103,11 @@ class Bernoulli():
 
     def _instable_subspace_moebius(self, size):
 
-        sigma = self.const.BERNOULLI_STRATEGY["sigma"]
-        tau = self.const.BERNOULLI_STRATEGY["tau"]
-        target = self.const.BERNOULLI_STRATEGY["target"]
-        sortout = self.const.BERNOULLI_STRATEGY["sortout"]
-        tol = self.const.BERNOULLI_STRATEGY["tol"]
+        sigma = self.bernoullistrategy["sigma"]
+        tau = self.bernoullistrategy["tau"]
+        target = self.bernoullistrategy["target"]
+        tol = self.bernoullistrategy["tol"]
+        sortout = self.bernoullistrategy["sortout"]
         print "sigma={0:e}, tau={1:e}, tol={2:e}".format(sigma, tau, tol)
 
         # build linear operators for moebius transformed left and right ev problem
@@ -170,10 +174,10 @@ class Bernoulli():
         self.vl = vl
         self.dr = ((dr*sigma-tau)/(dr-1))
         self.dl = ((dl*sigma-tau)/(dl-1))
-        #self.Ir = np.logical_and(self.dr.real > 0, np.logical_not(sortout(self.dr)))
-        #self.Il = np.logical_and(self.dl.real > 0, np.logical_not(sortout(self.dl)))
-        self.Ir = self.dr.real > 0
-        self.Il = self.dl.real > 0
+        self.Ir = np.logical_and(self.dr.real > 0, np.logical_not(sortout(self.dr)))
+        self.Il = np.logical_and(self.dl.real > 0, np.logical_not(sortout(self.dl)))
+        #self.Ir = self.dr.real > 0
+        #self.Il = self.dl.real > 0
         self.nIr = self.Ir.sum()
         self.nIl = self.Il.sum()
 
@@ -187,7 +191,6 @@ class Bernoulli():
         for i in np.nditer(np.where(self.Il)):
             print "ev = {0:e}+{1:e}*i".format(self.dl[i].real, self.dl[i].imag)
             print "res = {0:e}".format(np.linalg.norm(self.fullA.T*self.vl[:, i]-self.dl[i]*self.fullE.T*self.vl[:, i]))
-
 
     def _instable_subspace_slepc(self, size):
         raise NotImplementedError('not further tested')
@@ -390,13 +393,11 @@ class Bernoulli():
         self.Il = self.dl.real > 0
         self.nIl = self.Il.sum()
 
-
-    def solve(self):
-
+    def _call_strategy(self):
         # chose strategy and solve
-        size = self.const.BERNOULLI_STRATEGY["eigenvals"]
-        strategy = self.const.BERNOULLI_STRATEGY["strategy"]
-        solver = self.const.BERNOULLI_STRATEGY["solver"]
+        size = self.bernoullistrategy["eigenvals"]
+        strategy = self.bernoullistrategy["strategy"]
+        solver = self.bernoullistrategy["solver"]
 
         if solver == "scipy" and strategy == "shiftinvert":
             self._instable_subspace_shiftinvert(size)
@@ -409,9 +410,22 @@ class Bernoulli():
         else:
             raise ValueError('unknown bernoulli eigenvalue shifting strategy {0:s}'.format(strategy))
 
-        if self.nIr != self.nIl:
+    def solve(self):
+
+        # call strategy
+        self._call_strategy()
+
+        if self.nIr != self.nIl or (self.bernoulli_instable_re >= self.RE and self.nIr==self.nIl):
             print "Number of left eigenvalues {0:d} != {1:d} number of right eigenvalues".format(self.nIl, self.nIr)
-            raise ValueError("Could not properly compute instable subspace.")
+            print "Use Second Strategy"
+            self.bernoullistrategy = self.const.BERNOULLI_STRATEGY_2
+            self._call_strategy()
+            if self.nIr != self.nIl or (self.bernoulli_instable_re >= self.RE and self.nIr==self.nIl):
+                print "Use Third and last Strategy"
+                self.bernoullistrategy = self.const.BERNOULLI_STRATEGY_3
+                self._call_strategy()
+                if self.nIr != self.nIl or (self.bernoulli_instable_re >= self.RE and self.nIr==self.nIl):
+                    raise ValueError("Could not properly compute instable subspace.")
 
         elif self.nIl == 0 and self.nIr == 0:
             print "No instable eigenvalues detected, no need for initial feedback"
