@@ -107,7 +107,6 @@ class Bernoulli():
         tau = self.bernoullistrategy["tau"]
         target = self.bernoullistrategy["target"]
         tol = self.bernoullistrategy["tol"]
-        sortout = self.bernoullistrategy["sortout"]
         print "sigma={0:e}, tau={1:e}, tol={2:e}".format(sigma, tau, tol)
 
         # build linear operators for moebius transformed left and right ev problem
@@ -155,29 +154,13 @@ class Bernoulli():
         print "backtransformed (right/left) moebiues eigenvalues with |lambda|>1 (instable)"
         print instablebackr, instablebackl
 
-        # sort out
-        sortedout_r_idx = sortout(instablebackr)
-        sortedout_l_idx = sortout(instablebackl)
-        sortedout_r = instablebackr[sortedout_r_idx]
-        sortedout_l = instablebackl[sortedout_l_idx]
-        not_sortedout_r = instablebackr[np.logical_not(sortedout_r_idx)]
-        not_sortedout_l = instablebackl[np.logical_not(sortedout_l_idx)]
-
-        print "backtransformed  sorted out (right/left) moebiues eigenvalues with |lambda|>1 (instable)"
-        print sortedout_r, sortedout_l
-
-        print "backtransformed  not sorted out (right/left) moebiues eigenvalues with |lambda|>1 (instable)"
-        print not_sortedout_r, not_sortedout_l
-
         # set attributes transform all back set attributes (eigenvectors change not)
         self.vr = vr
         self.vl = vl
         self.dr = ((dr*sigma-tau)/(dr-1))
         self.dl = ((dl*sigma-tau)/(dl-1))
-        self.Ir = np.logical_and(self.dr.real > 0, np.logical_not(sortout(self.dr)))
-        self.Il = np.logical_and(self.dl.real > 0, np.logical_not(sortout(self.dl)))
-        #self.Ir = self.dr.real > 0
-        #self.Il = self.dl.real > 0
+        self.Ir = self.dr.real > 0
+        self.Il = self.dl.real > 0
         self.nIr = self.Ir.sum()
         self.nIl = self.Il.sum()
 
@@ -414,22 +397,20 @@ class Bernoulli():
 
         # call strategy
         self._call_strategy()
-
-        if self.nIr != self.nIl or (self.bernoulli_instable_re >= self.RE and self.nIr==self.nIl):
+        if self.nIl == 0 and self.nIr == 0 and (self.bernoulli_instable_re > self.RE):
+            print "No instable eigenvalues detected, no need for initial feedback"
+            return
+        elif self.nIr != self.nIl or (self.bernoulli_instable_re >= self.RE and self.nIr==0):
             print "Number of left eigenvalues {0:d} != {1:d} number of right eigenvalues".format(self.nIl, self.nIr)
             print "Use Second Strategy"
             self.bernoullistrategy = self.const.BERNOULLI_STRATEGY_2
             self._call_strategy()
-            if self.nIr != self.nIl or (self.bernoulli_instable_re >= self.RE and self.nIr==self.nIl):
+            if self.nIr != self.nIl or (self.bernoulli_instable_re >= self.RE and self.nIr==0):
                 print "Use Third and last Strategy"
                 self.bernoullistrategy = self.const.BERNOULLI_STRATEGY_3
                 self._call_strategy()
-                if self.nIr != self.nIl or (self.bernoulli_instable_re >= self.RE and self.nIr==self.nIl):
+                if self.nIr != self.nIl or (self.bernoulli_instable_re >= self.RE and self.nIr==0):
                     raise ValueError("Could not properly compute instable subspace.")
-
-        elif self.nIl == 0 and self.nIr == 0:
-            print "No instable eigenvalues detected, no need for initial feedback"
-            return
         else:
             print "Found {0:d}, {1:d} instable eigenvalues".format(self.nIr, self.nIl)
 

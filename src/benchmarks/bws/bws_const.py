@@ -58,7 +58,7 @@ def LOCALREFINE(p):
     return False
 
 """resolution of the macro mesh"""
-INITIALRESOLUTION = 60
+INITIALRESOLUTION = 90
 
 """indices for the boundary parts"""
 CONTROLRADIUS = 0.25*MODELHEIGHT
@@ -266,12 +266,12 @@ def LINEARIZED_SIM_LOG(ref, RE):
 
 """constants for bernoulli"""
 BERNOULLI_MAXIT = 50
-BERNOULLI_STRATEGY = {"solver": "slepc", "strategy": "", "eigenvals": 1, "sigma": 1.0, "verbose": True, "maxiter": 1000, "tol": 1e-13}
-# BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 2, "target" : "LR", "maxiter": 3000}
-# BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 250, "target" : "LM"}
-# BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "moebius", "sigma": 1, "tau": -1, "eigenvals": 10, "maxiter": 2000, "target": "LM"}
-# choose eigenvals in moebius and shiftinvert with LR to that number of instable eigenvalues
-# for karman experiments have shown that there are two
+BERNOULLI_INSTABLE_RE = 2500 # a rough estimation when instabilities occur
+BERNOULLI_STRATEGY_1 = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 0.5, "eigenvals": 400, "target": "LM", "tol": 1e-13}
+BERNOULLI_STRATEGY_2 = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 4, "target": "LR", "tol": 1e-13}
+BERNOULLI_STRATEGY_3 = {"solver": "scipy", "strategy": "moebius", "sigma": 1.0, "tau": -1.0, "eigenvals": 4, "tol": 1e-13,
+                        "target": "LM"}
+
 # sigma must be positive and tau negative and they must have the same absolute value
 
 def BERNOULLI_FEED0_CPS_MTX(ref, RE):
@@ -294,9 +294,9 @@ LQR_ADI_OUTPUT = 0
 LQR_ADI_RES2 = 1e-16
 LQR_ADI_MAXIT = 8000
 LQR_ADI_REL_CHANGE_TOL = 1e-13
-LQR_ADI_ARP_M = 40
-LQR_ADI_ARP_P = 40
-LQR_ADI_L0 = 25
+LQR_ADI_ARP_M = 200
+LQR_ADI_ARP_P = 200
+LQR_ADI_L0 = 50
 LQR_SAVE_FREQ = 5
 LQR_START_CONTROLLING = 0
 LQR_INFO = 0.05

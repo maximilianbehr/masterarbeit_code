@@ -281,9 +281,9 @@ def LINEARIZED_SIM_LOG(ref, RE):
 BERNOULLI_MAXIT = 50
 BERNOULLI_INSTABLE_RE = 80 # a rough estimation when instabilities occur
 BERNOULLI_STRATEGY_1 = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 0.5, "eigenvals": 400, "target": "LM", "tol": 1e-13}
-BERNOULLI_STRATEGY_2 = {"solver": "scipy", "strategy": "moebius", "sigma": 1.0, "tau": -1.0, "eigenvals": 4, "tol": 1e-13,
-                        "target": "LM", "sortout": lambda(x): np.abs(np.abs(x.imag)-5) > 1.0}
-BERNOULLI_STRATEGY_3 = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 4, "target": "LR", "tol": 1e-13}
+BERNOULLI_STRATEGY_2 = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 4, "target": "LR", "tol": 1e-13}
+BERNOULLI_STRATEGY_3 = {"solver": "scipy", "strategy": "moebius", "sigma": 1.0, "tau": -1.0, "eigenvals": 4, "tol": 1e-13,
+                        "target": "LM"}
 
 # choose eigenvals in moebius and shiftinvert with LR to that number of instable eigenvalues
 # for karman experiments have shown that there are two
