@@ -279,14 +279,10 @@ def LINEARIZED_SIM_LOG(ref, RE):
 
 """constants for bernoulli"""
 BERNOULLI_MAXIT = 50
-BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 4, "target": "LR", "maxiter": 2000}
-#BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 0.5, "eigenvals": 400, "target" : "LM"}
-#BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "moebius", "sigma": 1.0, "tau": -1.0, "eigenvals": 2, "maxiter": 2000,
-#                      "target": "LM", "sortout": lambda(x): x.real < 1e-2}
-
-
-# BERNOULLI_STRATEGY = {"solver": "slepc", "strategy": "", "eigenvals": 4, "sigma": 1.0, "verbose": True, "maxiter": 1000, "tol": 1e-13}
-# BERNOULLI_STRATEGY = {"solver": "slepc", "strategy": "", "eigenvals": 10, "sigma": 1.0, "verbose": False}
+BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "moebius", "sigma": 1.0, "tau": -1.0, "eigenvals": 4, "tol": 1e-19,
+                      "target": "LM", "sortout": lambda(x): np.abs(np.abs(x.imag)-5) > 0.5}
+#BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 4, "target": "LR", "tol": 1e-13}
+#BERNOULLI_STRATEGY = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 0.5, "eigenvals": 400, "target" : "LM", "tol": 1e-13}
 
 # choose eigenvals in moebius and shiftinvert with LR to that number of instable eigenvalues
 # for karman experiments have shown that there are two

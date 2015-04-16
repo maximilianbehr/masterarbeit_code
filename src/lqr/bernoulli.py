@@ -65,18 +65,14 @@ class Bernoulli():
 
         sigma = self.const.BERNOULLI_STRATEGY["sigma"]
         target = self.const.BERNOULLI_STRATEGY["target"]
+        tol = self.const.BERNOULLI_STRATEGY["tol"]
 
-        print "sigma={0:f} target={1:s} ".format(sigma, target)
+        print "sigma={0:e} target={1:s} tol={2:e}".format(sigma, target, tol)
         if target == "LM" or target == "LR":
             # compute right eigenvectors
             print gettime(), "Compute right eigenvectors"
             try:
-                if "maxiter" in self.const.BERNOULLI_STRATEGY.keys():
-                    maxiter = self.const.BERNOULLI_STRATEGY["maxiter"]
-                    print "maxiter={0:d}".format(maxiter)
-                    self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=sigma, which=target, maxiter=maxiter)
-                else:
-                    self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=sigma, which=target)
+                self.dr, self.vr = scspla.eigs(self.fullA.tocsc(), size, self.fullE.tocsc(),  sigma=sigma, which=target, tol=tol)
             except scspla.ArpackNoConvergence as e:
                 print "Arpack did not converge take current (right) eigenvalues eigenvectors"
                 self.dr = e.eigenvalues
@@ -89,12 +85,7 @@ class Bernoulli():
             # compute left eigenvectors
             print gettime(), "Compute left eigenvectors"
             try:
-                if "maxiter" in self.const.BERNOULLI_STRATEGY.keys():
-                    maxiter = self.const.BERNOULLI_STRATEGY["maxiter"]
-                    print "maxiter={0:d}".format(maxiter)
-                    self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(),  sigma=sigma, which=target, maxiter=maxiter)
-                else:
-                    self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(),  sigma=sigma, which=target)
+                self.dl, self.vl = scspla.eigs(self.fullA.T.tocsc(), size, self.fullE.T.tocsc(),  sigma=sigma, which=target, tol=tol)
             except scspla.ArpackNoConvergence as e:
                 print "Arpack did not converge take current (right) eigenvalues eigenvectors"
                 self.dl = e.eigenvalues
@@ -110,10 +101,10 @@ class Bernoulli():
 
         sigma = self.const.BERNOULLI_STRATEGY["sigma"]
         tau = self.const.BERNOULLI_STRATEGY["tau"]
-        maxiter = self.const.BERNOULLI_STRATEGY["maxiter"]
         target = self.const.BERNOULLI_STRATEGY["target"]
         sortout = self.const.BERNOULLI_STRATEGY["sortout"]
-        print "maxiter={0:d}, sigma={1:f}, tau={2:f}".format(maxiter, sigma, tau)
+        tol = self.const.BERNOULLI_STRATEGY["tol"]
+        print "sigma={0:e}, tau={1:e}, tol={2:e}".format(sigma, tau, tol)
 
         # build linear operators for moebius transformed left and right ev problem
         shape = (self.nv+self.np, self.nv+self.np)
@@ -123,13 +114,13 @@ class Bernoulli():
         Moeb1T = Moeb1.T.tocsc(); Moeb2T = Moeb2.T.tocsc()
         Moeb1solver = scspla.splu(Moeb1).solve; Moeb1Tsolver = scspla.splu(Moeb1T).solve
         matvecR = lambda x: Moeb1solver(Moeb2*x)
-        matvecL = lambda x: Moeb2T*Moeb1Tsolver(x)
+        matvecL = lambda x: Moeb1Tsolver(Moeb2T*x)
         MoebL = scspla.LinearOperator(shape, matvecL)
         MoebR = scspla.LinearOperator(shape, matvecR)
 
         print gettime(), "Compute right eigenvectors"
         try:
-            dr, vr = scspla.eigs(MoebR, size, which=target, maxiter=maxiter)
+            dr, vr = scspla.eigs(MoebR, size, which=target, tol=tol)
         except scspla.ArpackNoConvergence as e:
             print "Arpack did not converge take current (right) eigenvalues eigenvectors"
             dr = e.eigenvalues
@@ -137,7 +128,7 @@ class Bernoulli():
 
         print gettime(), "Compute left eigenvectors"
         try:
-            dl, vl = scspla.eigs(MoebL, size, which=target, maxiter=maxiter)
+            dl, vl = scspla.eigs(MoebL, size, which=target, tol=tol)
         except scspla.ArpackNoConvergence as e:
             print "Arpack did not converge take current (left) eigenvalues eigenvectors"
             dl = e.eigenvalues
@@ -185,6 +176,18 @@ class Bernoulli():
         self.Il = self.dl.real > 0
         self.nIr = self.Ir.sum()
         self.nIl = self.Il.sum()
+
+    def _resev(self):
+        print "res right eigenvector"
+        for i in np.nditer(np.where(self.Ir)):
+            print "ev = {0:e}+{1:e}*i".format(self.dr[i].real, self.dr[i].imag)
+            print "res = {0:e}".format(np.linalg.norm(self.fullA*self.vr[:, i]-self.dr[i]*self.fullE*self.vr[:, i]))
+
+        print "res left eigenvector"
+        for i in np.nditer(np.where(self.Il)):
+            print "ev = {0:e}+{1:e}*i".format(self.dl[i].real, self.dl[i].imag)
+            print "res = {0:e}".format(np.linalg.norm(self.fullA.T*self.vl[:, i]-self.dl[i]*self.fullE.T*self.vl[:, i]))
+
 
     def _instable_subspace_slepc(self, size):
         raise NotImplementedError('not further tested')
@@ -415,6 +418,10 @@ class Bernoulli():
             return
         else:
             print "Found {0:d}, {1:d} instable eigenvalues".format(self.nIr, self.nIl)
+
+        # print residuals
+        self._resev()
+
 
         # sort instable eigenvektors and eigenvalues
         LEV = self.vl[:, self.Il]

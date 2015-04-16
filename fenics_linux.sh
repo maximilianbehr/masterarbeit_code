@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source venv/bin/activate
+#source venv/bin/activate
 
 export PYTHONPATH=`pwd`:${PYTHONPATH}
 export PYTHONPATH=/usr/local/lib/python2.7:${PYTHONPATH}

@@ -26,7 +26,7 @@ class LQR_Solver():
         self.eqn.M = self.mat["M"]
         self.eqn.A = -self.mat["S"] - self.mat["K"] - self.mat["R"] - self.mat["M_BOUNDARY_CTRL"]
         self.eqn.G = self.mat["G"]
-        self.eqn.B = -self.mat["B"]
+        self.eqn.B = self.mat["B"]
         self.eqn.C = self.mat["C"]
         if hasattr(self.eqn.C, "todense"):
             self.eqn.C = self.eqn.C.todense()
@@ -42,6 +42,7 @@ class LQR_Solver():
         self.opt.nm.maxit = const.LQR_NM_MAXIT
 
         if os.path.isfile(const.BERNOULLI_FEED0_CPS_MTX(ref, RE)):
+            print "take initial stabilizing feedback {0:s}".format(const.BERNOULLI_FEED0_CPS_MTX(ref, RE))
             self.opt.nm.nm_K0 = scio.mmread(const.BERNOULLI_FEED0_CPS_MTX(ref, RE))
 
         self.opt.adi.output = const.LQR_ADI_OUTPUT
