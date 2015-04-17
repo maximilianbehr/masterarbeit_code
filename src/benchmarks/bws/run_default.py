@@ -35,11 +35,11 @@ if __name__ == "__main__":
 
     print "lambda ={0:f}".format(const.STATIONARY_LAM)
 
-    #build_mesh(const, refs)
-    #solve_newton(const, refs, REs)
+    build_mesh(const, refs)
+    solve_newton(const, refs, REs)
     REs = REscompute
-    #assemble_lqr(const, refs, REs)
-    #compute_condition(const, refs, REs)
+    assemble_lqr(const, refs, REs)
+    compute_condition(const, refs, REs)
     #simulate(const, refs, REs)
     solve_bernoulli(const, refs, REs)
     solve_lqr(const, refs, REs)
