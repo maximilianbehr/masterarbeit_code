@@ -266,7 +266,7 @@ def LINEARIZED_SIM_LOG(ref, RE):
 
 """constants for bernoulli"""
 BERNOULLI_MAXIT = 50
-BERNOULLI_INSTABLE_RE = 2500 # a rough estimation when instabilities occur
+BERNOULLI_INSTABLE_RE = 4000 # a rough estimation when instabilities occur
 BERNOULLI_STRATEGY_1 = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 0.5, "eigenvals": 400, "target": "LM", "tol": 1e-13}
 BERNOULLI_STRATEGY_2 = {"solver": "scipy", "strategy": "shiftinvert", "sigma": 1.0, "eigenvals": 4, "target": "LR", "tol": 1e-13}
 BERNOULLI_STRATEGY_3 = {"solver": "scipy", "strategy": "moebius", "sigma": 1.0, "tau": -1.0, "eigenvals": 4, "tol": 1e-13,
@@ -291,12 +291,15 @@ LQR_NM_REL2_CHANGE = 3e-10
 LQR_NM_REL_CHANGE = 3e-10
 LQR_NM_MAXIT = 20
 LQR_ADI_OUTPUT = 1
-LQR_ADI_RES2 = 1e-16
-LQR_ADI_MAXIT = 8000
-LQR_ADI_REL_CHANGE_TOL = 1e-13
+LQR_ADI_RES2 = 1e-13
+LQR_ADI_MAXIT = 1500
+LQR_ADI_REL_CHANGE_TOL = 1e-15
 LQR_ADI_ARP_M = 200
 LQR_ADI_ARP_P = 200
-LQR_ADI_L0 = 50
+LQR_ADI_L0 = 100
+LQR_PARATYPE = 4 # 4-adaptive V 1 minmax
+LQR_NM_GP = 0
+LQR_GP = 0
 LQR_SAVE_FREQ = 5
 LQR_START_CONTROLLING = 0
 LQR_INFO = 0.05

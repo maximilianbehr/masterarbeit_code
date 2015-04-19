@@ -57,7 +57,9 @@ class LQR_Solver():
         self.opt.adi.shifts.arp_m = const.LQR_ADI_ARP_M
         self.opt.adi.shifts.arp_p = const.LQR_ADI_ARP_P
         self.opt.adi.memory_usage = const.LQR_MEMORY_USAGE
-
+        self.opt.adi.shifts.paratype = const.LQR_PARATYPE
+        self.opt.nm.gpStep = const.LQR_NM_GP
+        self.opt.adi.gpStep = const.LQR_GP
         # setup empty fields for solve
         self.Z = None
         self.res2 = None

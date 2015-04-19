@@ -13,12 +13,12 @@
 #python -u src/benchmarks/karman/run_default.py 2 ref_2_RE_90 90    > karman_default_ref_2_RE_90.log &
 #python -u src/benchmarks/karman/run_default.py 2 ref_2_RE_160 160  > karman_default_ref_2_RE_160.log &
 
-#echo "KARMAN REF 3 DEFAULT"
-#python -u src/benchmarks/karman/run_default.py 3 ref_3             > karman_default_ref_3.log &
-#python -u src/benchmarks/karman/run_default.py 3 ref_3_RE_10 10    > karman_default_ref_3_RE_10.log &
-#python -u src/benchmarks/karman/run_default.py 3 ref_3_RE_60 60    > karman_default_ref_3_RE_60.log &
-#python -u src/benchmarks/karman/run_default.py 3 ref_3_RE_90 90    > karman_default_ref_3_RE_90.log &
-#python -u src/benchmarks/karman/run_default.py 3 ref_3_RE_160 160  > karman_default_ref_3_RE_160.log &
+echo "KARMAN REF 3 DEFAULT"
+python -u src/benchmarks/karman/run_default.py 3 ref_3             > karman_default_ref_3.log &
+python -u src/benchmarks/karman/run_default.py 3 ref_3_RE_10 10    > karman_default_ref_3_RE_10.log &
+python -u src/benchmarks/karman/run_default.py 3 ref_3_RE_60 60    > karman_default_ref_3_RE_60.log &
+python -u src/benchmarks/karman/run_default.py 3 ref_3_RE_90 90    > karman_default_ref_3_RE_90.log &
+python -u src/benchmarks/karman/run_default.py 3 ref_3_RE_160 160  > karman_default_ref_3_RE_160.log &
 
 #echo "KARMAN REF 4 DEFAULT"
 #python -u src/benchmarks/karman/run_default.py 4 ref_4             > karman_default_ref_4.log &

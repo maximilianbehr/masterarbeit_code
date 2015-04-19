@@ -32,5 +32,5 @@ if __name__ == "__main__":
     solve_bernoulli(const, refs, REs)
     solve_lqr(const, refs, REs)
     control(const, refs, REs)
-    compute_eigen(const, refs, REs)
+    #compute_eigen(const, refs, REs)
 

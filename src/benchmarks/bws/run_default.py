@@ -29,7 +29,7 @@ if __name__ == "__main__":
         const.OUTPUTDIR_NAME = "results_{0:s}".format(name)
         desiredRE = int(sys.argv[4])
         REscompute = [desiredRE]
-        REs = range(100, desiredRE, 1000)
+        REs = range(100, desiredRE, 50)
         REs.append(desiredRE)
 
 
@@ -40,8 +40,8 @@ if __name__ == "__main__":
     REs = REscompute
     assemble_lqr(const, refs, REs)
     compute_condition(const, refs, REs)
-    #simulate(const, refs, REs)
+    simulate(const, refs, REs)
     solve_bernoulli(const, refs, REs)
     solve_lqr(const, refs, REs)
-    #control(const, refs, REs)
+    control(const, refs, REs)
     #compute_eigen(const, refs, REs)
