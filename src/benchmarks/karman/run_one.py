@@ -28,7 +28,7 @@ if __name__ == "__main__":
     solve_newton(const, refs, REs)
     REs = REscompute
     assemble_lqr(const, refs, REs)
-    simulate(const, refs, REs)
+    #simulate(const, refs, REs)
     solve_bernoulli(const, refs, REs)
     solve_lqr(const, refs, REs)
     control(const, refs, REs)
