@@ -287,12 +287,11 @@ LQR_DELTA = - 0.02
 LQR_NM_OUTPUT = 1
 LQR_NM_RES2_SAVE = 1e-1
 LQR_NM_RES2 = 5e-10
-LQR_NM_REL2_CHANGE = 3e-10
 LQR_NM_REL_CHANGE = 3e-10
 LQR_NM_MAXIT = 20
 LQR_ADI_OUTPUT = 1
-LQR_ADI_RES2 = 1e-15
-LQR_ADI_MAXIT = 1500
+LQR_ADI_RES2 = 1e-18
+LQR_ADI_MAXIT = 2000
 LQR_ADI_REL_CHANGE_TOL = 1e-15
 LQR_ADI_ARP_M = 200
 LQR_ADI_ARP_P = 200
@@ -308,6 +307,11 @@ if socket.gethostname() == "editha":
     LQR_MEMORY_USAGE = 1
 else:
     LQR_MEMORY_USAGE = 0
+
+def LQR_LOG(ref, RE):
+    return os.path.join(OUTPUTDIR(), LINEARIZED_CTRL_DIR, parameters["refinement_algorithm"],
+                        "ref_{0:d}".format(ref), "RE_{0:d}".format(RE), "lqr_log.txt")
+
 
 """constants for linearized control of navier stokes"""
 LINEARIZED_CTRL_DIR = "lqr_ctrl"

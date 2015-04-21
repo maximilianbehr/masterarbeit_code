@@ -37,7 +37,6 @@ class LQR_Solver():
         self.opt = options()
         self.opt.nm.output = const.LQR_NM_OUTPUT
         self.opt.nm.res2_tol = const.LQR_NM_RES2
-        self.opt.nm.rel2_change_tol = const.LQR_NM_REL2_CHANGE
         self.opt.nm.rel_change_tol = const.LQR_NM_REL_CHANGE
         self.opt.nm.maxit = const.LQR_NM_MAXIT
 
@@ -58,8 +57,8 @@ class LQR_Solver():
         self.opt.adi.shifts.arp_p = const.LQR_ADI_ARP_P
         self.opt.adi.memory_usage = const.LQR_MEMORY_USAGE
         self.opt.adi.shifts.paratype = const.LQR_PARATYPE
-        self.opt.nm.gpStep = const.LQR_NM_GP
-        self.opt.adi.gpStep = const.LQR_GP
+        #self.opt.nm.gpStep = const.LQR_NM_GP
+        #self.opt.adi.gpStep = const.LQR_GP
         # setup empty fields for solve
         self.Z = None
         self.res2 = None
@@ -67,9 +66,9 @@ class LQR_Solver():
 
 
     def solve(self):
-        result = lrnm(self.eqn, self.opt)
-        self.Z = result[0]
-        self.res2 = result[1]
+        self.Z, self.status = lrnm(self.eqn, self.opt)
+        self.res2 = self.status.res2_norms
+
         # self.iter = result[2]
         if self.res2[-1] > self.const.LQR_NM_RES2_SAVE:
             raise ValueError("No convergence")
@@ -89,3 +88,9 @@ class LQR_Solver():
         #with open(file, "w") as handle:
         #    scio.mmwrite(handle, self.Kinf)
         write_matrix(file, self.Kinf, "lqr solver Kinf, ref={0:d} RE={1:d}".format(self.ref, self.RE))
+
+        try:
+            with open(self.const.LQR_LOG(self.ref, self.RE),'w') as f:
+                f.write(self.status.__str__())
+        except:
+            print "an error occured writing the logfile for lqr"

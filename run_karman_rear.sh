@@ -8,10 +8,10 @@
 
 #echo "KARMAN REF 2 DEFAULT"
 #python -u src/benchmarks/karman/run_rear.py 2 ref_2             > karman_rear_ref_2.log &
-#python -u src/benchmarks/karman/run_rear.py 2 ref_2_RE_10 10    > karman_rear_ref_2_RE_10.log &
-#python -u src/benchmarks/karman/run_rear.py 2 ref_2_RE_60 60    > karman_rear_ref_2_RE_60.log &
-#python -u src/benchmarks/karman/run_rear.py 2 ref_2_RE_90 90    > karman_rear_ref_2_RE_90.log &
-#python -u src/benchmarks/karman/run_rear.py 2 ref_2_RE_160 160  > karman_rear_ref_2_RE_160.log &
+python -u src/benchmarks/karman/run_rear.py 2 ref_2_RE_10 10    > karman_rear_ref_2_RE_10.log &
+python -u src/benchmarks/karman/run_rear.py 2 ref_2_RE_60 60    > karman_rear_ref_2_RE_60.log &
+python -u src/benchmarks/karman/run_rear.py 2 ref_2_RE_90 90    > karman_rear_ref_2_RE_90.log &
+python -u src/benchmarks/karman/run_rear.py 2 ref_2_RE_160 160  > karman_rear_ref_2_RE_160.log &
 
 #echo "KARMAN REF 3 DEFAULT"
 #python -u src/benchmarks/karman/run_rear.py 3 ref_3             > karman_rear_ref_3.log &
