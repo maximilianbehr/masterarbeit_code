@@ -92,5 +92,6 @@ class LQR_Solver():
         try:
             with open(self.const.LQR_LOG(self.ref, self.RE),'w') as f:
                 f.write(self.status.__str__())
+                f.close()
         except:
             print "an error occured writing the logfile for lqr"
